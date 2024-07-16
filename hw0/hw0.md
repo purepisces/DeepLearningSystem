@@ -1,1 +1,1 @@
-
+The assignment will require you to build a basic softmax regression algorithm, plus a simple two-layer neural network.  You will create these implementations both in native Python (using the numpy library), and (for softmax regression) in native C/C++. 
