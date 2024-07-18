@@ -200,4 +200,29 @@ sum_axis_1 = np.sum(arr, axis=1)
 print("Sum along axis=1 (across the rows):", sum_axis_1)
 # Output: [ 6 15 24]
 ```
+-------------------
+```python
+import numpy as np
+
+# Logits for a batch of 3 samples and 4 classes
+Z = np.array([[2.0, 1.0, 0.1, 0.5],
+              [1.5, 2.1, 0.2, 0.7],
+              [1.1, 1.8, 0.3, 0.4]])
+
+# True labels for the 3 samples
+y = np.array([0, 1, 2])
+
+# np.arange(Z.shape[0]) creates an array [0, 1, 2]
+row_indices = np.arange(Z.shape[0])
+print("Row indices:", row_indices)  # Output: [0 1 2]
+
+# y is [0, 1, 2]
+print("True class labels:", y)  # Output: [0 1 2]
+
+# Advanced indexing: Z[np.arange(Z.shape[0]), y] selects Z[0, 0], Z[1, 1], Z[2, 2]
+correct_class_logits = Z[row_indices, y]
+
+print("Correct class logits:", correct_class_logits)
+# Output: [2.0, 2.1, 0.3]
+```
 
