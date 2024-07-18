@@ -50,7 +50,7 @@ with gzip.open(label_filename, 'rb') as lbl_f:
 Purpose: Read and unpack the first 8 bytes of the file to get the magic number and the number of items (labels).
 lbl_f.read(8): Reads the first 8 bytes from the file. These 8 bytes contain two 4-byte integers: the magic number and the number of items.
 struct.unpack(">II", ...): Unpacks the 8 bytes into two 32-bit unsigned integers (I), in big-endian order (>). The result is a tuple containing the magic number and the number of items.
->: Indicates big-endian byte order.
+`>`: Indicates big-endian byte order.
 I: Indicates a 32-bit unsigned integer.
 
 Big Endian:
