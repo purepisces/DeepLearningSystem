@@ -146,3 +146,9 @@ Each row represents one image, and each image is flattened into a 1D array of pi
 
 
 astype(np.float32): Converts the array's data type from uint8 to float32. This is necessary for normalization and further processing.
+
+Why Convert to np.float32?
+
+Precision:
+np.uint8: This data type can store integer values from 0 to 255. It is not capable of representing fractional values, which are needed for normalization.
+np.float32: This data type can store floating-point numbers, which can represent a much wider range of values, including fractions.
