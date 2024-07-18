@@ -113,3 +113,15 @@ Unpacked value1 (Big Endian): 305419896
 Unpacked value2 (Big Endian): 572798584
 Unpacked value3 (Big Endian): 572798488
 ```
+--------
+```
+TEST SET LABEL FILE (t10k-labels-idx1-ubyte):
+[offset] [type]          [value]          [description]
+0000     32 bit integer  0x00000801(2049) magic number (MSB first)
+0004     32 bit integer  10000            number of items
+0008     unsigned byte   ??               label
+0009     unsigned byte   ??               label
+........
+xxxx     unsigned byte   ??               label
+The labels values are 0 to 9.
+```
