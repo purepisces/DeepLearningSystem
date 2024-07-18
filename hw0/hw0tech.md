@@ -88,7 +88,7 @@ Output
 value1: (305419896,)
 ```
 Code
-```
+```python
 import struct
 big_endian_bytes = b'\x12\x34\x56\x78'
 value1 = struct.unpack('>I', big_endian_bytes)[0]
