@@ -176,3 +176,28 @@ Why Convert to np.float32?
 Precision:
 np.uint8: This data type can store integer values from 0 to 255. It is not capable of representing fractional values, which are needed for normalization.
 np.float32: This data type can store floating-point numbers, which can represent a much wider range of values, including fractions.
+
+--------------------
+**axis=0**: Sum along the rows (down the columns). This reduces the dimension by summing over the first axis.
+
+**axis=1**: Sum along the columns (across the rows). This reduces the dimension by summing over the second axis.
+
+```python
+import numpy as np
+
+# Example 2D array
+arr = np.array([[1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]])
+
+# Sum along the rows (down the columns)
+sum_axis_0 = np.sum(arr, axis=0)
+print("Sum along axis=0 (down the columns):", sum_axis_0)
+# Output: [12 15 18]
+
+# Sum along the columns (across the rows)
+sum_axis_1 = np.sum(arr, axis=1)
+print("Sum along axis=1 (across the rows):", sum_axis_1)
+# Output: [ 6 15 24]
+```
+
