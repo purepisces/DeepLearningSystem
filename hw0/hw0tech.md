@@ -125,3 +125,6 @@ TEST SET LABEL FILE (t10k-labels-idx1-ubyte):
 xxxx     unsigned byte   ??               label
 The labels values are 0 to 9.
 ```
+
+
+lbl_f.read(num_items): Reads num_items bytes from the file, where num_items is the number of labels.
