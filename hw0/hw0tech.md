@@ -1,48 +1,11 @@
 ```python
-binary_data = b'\x00\xff\x7f\x80\x01
+  with gzip.open(label_filename, 'rb') as lbl_f:
+        magic, num_items = struct.unpack(">II", lbl_f.read(8))
+        if magic != 2049:
+            raise ValueError(f"Invalid magic number in label file: {magic}")
+        labels = np.frombuffer(lbl_f.read(num_items), dtype=np.uint8)
 ```
-binary_data = b'\x00\xff\x7f\x80\x01' is an example of a buffer. In Python, a buffer is essentially a contiguous block of memory that can store binary data. The bytes object b'\x00\xff\x7f\x80\x01' is a sequence of bytes, where each byte is represented as a hexadecimal value.
 
-The bytes object b'\x00\xff\x7f\x80\x01' is composed of 5 bytes, and each byte is indeed 8 bits.
-
-b'': The prefix b indicates that the following string is a bytes object.
-\x00\xff\x7f\x80\x01: Each of these sequences represents a byte in hexadecimal notation:
-\x00: The hexadecimal value 00, which is 00000000 in binary (8 bits).
-\xff: The hexadecimal value FF, which is 11111111 in binary (8 bits).
-\x7f: The hexadecimal value 7F, which is 01111111 in binary (8 bits).
-\x80: The hexadecimal value 80, which is 10000000 in binary (8 bits).
-\x01: The hexadecimal value 01, which is 00000001 in binary (8 bits).
-
-Byte: A byte is a unit of digital information that consists of 8 bits. It can represent 256 different values (from 0 to 255 for unsigned integers).
-Bit: A bit is the smallest unit of data in computing and can have a value of either 0 or 1.
-
-```python
-import numpy as np
-
-# Example binary data (5 pixels with values 0, 255, 127, 128, 1)
-binary_data = b'\x00\xff\x7f\x80\x01'
-
-# Convert the binary data to a numpy array of uint8
-pixels = np.frombuffer(binary_data, dtype=np.uint8)
-
-print(pixels)  # Output: [  0 255 127 128   1]
-```
-Unsigned Integers
-
-An unsigned integer is a type of integer that can only represent non-negative values. For an 8-bit unsigned integer (uint8), the possible range of values is from 0 to 255.
-
-Understanding uint8
-
-u: Stands for "unsigned." In computing, unsigned numbers are those that can only represent non-negative values (i.e., 0 and positive integers). They do not have a sign bit to indicate positive or negative values.
-int: Short for "integer," which refers to whole numbers that do not have fractional parts.
-8: Indicates that the integer is represented using 8 bits (1 byte).
-
-
-Using np.frombuffer
-When we use np.frombuffer, we are taking an existing buffer (like a bytes object) and interpreting its binary data as a numpy array of a specified data type. This is useful because it allows us to work with the binary data directly in a structured format (like an array of integers or floats) without having to copy the data, which is efficient.
-
-
----------------------------------
 ```python
 with gzip.open(label_filename, 'rb') as lbl_f:
   magic, num_items = struct.unpack(">II", lbl_f.read(8))
@@ -130,6 +93,67 @@ The labels values are 0 to 9.
 lbl_f.read(num_items): Reads num_items bytes from the file, where num_items is the number of labels.
 
 ---------
+
+
+```python
+binary_data = b'\x00\xff\x7f\x80\x01
+```
+binary_data = b'\x00\xff\x7f\x80\x01' is an example of a buffer. In Python, a buffer is essentially a contiguous block of memory that can store binary data. The bytes object b'\x00\xff\x7f\x80\x01' is a sequence of bytes, where each byte is represented as a hexadecimal value.
+
+The bytes object b'\x00\xff\x7f\x80\x01' is composed of 5 bytes, and each byte is indeed 8 bits.
+
+b'': The prefix b indicates that the following string is a bytes object.
+\x00\xff\x7f\x80\x01: Each of these sequences represents a byte in hexadecimal notation:
+\x00: The hexadecimal value 00, which is 00000000 in binary (8 bits).
+\xff: The hexadecimal value FF, which is 11111111 in binary (8 bits).
+\x7f: The hexadecimal value 7F, which is 01111111 in binary (8 bits).
+\x80: The hexadecimal value 80, which is 10000000 in binary (8 bits).
+\x01: The hexadecimal value 01, which is 00000001 in binary (8 bits).
+
+Byte: A byte is a unit of digital information that consists of 8 bits. It can represent 256 different values (from 0 to 255 for unsigned integers).
+Bit: A bit is the smallest unit of data in computing and can have a value of either 0 or 1.
+
+```python
+import numpy as np
+
+# Example binary data (5 pixels with values 0, 255, 127, 128, 1)
+binary_data = b'\x00\xff\x7f\x80\x01'
+
+# Convert the binary data to a numpy array of uint8
+pixels = np.frombuffer(binary_data, dtype=np.uint8)
+
+print(pixels)  # Output: [  0 255 127 128   1]
+```
+Unsigned Integers
+
+An unsigned integer is a type of integer that can only represent non-negative values. For an 8-bit unsigned integer (uint8), the possible range of values is from 0 to 255.
+
+Understanding uint8
+
+u: Stands for "unsigned." In computing, unsigned numbers are those that can only represent non-negative values (i.e., 0 and positive integers). They do not have a sign bit to indicate positive or negative values.
+int: Short for "integer," which refers to whole numbers that do not have fractional parts.
+8: Indicates that the integer is represented using 8 bits (1 byte).
+
+
+Using np.frombuffer
+When we use np.frombuffer, we are taking an existing buffer (like a bytes object) and interpreting its binary data as a numpy array of a specified data type. This is useful because it allows us to work with the binary data directly in a structured format (like an array of integers or floats) without having to copy the data, which is efficient.
+
+---------------------------------
+
+struct.unpack vs np.frombuffer
+struct.unpack:
+
+Purpose: Unpack fixed-size, structured binary data into Python objects.
+Usage: Suitable for reading structured headers or records with a predefined format.
+Example: Reading the header of the MNIST file which has a specific structure with multiple fields (magic number, number of items).
+np.frombuffer:
+
+Purpose: Interpret a continuous block of memory as a numpy array of a specified type.
+Usage: Suitable for reading homogeneous data where each element is the same size and type, such as arrays of pixel values or labels.
+Example: Reading the sequence of label bytes in the MNIST file.
+
+---------------------------------
+
 ```python
  # Read the images file
     with gzip.open(image_filename, 'rb') as img_f:
