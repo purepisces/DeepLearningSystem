@@ -128,3 +128,21 @@ The labels values are 0 to 9.
 
 
 lbl_f.read(num_items): Reads num_items bytes from the file, where num_items is the number of labels.
+
+---------
+```python
+ # Read the images file
+    with gzip.open(image_filename, 'rb') as img_f:
+        magic, num_images, num_rows, num_cols = struct.unpack(">IIII", img_f.read(16))
+        if magic != 2051:
+            raise ValueError(f"Invalid magic number in image file: {magic}")
+        images = np.frombuffer(img_f.read(num_images * num_rows * num_cols), dtype=np.uint8)
+        images = images.reshape(num_images, num_rows * num_cols).astype(np.float32)
+        images /= 255.0  # Normalize to range [0, 1]
+```
+For reshape(num_images, num_rows * num_cols):
+Reshapes the 1D array into a 2D array with shape (num_images, num_rows * num_cols).
+Each row represents one image, and each image is flattened into a 1D array of pixel values.
+
+
+astype(np.float32): Converts the array's data type from uint8 to float32. This is necessary for normalization and further processing.
