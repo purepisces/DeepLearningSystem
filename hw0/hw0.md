@@ -247,9 +247,7 @@ Let's derive the gradient $\nabla_\Theta \ell_{\mathrm{softmax}}(\Theta^T x, y) 
 
 1. **Softmax Function**
    First, recall the softmax function for converting logits (raw scores) into probabilities:
-$$
-   \sigma(z_i) = \frac{\exp(z_i)}{\sum_{j=1}^k \exp(z_j)}
-$$
+$$\sigma(z_i) = \frac{\exp(z_i)}{\sum_{j=1}^k \exp(z_j)}$$
    where $z_i = \Theta_i^T x$are the logits for the $i$-th class.
 
 2. **Cross-Entropy Loss**
