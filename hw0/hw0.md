@@ -247,17 +247,19 @@ Let's derive the gradient $\nabla_\Theta \ell_{\mathrm{softmax}}(\Theta^T x, y) 
 
 1. **Softmax Function**
    First, recall the softmax function for converting logits (raw scores) into probabilities:
+   
 $$\sigma(z_i) = \frac{\exp(z_i)}{\sum_{j=1}^k \exp(z_j)}$$
+
    where $z_i = \Theta_i^T x$are the logits for the $i$-th class.
 
-2. **Cross-Entropy Loss**
+3. **Cross-Entropy Loss**
    The cross-entropy loss for a single example \((x, y)\) is given by:
    \[
    \ell_{\mathrm{softmax}}(\Theta^T x, y) = -\log(\sigma(z_y))
    \]
    where \(z_y\) is the logit corresponding to the true class \(y\).
 
-3. **Simplifying the Loss Function**
+4. **Simplifying the Loss Function**
    Expressing \(\sigma(z_y)\) using the softmax function:
    \[
    \sigma(z_y) = \frac{\exp(z_y)}{\sum_{j=1}^k \exp(z_j)}
@@ -267,7 +269,7 @@ $$\sigma(z_i) = \frac{\exp(z_i)}{\sum_{j=1}^k \exp(z_j)}$$
    \ell_{\mathrm{softmax}}(\Theta^T x, y) = -\log\left(\frac{\exp(z_y)}{\sum_{j=1}^k \exp(z_j)}\right) = -\left(\log(\exp(z_y)) - \log\left(\sum_{j=1}^k \exp(z_j)\right)\right) = -z_y + \log\left(\sum_{j=1}^k \exp(z_j)\right)
    \]
 
-4. **Gradient of the Loss with Respect to \(\Theta\)**
+5. **Gradient of the Loss with Respect to \(\Theta\)**
    To find the gradient of the loss with respect to \(\Theta\), we first need to find the partial derivatives of each term.
 
    4.1 **Gradient of \(-z_y**\):
@@ -295,7 +297,7 @@ $$\sigma(z_i) = \frac{\exp(z_i)}{\sum_{j=1}^k \exp(z_j)}$$
    \frac{\partial \log\left(\sum_{j=1}^k \exp(z_j)\right)}{\partial \Theta_i} = \sigma(z_i) x
    \]
 
-5. **Combining the Gradients**
+6. **Combining the Gradients**
    Combining the two parts, we get:
    \[
    \nabla_{\Theta_i} \ell_{\mathrm{softmax}}(\Theta^T x, y) = \sigma(z_i) x - x \cdot \delta_{iy}
