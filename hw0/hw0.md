@@ -1,6 +1,6 @@
 The assignment will require you to build a basic softmax regression algorithm, plus a simple two-layer neural network.  You will create these implementations both in native Python (using the numpy library), and (for softmax regression) in native C/C++. 
 
-Dataset:
+## Dataset:
 
 The MNIST (Modified National Institute of Standards and Technology) dataset is a well-known dataset in the field of machine learning and computer vision. It consists of images of handwritten digits (0-9) and their corresponding labels. 
 
@@ -14,7 +14,7 @@ Each example in the dataset consists of:
 Image: A 28x28 grayscale image of a handwritten digit.
 Label: A label corresponding to the digit in the image (0-9).
 
-Softmax(a.k.a. cross-entropy) loss:
+## Softmax(a.k.a. cross-entropy) loss:
 
 Implement the softmax (a.k.a. cross-entropy) loss as defined in `softmax_loss()` function in `src/simple_ml.py`.  Recall (hopefully this is review, but we'll also cover it in lecture on 9/1), that for a multi-class output that can take on values $y \in \{1,\ldots,k\}$, the softmax loss takes as input a vector of logits $z \in \mathbb{R}^k$, the true class $y \in \{1,\ldots,k\}$ returns a loss defined by
 
@@ -52,3 +52,29 @@ def softmax_loss(Z, y):
     return np.mean(losses)
     ### END YOUR CODE
 ```
+Example
+```python
+import numpy as np
+
+# Logits for a batch of 3 samples and 4 classes
+Z = np.array([[2.0, 1.0, 0.1, 0.5],
+              [1.5, 2.1, 0.2, 0.7],
+              [1.1, 1.8, 0.3, 0.4]])
+
+# True labels for the 3 samples
+y = np.array([0, 1, 2])
+
+# np.arange(Z.shape[0]) creates an array [0, 1, 2]
+row_indices = np.arange(Z.shape[0])
+print("Row indices:", row_indices)  # Output: [0 1 2]
+
+# y is [0, 1, 2]
+print("True class labels:", y)  # Output: [0 1 2]
+
+# Advanced indexing: Z[np.arange(Z.shape[0]), y] selects Z[0, 0], Z[1, 1], Z[2, 2]
+correct_class_logits = Z[row_indices, y]
+
+print("Correct class logits:", correct_class_logits)
+# Output: [2.0, 2.1, 0.3]
+```
+
