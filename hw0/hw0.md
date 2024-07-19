@@ -173,3 +173,4 @@ denotes the matrix of logits, and $I_y \in \mathbb{R}^{m \times k}$ represents a
 
 Using these gradients, implement the `softmax_regression_epoch()` function, which runs a single epoch of SGD (one pass over a data set) using the specified learning rate / step size `lr` and minibatch size `batch`.  As described in the docstring, your function should modify the `Theta` array in-place.  After implementation, run the tests.
 
+
