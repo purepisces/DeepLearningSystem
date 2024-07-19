@@ -201,6 +201,7 @@ print("Sum along axis=1 (across the rows):", sum_axis_1)
 # Output: [ 6 15 24]
 ```
 -------------------
+The expression Z[np.arange(Z.shape[0]), y] in numpy is a form of advanced indexing where you are providing two lists (or arrays) of indices to index into the 2D array Z.
 ```python
 import numpy as np
 
