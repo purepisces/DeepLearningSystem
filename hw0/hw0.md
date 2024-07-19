@@ -173,4 +173,149 @@ denotes the matrix of logits, and $I_y \in \mathbb{R}^{m \times k}$ represents a
 
 Using these gradients, implement the `softmax_regression_epoch()` function, which runs a single epoch of SGD (one pass over a data set) using the specified learning rate / step size `lr` and minibatch size `batch`.  As described in the docstring, your function should modify the `Theta` array in-place.  After implementation, run the tests.
 
+### Math Prove
+
+
+### Understanding the Derivative of Logarithm of the Softmax Denominator
+
+To understand why
+$$
+\frac{\partial \log(A)}{\partial z_i} = \frac{1}{A} \frac{\partial A}{\partial z_i} = \frac{\exp(z_i)}{\sum_{j=1}^k \exp(z_j)} = \sigma(z_i)$$
+let's break this down step-by-step.
+
+1. **Logarithm Derivative Rule**
+   The derivative of the logarithm function \(\log(A)\) with respect to \(z_i\) can be expressed using the chain rule. Specifically, if \(A = f(z)\), then:
+$$
+   \frac{\partial \log(A)}{\partial z_i} = \frac{1}{A} \frac{\partial A}{\partial z_i}
+$$
+
+2. **Softmax Function**
+   The softmax function is defined as:
+$$
+   \sigma(z)_i = \frac{\exp(z_i)}{\sum_{j=1}^k \exp(z_j)}
+$$
+   Let's denote \(A\) as the denominator of the softmax function:
+$$
+   A = \sum_{j=1}^k \exp(z_j)
+$$
+
+3. **Logarithm of Softmax Denominator**
+   Consider the logarithm of the softmax denominator:
+$$
+   \log(A) = \log\left(\sum_{j=1}^k \exp(z_j)\right)
+$$
+   We need to find the partial derivative of \(\log(A)\) with respect to \(z_i\):
+$$
+   \frac{\partial \log(A)}{\partial z_i}
+$$
+
+4. **Apply the Chain Rule**
+   Using the chain rule for derivatives:
+$$
+   \frac{\partial \log(A)}{\partial z_i} = \frac{1}{A} \frac{\partial A}{\partial z_i}
+$$
+
+5. **Derivative of \(A\) with respect to \(z_i\)**
+   Now, we need to compute the partial derivative of \(A\) with respect to \(z_i\):
+$$
+   A = \sum_{j=1}^k \exp(z_j)
+$$
+   So,
+$$
+   \frac{\partial A}{\partial z_i} = \frac{\partial}{\partial z_i} \left( \sum_{j=1}^k \exp(z_j) \right) = \exp(z_i)
+$$
+
+6. **Substitute Back**
+   Substituting $\frac{\partial A}{\partial z_i} = \exp(z_i)\) and \(A = \sum_{j=1}^k \exp(z_j)$ into the chain rule expression:
+$$
+   \frac{\partial \log(A)}{\partial z_i} = \frac{1}{A} \frac{\partial A}{\partial z_i} = \frac{1}{\sum_{j=1}^k \exp(z_j)} \cdot \exp(z_i)
+$$
+   Simplifying this expression:
+$$
+   \frac{\partial \log(A)}{\partial z_i} = \frac{\exp(z_i)}{\sum_{j=1}^k \exp(z_j)}
+$$
+
+7. **Recognize the Softmax Output**
+   Notice that this is exactly the softmax function \(\sigma(z)_i\):
+$$
+   \frac{\partial \log(A)}{\partial z_i} = \sigma(z)_i = \frac{\exp(z_i)}{\sum_{j=1}^k \exp(z_j)}
+$$
+
+### Gradient of the Softmax Loss
+
+Let's derive the gradient $\nabla_\Theta \ell_{\mathrm{softmax}}(\Theta^T x, y) = x (z - e_y)^T$ step by step.
+
+1. **Softmax Function**
+   First, recall the softmax function for converting logits (raw scores) into probabilities:
+$$
+   \sigma(z_i) = \frac{\exp(z_i)}{\sum_{j=1}^k \exp(z_j)}
+$$
+   where $z_i = \Theta_i^T x$are the logits for the $i$-th class.
+
+2. **Cross-Entropy Loss**
+   The cross-entropy loss for a single example \((x, y)\) is given by:
+   \[
+   \ell_{\mathrm{softmax}}(\Theta^T x, y) = -\log(\sigma(z_y))
+   \]
+   where \(z_y\) is the logit corresponding to the true class \(y\).
+
+3. **Simplifying the Loss Function**
+   Expressing \(\sigma(z_y)\) using the softmax function:
+   \[
+   \sigma(z_y) = \frac{\exp(z_y)}{\sum_{j=1}^k \exp(z_j)}
+   \]
+   Therefore, the loss can be written as:
+   \[
+   \ell_{\mathrm{softmax}}(\Theta^T x, y) = -\log\left(\frac{\exp(z_y)}{\sum_{j=1}^k \exp(z_j)}\right) = -\left(\log(\exp(z_y)) - \log\left(\sum_{j=1}^k \exp(z_j)\right)\right) = -z_y + \log\left(\sum_{j=1}^k \exp(z_j)\right)
+   \]
+
+4. **Gradient of the Loss with Respect to \(\Theta\)**
+   To find the gradient of the loss with respect to \(\Theta\), we first need to find the partial derivatives of each term.
+
+   4.1 **Gradient of \(-z_y**\):
+   The term \(-z_y\) is linear in \(\Theta\):
+   \[
+   z_y = \Theta_y^T x
+   \]
+   So, the gradient of \(-z_y\) with respect to \(\Theta\) is:
+   \[
+   \frac{\partial (-z_y)}{\partial \Theta_i} = -x \cdot \delta_{iy}
+   \]
+   where \(\delta_{iy}\) is the Kronecker delta, which is 1 if \(i=y\) and 0 otherwise.
+
+   4.2 **Gradient of \(\log\left(\sum_{j=1}^k \exp(z_j)\right)\)**:
+   Let \(A = \sum_{j=1}^k \exp(z_j)\). Then,
+   \[
+   \log(A)
+   \]
+   The derivative of \(\log(A)\) with respect to \(z_i\) is:
+   \[
+   \frac{\partial \log(A)}{\partial z_i} = \frac{1}{A} \frac{\partial A}{\partial z_i} = \frac{\exp(z_i)}{\sum_{j=1}^k \exp(z_j)} = \sigma(z_i)
+   \]
+   Therefore, the gradient of the log term with respect to \(\Theta\) is:
+   \[
+   \frac{\partial \log\left(\sum_{j=1}^k \exp(z_j)\right)}{\partial \Theta_i} = \sigma(z_i) x
+   \]
+
+5. **Combining the Gradients**
+   Combining the two parts, we get:
+   \[
+   \nabla_{\Theta_i} \ell_{\mathrm{softmax}}(\Theta^T x, y) = \sigma(z_i) x - x \cdot \delta_{iy}
+   \]
+   In vector form, this can be written as:
+   \[
+   \nabla_\Theta \ell_{\mathrm{softmax}}(\Theta^T x, y) = x (z - e_y)^T
+   \]
+   where \(\sigma(z)\) is the vector of softmax probabilities, and \(e_y\) is the one-hot encoded vector for the true class \(y\).
+
+### Final Gradient Expression
+Thus, we have the final gradient expression for the softmax loss:
+\[
+\nabla_\Theta \ell_{\mathrm{softmax}}(\Theta^T x, y) = x (z - e_y)^T
+\]
+where \(z = \sigma(\Theta^T x)\).
+
+This derivation shows why the gradient of the softmax loss with respect to the model parameters \(\Theta\) is given by the expression \(x (z - e_y)^T\).
+
+
 
