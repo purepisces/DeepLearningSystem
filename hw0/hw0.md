@@ -129,4 +129,38 @@ correct_class_logits = Z[row_indices, y]
 print("Correct class logits:", correct_class_logits)
 # Output: [2.0, 2.1, 0.3]
 ```
+## Stochastic gradient descent for softmax regression
+
+In this question you will implement stochastic gradient descent (SGD) for (linear) softmax regression.  In other words, as discussed in lecture on 9/1, we will consider a hypothesis function that makes $n$-dimensional inputs to $k$-dimensional logits via the function
+$$\begin{equation}
+h(x) = \Theta^T x
+\end{equation}$$
+where $x \in \mathbb{R}^n$ is the input, and $\Theta \in \mathbb{R}^{n \times k}$ are the model parameters.  Given a dataset $\{(x^{(i)} \in \mathbb{R}^n, y^{(i)} \in \{1,\ldots,k\})\}$, for $i=1,\ldots,m$, the optimization problem associated with softmax regression is thus given by
+$$\begin{equation}
+\DeclareMathOperator*{\minimize}{minimize}
+\minimize_{\Theta} \; \frac{1}{m} \sum_{i=1}^m \ell_{\mathrm{softmax}}(\Theta^T x^{(i)}, y^{(i)}).
+\end{equation}$$
+
+Recall from class that the gradient of the linear softmax objective is given by
+$$\begin{equation}
+\nabla_\Theta \ell_{\mathrm{softmax}}(\Theta^T x, y) = x (z - e_y)^T
+\end{equation}$$
+where
+$$\begin{equation}
+\DeclareMathOperator*{\normalize}{normalize}
+z = \frac{\exp(\Theta^T x)}{1^T \exp(\Theta^T x)} \equiv \normalize(\exp(\Theta^T x))
+\end{equation}$$
+(i.e., $z$ is just the normalized softmax probabilities), and where $e_y$ denotes the $y$th unit basis, i.e., a vector of all zeros with a one in the $y$th position.
+
+We can also write this in the more compact notation we discussed in class.  Namely, if we let $X \in \mathbb{R}^{m \times n}$ denote a design matrix of some $m$ inputs (either the entire dataset or a minibatch), $y \in \{1,\ldots,k\}^m$ a corresponding vector of labels, and overloading $\ell_{\mathrm{softmax}}$ to refer to the average softmax loss, then
+$$\begin{equation}
+\nabla_\Theta \ell_{\mathrm{softmax}}(X \Theta, y) = \frac{1}{m} X^T (Z - I_y)
+\end{equation}$$
+where
+$$\begin{equation}
+Z = \normalize(\exp(X \Theta)) \quad \mbox{(normalization applied row-wise)}
+\end{equation}$$
+denotes the matrix of logits, and $I_y \in \mathbb{R}^{m \times k}$ represents a concatenation of one-hot bases for the labels in $y$.
+
+Using these gradients, implement the `softmax_regression_epoch()` function, which runs a single epoch of SGD (one pass over a data set) using the specified learning rate / step size `lr` and minibatch size `batch`.  As described in the docstring, your function should modify the `Theta` array in-place.  After implementation, run the tests.
 
