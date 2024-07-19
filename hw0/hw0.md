@@ -60,9 +60,7 @@ def parse_mnist(image_filename, label_filename):
     ### END YOUR CODE
 ```
 
-## Softmax(a.k.a. cross-entropy) loss:
-
-## Question 3: Softmax loss
+## Question3: Softmax(a.k.a. cross-entropy) loss:
 
 Implement the softmax (a.k.a. cross-entropy) loss as defined in `softmax_loss()` function in `src/simple_ml.py`.  Recall (hopefully this is review, but we'll also cover it in lecture on 9/1), that for a multi-class output that can take on values $y \in \{1,\ldots,k\}$, the softmax loss takes as input a vector of logits $z \in \mathbb{R}^k$, the true class $y \in \{1,\ldots,k\}$ returns a loss defined by
 
@@ -129,6 +127,55 @@ correct_class_logits = Z[row_indices, y]
 print("Correct class logits:", correct_class_logits)
 # Output: [2.0, 2.1, 0.3]
 ```
+
+### Math Prove
+
+**Equation for All Training Examples**:
+
+$$H(Y, P) = -\sum_{i=1}^k Y_i \log(P_i) = H(Y, \sigma(z)) = -\sum\limits_{i=1}^k Y_i \log(\sigma(z)_i)$$
+
+**Equation for One Training Example**:
+
+$$H(Y, \sigma(z)) = -\log(\sigma(z)y) = -\log\left( \frac{\exp(z_y)}{\sum\limits_{j=1}^k \exp(z_j)} \right)$$
+
+
+**Simplified Equation for One Training Example**:
+
+$$H(Y, \sigma(z)) = -z_y + \log\left( \sum\limits_{j=1}^k \exp(z_j) \right)$$
+
+#### Softmax Function
+
+The softmax function converts logits (raw scores) into probabilities. For a vector of logits $z$ of length $k$, the softmax function $\sigma(z)$ is defined as:
+
+$$\sigma(z)i = \frac{\exp(z_i)}{\sum\limits_{j=1}^k \exp(z_j)}$$
+
+for $i = 1, \ldots, k$.
+
+#### Cross-Entropy Loss
+
+The cross-entropy loss measures the difference between the true labels and the predicted probabilities. For a true label vector $Y$ (one-hot encoded) and a predicted probability vector $P$ (output of the softmax function), the cross-entropy loss $H(Y, P)$ is defined as:
+
+$$H(Y, P) = -\sum_{i=1}^k Y_i \log(P_i)$$
+
+#### Connection Between Softmax and Cross-Entropy
+
+When using the softmax function as the final layer in a neural network for multi-class classification, the predicted probability vector $P$ is given by:
+
+$$P_i = \sigma(z) i = \frac{\exp(z_i)}{\sum\limits_{j=1}^k \exp(z_j)}$$
+
+The cross-entropy loss then becomes:
+
+$$H(Y, \sigma(z)) = -\sum_{i=1}^k Y_i \log(\sigma(z)_i)$$
+
+For a single training example where the true class is $y$, $Y$ is a one-hot encoded vector where $Y_y = 1$ and $Y_i = 0$ for $i \neq y$. Thus, the cross-entropy loss simplifies to:
+
+$$H(Y, \sigma(z)) = -\log(\sigma(z)y) = -\log\left( \frac{\exp(z_y)}{\sum\limits_{j=1}^k \exp(z_j)} \right)$$
+
+Using properties of logarithms, this can be rewritten as:
+
+$$H(Y, \sigma(z)) = -\left( \log(\exp(z_y)) - \log\left( \sum\limits_{j=1}^k \exp(z_j) \right) \right)$$
+$$H(Y, \sigma(z)) = -z_y + \log\left( \sum\limits_{j=1}^k \exp(z_j) \right)$$
+
 ## Stochastic gradient descent for softmax regression
 
 In this question you will implement stochastic gradient descent (SGD) for (linear) softmax regression.  In other words, as discussed in lecture on 9/1, we will consider a hypothesis function that makes $n$-dimensional inputs to $k$-dimensional logits via the function
