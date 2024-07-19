@@ -367,3 +367,15 @@ This derivation shows why the gradient of the softmax loss with respect to the m
 
 
 
+
+
+------------------
+
+The Kronecker delta, denoted as $\delta_{ij}$, is a function of two variables (usually integers) that is 1 if the variables are equal and 0 otherwise. It is named after the German mathematician Leopold Kronecker. Mathematically, it is defined as:
+
+$$\delta_{ij} = 
+\begin{cases} 
+1 & \text{if } i = j \\
+0 & \text{if } i \neq j 
+\end{cases}$$
+
