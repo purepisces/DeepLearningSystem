@@ -221,8 +221,7 @@ denotes the matrix of logits, and $I_y \in \mathbb{R}^{m \times k}$ represents a
 
 Using these gradients, implement the `softmax_regression_epoch()` function, which runs a single epoch of SGD (one pass over a data set) using the specified learning rate / step size `lr` and minibatch size `batch`.  As described in the docstring, your function should modify the `Theta` array in-place.  After implementation, run the tests.
 
-
-### Gradient of the Softmax Loss with Respect to Parameters
+### Math Prove(Gradient of the Softmax Loss with Respect to Parameters)
 
 #### Softmax Function and Loss
 Given logits $z$ and the true label $y$, the softmax function and the corresponding loss function are defined as follows:
@@ -289,11 +288,6 @@ $$\delta_{ij} =
 1 & \text{if } i = j \\
 0 & \text{if } i \neq j 
 \end{cases}$$
-
-
-
-
-
 
 ### Example of $\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta}$
 
