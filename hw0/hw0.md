@@ -177,7 +177,7 @@ $$H(Y, \sigma(z)) = -\left( \log(\exp(z_y)) - \log\left( \sum\limits_{j=1}^k \ex
 
 $$H(Y, \sigma(z)) = -z_y + \log\left( \sum\limits_{j=1}^k \exp(z_j) \right)$$
 
-## Stochastic gradient descent for softmax regression
+## Question 4: Stochastic gradient descent for softmax regression
 
 In this question you will implement stochastic gradient descent (SGD) for (linear) softmax regression.  In other words, as discussed in lecture on 9/1, we will consider a hypothesis function that makes $n$-dimensional inputs to $k$-dimensional logits via the function
 
@@ -221,6 +221,54 @@ denotes the matrix of logits, and $I_y \in \mathbb{R}^{m \times k}$ represents a
 
 Using these gradients, implement the `softmax_regression_epoch()` function, which runs a single epoch of SGD (one pass over a data set) using the specified learning rate / step size `lr` and minibatch size `batch`.  As described in the docstring, your function should modify the `Theta` array in-place.  After implementation, run the tests.
 
+**Code:**
+```python
+def softmax_regression_epoch(X, y, theta, lr = 0.1, batch=100):
+    """ Run a single epoch of SGD for softmax regression on the data, using
+    the step size lr and specified batch size.  This function should modify the
+    theta matrix in place, and you should iterate through batches in X _without_
+    randomizing the order.
+
+    Args:
+        X (np.ndarray[np.float32]): 2D input array of size
+            (num_examples x input_dim).
+        y (np.ndarray[np.uint8]): 1D class label array of size (num_examples,)
+        theta (np.ndarrray[np.float32]): 2D array of softmax regression
+            parameters, of shape (input_dim, num_classes)
+        lr (float): step size (learning rate) for SGD
+        batch (int): size of SGD minibatch
+
+    Returns:
+        None
+    """
+    ### BEGIN YOUR CODE
+    num_examples = X.shape[0]
+    num_classes = theta.shape[1]
+ 
+    for start in range(0, num_examples, batch):
+        end = min(start + batch, num_examples)
+        X_batch = X[start:end]
+        y_batch = y[start:end]
+
+        # Compute the logits
+        logits = X_batch @ theta
+
+        # Compute the softmax probabilities
+        exp_logits = np.exp(logits)
+        probabilities = exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
+
+        # Create a one-hot encoded matrix of the true labels
+        I_y = np.zeros_like(probabilities)
+        I_y[np.arange(y_batch.size), y_batch] = 1
+
+        # Compute the gradient
+        gradient = X_batch.T @ (probabilities - I_y) / y_batch.size
+
+        # Update the parameters
+        theta -= lr * gradient
+   
+    ### END YOUR CODE
+```
 ### Math Prove(Gradient of the Softmax Loss with Respect to Parameters)
 
 #### Softmax Function and Loss
