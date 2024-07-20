@@ -279,6 +279,7 @@ $$\nabla_{\Theta} \ell_{\mathrm{softmax}}(\Theta^T x, y) = x (z - e_y)^T$$
 
 where $z = \sigma(\Theta^T x)$ is the vector of softmax probabilities and $e_y$ is the one-hot encoded vector for the true class $y$.
 
+
 ------------------
 
 The Kronecker delta, denoted as $\delta_{ij}$, is a function of two variables (usually integers) that is 1 if the variables are equal and 0 otherwise. It is named after the German mathematician Leopold Kronecker. Mathematically, it is defined as:
@@ -365,23 +366,23 @@ Let's compute a few of these explicitly using the symbolic expressions:
 
 ##### For $j = 1$, $k = 1$:
 
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{11}} = x_1 (\sigma(z_1) - \delta_{1y}) = x_1 \left(\frac{\exp(z_1)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 0\right) = x_1 \left(\frac{\exp(z_1)}{\sum_\limits_{j=1}^3 \exp(z_j)}\right)$$
+$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{11}} = x_1 (\sigma(z_1) - \delta_{1y}) = x_1 \left(\frac{\exp(z_1)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 0\right) = x_1 \left(\frac{\exp(z_1)}{\sum_{j=1}^3 \exp(z_j)}\right)$$
 
 ##### For $j = 1$, $k = 2$:
 
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{12}} = x_1 (\sigma(z_2) - \delta_{2y}) = x_1 \left(\frac{\exp(z_2)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 1\right) = x_1 \left(\frac{\exp(z_2)}{\sum_\limits_{j=1}^3 \exp(z_j)} - 1\right)$$
+$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{12}} = x_1 (\sigma(z_2) - \delta_{2y}) = x_1 \left(\frac{\exp(z_2)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 1\right) = x_1 \left(\frac{\exp(z_2)}{\sum_{j=1}^3 \exp(z_j)} - 1\right)$$
 
 ##### For $j = 1$, $k = 3$:
 
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{13}} = x_1 (\sigma(z_3) - \delta_{3y}) = x_1 \left(\frac{\exp(z_3)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 0\right) = x_1 \left(\frac{\exp(z_3)}{\sum_\limits_{j=1}^3 \exp(z_j)}\right)$$
+$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{13}} = x_1 (\sigma(z_3) - \delta_{3y}) = x_1 \left(\frac{\exp(z_3)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 0\right) = x_1 \left(\frac{\exp(z_3)}{\sum_{j=1}^3 \exp(z_j)}\right)$$
 
 ##### For $j = 2$, $k = 1$:
 
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{21}} = x_2 (\sigma(z_1) - \delta_{1y}) = x_2 \left(\frac{\exp(z_1)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 0\right) = x_2 \left(\frac{\exp(z_1)}{\sum_\limits_{j=1}^3 \exp(z_j)}\right)$$
+$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{21}} = x_2 (\sigma(z_1) - \delta_{1y}) = x_2 \left(\frac{\exp(z_1)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 0\right) = x_2 \left(\frac{\exp(z_1)}{\sum_{j=1}^3 \exp(z_j)}\right)$$
 
 ##### For $j = 2$, $k = 2$:
 
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{22}} = x_2 (\sigma(z_2) - \delta_{2y}) = x_2 \left(\frac{\exp(z_2)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 1\right) = x_2 \left(\frac{\exp(z_2)}{\sum_\limits_{j=1}^3 \exp(z_j)} - 1\right)$$
+$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{22}} = x_2 (\sigma(z_2) - \delta_{2y}) = x_2 \left(\frac{\exp(z_2)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 1\right) = x_2 \left(\frac{\exp(z_2)}{\sum_{j=1}^3 \exp(z_j)} - 1\right)$$
 
 ##### For $j = 2$, $k = 3$:
 
@@ -395,8 +396,8 @@ $$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta} = \begin{pmatrix}
 \frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{11}} & \frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{12}} & \frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{13}} \\
 \frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{21}} & \frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{22}} & \frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{23}}
 \end{pmatrix} = \begin{pmatrix}
-x_1 \left(\frac{\exp(z_1)}{\sum_\limits_{j=1}^3 \exp(z_j)}\right) & x_1 \left(\frac{\exp(z_2)}{\sum_\limits_{j=1}^3 \exp(z_j)} - 1\right) & x_1 \left(\frac{\exp(z_3)}{\sum_\limits_{j=1}^3 \exp(z_j)}\right) \\
-x_2 \left(\frac{\exp(z_1)}{\sum_\limits_{j=1}^3 \exp(z_j)}\right) & x_2 \left(\frac{\exp(z_2)}{\sum_\limits_{j=1}^3 \exp(z_j)} - 1\right) & x_2 \left(\frac{\exp(z_3)}{\sum_\limits_{j=1}^3 \exp(z_j)}\right)
+x_1 \left(\frac{\exp(z_1)}{\sum_{j=1}^3 \exp(z_j)}\right) & x_1 \left(\frac{\exp(z_2)}{\sum_{j=1}^3 \exp(z_j)} - 1\right) & x_1 \left(\frac{\exp(z_3)}{\sum_{j=1}^3 \exp(z_j)}\right) \\
+x_2 \left(\frac{\exp(z_1)}{\sum_{j=1}^3 \exp(z_j)}\right) & x_2 \left(\frac{\exp(z_2)}{\sum_{j=1}^3 \exp(z_j)} - 1\right) & x_2 \left(\frac{\exp(z_3)}{\sum_{j=1}^3 \exp(z_j)}\right)
 \end{pmatrix}$$
 
 
