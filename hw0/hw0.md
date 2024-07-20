@@ -490,3 +490,60 @@ x_2 \sigma(z_1) & x_2 (\sigma(z_2) - 1) & x_2 \sigma(z_3)
 #### Conclusion
 
 The gradient matrix $\nabla_\Theta \ell_{\mathrm{softmax}}$ is separate from the weight matrix $\Theta$. It is used to compute the direction and magnitude of updates needed to minimize the loss function. The weight matrix $\Theta$ is updated iteratively using the gradient matrix during the training process through gradient descent or other optimization algorithms.
+
+------------------------------
+
+### Gradient for a Single Example
+
+Recall from the gradient for a single example:
+
+$$\nabla_\Theta \ell_{\mathrm{softmax}}(\Theta^T x, y) = x (z - e_y)^T$$
+
+where:
+
+- $x$ is the input vector for a single example.
+- $z$ is the vector of softmax probabilities for the input example.
+- $e_y$ is the one-hot encoded vector for the true class $y$.
+
+### Extending to Multiple Examples (Batch)
+
+$$\nabla_\Theta \ell_{\mathrm{softmax}}(X \Theta, y) = \frac{1}{m} X^T (Z - I_y)$$
+
+When we have multiple examples, we can represent the inputs as a matrix $X$ where each row is an input vector $x_i$ for the $i$-th example. Similarly, we can represent the true labels as a matrix $I_y$ where each row is the one-hot encoded vector $e_{y_i}$ for the $i$-th label.
+
+The matrix $Z$ is the matrix of softmax probabilities for all examples, where each row contains the softmax probabilities for the corresponding example.
+
+### Notation and Dimensions
+
+Let's define the matrices and their dimensions:
+
+- $X \in \mathbb{R}^{m \times n}$: Design matrix of $m$ input vectors, each with $n$ features.
+- $\Theta \in \mathbb{R}^{n \times k}$: Weight matrix, mapping $n$ features to $k$ classes.
+- $Z \in \mathbb{R}^{m \times k}$: Matrix of softmax probabilities for $m$ examples and $k$ classes.
+- $I_y \in \mathbb{R}^{m \times k}$: One-hot encoded matrix for the true labels of $m$ examples and $k$ classes.
+
+
+### Computing the Gradient
+
+The average softmax loss gradient over $m$ examples can be computed by summing the gradients for each example and then dividing by $m$:
+
+$$\nabla_\Theta \ell_{\mathrm{softmax}} = \frac{1}{m} \sum_{i=1}^m x_i (z_i - e_{y_i})^T$$
+
+In matrix form, this can be represented as:
+
+$$\nabla_\Theta \ell_{\mathrm{softmax}}(X \Theta, y) = \frac{1}{m} X^T (Z - I_y)$$
+
+### Why This Works
+
+- **Matrix $X$**:
+  Each row of $X$ is an input vector $x_i$.
+
+- **Matrix $Z$**:
+  Each row of $Z$ is the softmax probabilities $z_i$ for the corresponding input $x_i$.
+
+- **Matrix $I_y$**:
+  Each row of $I_y$ is the one-hot encoded vector $e_{y_i}$ for the true class $y_i$.
+
+- **Matrix Multiplication**:
+  $X^T (Z - I_y)$ computes the sum of outer products $x_i (z_i - e_{y_i})^T$ for all examples in the batch.
+  Dividing by $m$ gives the average gradient.
