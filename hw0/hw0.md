@@ -203,7 +203,7 @@ $$\begin{equation}
 z = \frac{\exp(\Theta^T x)}{1^T \exp(\Theta^T x)} \equiv \normalize(\exp(\Theta^T x))
 \end{equation}$$
 
-(i.e., $z$ is just the normalized softmax probabilities), and where $e_y$ denotes the $y$th unit basis, i.e., a vector of all zeros with a one in the $y$th position.
+(i.e., $z$ is just the normalized softmax probabilities), and where $e_y$ denotes the $y$th unit basis, i.e., a vector of all zeros with a one in the $y$-th position.
 
 We can also write this in the more compact notation we discussed in class.  Namely, if we let $X \in \mathbb{R}^{m \times n}$ denote a design matrix of some $m$ inputs (either the entire dataset or a minibatch), $y \in \{1,\ldots,k\}^m$ a corresponding vector of labels, and overloading $\ell_{\mathrm{softmax}}$ to refer to the average softmax loss, then
 
