@@ -381,242 +381,10 @@ $$\delta_{ij} =
 
 
 
-## Example of $\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta}$
 
-Consider a simple case with:
 
-- $n = 2$ features,
-- $k = 3$ classes.
 
-The input vector $x$ and parameter matrix $\Theta$ are given by:
-
-$$x = \begin{pmatrix}
-x_1 \\
-x_2
-\end{pmatrix}$$
-
-$$\Theta = \begin{pmatrix}
-\Theta_{11} & \Theta_{12} & \Theta_{13} \\
-\Theta_{21} & \Theta_{22} & \Theta_{23}
-\end{pmatrix}$$
-
-Let's assume the true class $y$ is 1 (i.e., the second class).
-
-### Calculate Logits $z$
-
-First, compute the logits $z$:
-
-$$z = \Theta^T x = \begin{pmatrix}
-\Theta_{11} & \Theta_{21} \\
-\Theta_{12} & \Theta_{22} \\
-\Theta_{13} & \Theta_{23}
-\end{pmatrix} \begin{pmatrix}
-x_1 \\
-x_2
-\end{pmatrix} = \begin{pmatrix}
-\Theta_{11} x_1 + \Theta_{21} x_2 \\
-\Theta_{12} x_1 + \Theta_{22} x_2 \\
-\Theta_{13} x_1 + \Theta_{23} x_2
-\end{pmatrix}
-$$
-
-### Calculate Softmax Probabilities $\sigma(z)$
-
-Next, compute the softmax probabilities:
-
-$$\sigma(z_i) = \frac{\exp(z_i)}{\sum_{j=1}^k \exp(z_j)}$$
-
-Let:
-
-$$z_1 = \Theta_{11} x_1 + \Theta_{21} x_2, \quad z_2 = \Theta_{12} x_1 + \Theta_{22} x_2, \quad z_3 = \Theta_{13} x_1 + \Theta_{23} x_2$$
-
-Then, the softmax probabilities are:
-
-$$\sigma(z_1) = \frac{\exp(z_1)}{\exp(z_1) + \exp(z_2) + \exp(z_3)}$$
-
-$$\sigma(z_2) = \frac{\exp(z_2)}{\exp(z_1) + \exp(z_2) + \exp(z_3)}$$
-
-$$\sigma(z_3) = \frac{\exp(z_3)}{\exp(z_1) + \exp(z_2) + \exp(z_3)}$$
-
-### Calculate $\delta_{ky}$
-
-Given that the true class $y = 1$ (second class), the one-hot encoded vector $e_y$ is:
-
-$$e_y = \begin{pmatrix}
-0 \\
-1 \\
-0
-\end{pmatrix}$$
-
-### Partial Derivative $\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{jk}}$
-
-We want to compute the partial derivative for each element $\Theta_{jk}$:
-
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{jk}} = x_j (\sigma(z_k) - \delta_{ky})$$
-
-Let's compute a few of these explicitly using the symbolic expressions:
-
-#### For $j = 1$, $k = 1$:
-
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{11}} = x_1 (\sigma(z_1) - \delta_{1,1}) = x_1 \left(\frac{\exp(z_1)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 1\right) = x_1 \left(\frac{\exp(z_1)}{\sum_{j=1}^3 \exp(z_j)} - 1\right)$$
-
-#### For $j = 1$, $k = 2$:
-
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{12}} = x_1 (\sigma(z_2) - \delta_{1,2}) = x_1 \left(\frac{\exp(z_2)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 0\right) = x_1 \left(\frac{\exp(z_2)}{\sum_{j=1}^3 \exp(z_j)}\right)$$
-
-#### For $j = 1$, $k = 3$:
-
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{13}} = x_1 (\sigma(z_3) - \delta_{1,3}) = x_1 \left(\frac{\exp(z_3)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 0\right) = x_1 \left(\frac{\exp(z_3)}{\sum_{j=1}^3 \exp(z_j)}\right)$$
-
-#### For $j = 2$, $k = 1$:
-
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{21}} = x_2 (\sigma(z_1) - \delta_{2,1}) = x_2 \left(\frac{\exp(z_1)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 0\right) = x_2 \left(\frac{\exp(z_1)}{\sum_{j=1}^3 \exp(z_j)}\right)$$
-
-#### For $j = 2$, $k = 2$:
-
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{22}} = x_2 (\sigma(z_2) - \delta_{2,2}) = x_2 \left(\frac{\exp(z_2)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 1\right) = x_2 \left(\frac{\exp(z_2)}{\sum_{j=1}^3 \exp(z_j)} - 1\right)$$
-
-#### For $j = 2$, $k = 3$:
-
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{23}} = x_2 (\sigma(z_3) - \delta_{2,3}) = x_2 \left(\frac{\exp(z_3)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 0\right) = x_2 \left(\frac{\exp(z_3)}{\sum_{j=1}^3 \exp(z_j)}\right)$$
-
-### Summary of Gradients
-
-Summarizing these, the gradients for the elements of $\Theta$ are:
-
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta} = \begin{pmatrix}
-\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{11}} & \frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{12}} & \frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{13}} \\
-\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{21}} & \frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{22}} & \frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{23}}
-\end{pmatrix} = \begin{pmatrix}
-x_1 \left(\frac{\exp(z_1)}{\sum_{j=1}^3 \exp(z_j)} - 1\right) & x_1 \frac{\exp(z_2)}{\sum_{j=1}^3 \exp(z_j)} & x_1 \frac{\exp(z_3)}{\sum_{j=1}^3 \exp(z_j)} \\
-x_2 \left(\frac{\exp(z_1)}{\sum_{j=1}^3 \exp(z_j)}\right) & x_2 \left(\frac{\exp(z_2)}{\sum_{j=1}^3 \exp(z_j)} - 1\right) & x_2 \frac{\exp(z_3)}{\sum_{j=1}^3 \exp(z_j)}
-\end{pmatrix}$$
-
-
-
-
-
--------
-
-
-
-
-
-
-
-## Example of $\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta}$
-
-Consider a simple case with:
-
-- $n = 2$ features,
-- $k = 3$ classes.
-
-The input vector $x$ and parameter matrix $\Theta$ are given by:
-
-$$x = \begin{pmatrix}
-x_1 \\
-x_2
-\end{pmatrix}$$
-
-$$\Theta = \begin{pmatrix}
-\Theta_{11} & \Theta_{12} & \Theta_{13} \\
-\Theta_{21} & \Theta_{22} & \Theta_{23}
-\end{pmatrix}$$
-
-Let's assume the true class $y$ is 1 (i.e., the second class).
-
-### Calculate Logits $z$
-
-First, compute the logits $z$:
-
-$$z = \Theta^T x = \begin{pmatrix}
-\Theta_{11} & \Theta_{21} \\
-\Theta_{12} & \Theta_{22} \\
-\Theta_{13} & \Theta_{23}
-\end{pmatrix} \begin{pmatrix}
-x_1 \\
-x_2
-\end{pmatrix} = \begin{pmatrix}
-\Theta_{11} x_1 + \Theta_{21} x_2 \\
-\Theta_{12} x_1 + \Theta_{22} x_2 \\
-\Theta_{13} x_1 + \Theta_{23} x_2
-\end{pmatrix}$$
-
-### Calculate Softmax Probabilities $\sigma(z)$
-
-Next, compute the softmax probabilities:
-
-$$\sigma(z_i) = \frac{\exp(z_i)}{\sum_{j=1}^k \exp(z_j)}$$
-
-Let:
-
-$$z_1 = \Theta_{11} x_1 + \Theta_{21} x_2, \quad z_2 = \Theta_{12} x_1 + \Theta_{22} x_2, \quad z_3 = \Theta_{13} x_1 + \Theta_{23} x_2$$
-
-Then, the softmax probabilities are:
-
-$$\sigma(z_1) = \frac{\exp(z_1)}{\exp(z_1) + \exp(z_2) + \exp(z_3)}$$
-
-$$\sigma(z_2) = \frac{\exp(z_2)}{\exp(z_1) + \exp(z_2) + \exp(z_3)}$$
-
-$$\sigma(z_3) = \frac{\exp(z_3)}{\exp(z_1) + \exp(z_2) + \exp(z_3)}$$
-
-### Calculate $\delta_{ky}$
-
-Given that the true class $y = 1$ (second class), the one-hot encoded vector $e_y$ is:
-
-$$e_y = \begin{pmatrix}
-0 \\
-1 \\
-0
-\end{pmatrix}$$
-
-### Partial Derivative $\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{jk}}$
-
-We want to compute the partial derivative for each element $\Theta_{jk}$:
-
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{jk}} = x_j (\sigma(z_k) - \delta_{ky})$$
-
-Let's compute a few of these explicitly using the symbolic expressions:
-
-#### For $j = 1$, $k = 1$:
-
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{11}} = x_1 (\sigma(z_1) - \delta_{1,1}) = x_1 \left(\frac{\exp(z_1)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 1\right) = x_1 \left(\frac{\exp(z_1)}{\sum_{j=1}^3 \exp(z_j)} - 1\right)$$
-
-#### For $j = 1$, $k = 2$:
-
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{12}} = x_1 (\sigma(z_2) - \delta_{1,2}) = x_1 \left(\frac{\exp(z_2)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 0\right) = x_1 \left(\frac{\exp(z_2)}{\sum_{j=1}^3 \exp(z_j)}\right)$$
-
-#### For $j = 1$, $k = 3$:
-
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{13}} = x_1 (\sigma(z_3) - \delta_{1,3}) = x_1 \left(\frac{\exp(z_3)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 0\right) = x_1 \left(\frac{\exp(z_3)}{\sum_{j=1}^3 \exp(z_j)}\right)$$
-
-#### For $j = 2$, $k = 1$:
-
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{21}} = x_2 (\sigma(z_1) - \delta_{2,1}) = x_2 \left(\frac{\exp(z_1)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 0\right) = x_2 \left(\frac{\exp(z_1)}{\sum_{j=1}^3 \exp(z_j)}\right)$$
-
-#### For $j = 2$, $k = 2$:
-
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{22}} = x_2 (\sigma(z_2) - \delta_{2,2}) = x_2 \left(\frac{\exp(z_2)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 1\right) = x_2 \left(\frac{\exp(z_2)}{\sum_{j=1}^3 \exp(z_j)} - 1\right)$$
-
-#### For $j = 2$, $k = 3$:
-
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{23}} = x_2 (\sigma(z_3) - \delta_{2,3}) = x_2 \left(\frac{\exp(z_3)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 0\right) = x_2 \left(\frac{\exp(z_3)}{\sum_{j=1}^3 \exp(z_j)}\right)$$
-
-### Summary of Gradients
-
-Summarizing these, the gradients for the elements of $\Theta$ are:
-
-$$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta} = \begin{pmatrix}
-\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{11}} & \frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{12}} & \frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{13}} \\
-\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{21}} & \frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{22}} & \frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{23}}
-\end{pmatrix} = \begin{pmatrix}
-x_1 \left(\frac{\exp(z_1)}{\sum_{j=1}^3 \exp(z_j)} - 1\right) & x_1 \frac{\exp(z_2)}{\sum_{j=1}^3 \exp(z_j)} & x_1 \frac{\exp(z_3)}{\sum_{j=1}^3 \exp(z_j)} \\
-x_2 \left(\frac{\exp(z_1)}{\sum_{j=1}^3 \exp(z_j)}\right) & x_2 \left(\frac{\exp(z_2)}{\sum_{j=1}^3 \exp(z_j)} - 1\right) & x_2 \frac{\exp(z_3)}{\sum_{j=1}^3 \exp(z_j)}
-\end{pmatrix}$$
-
-
-
-## Example of $\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta}$
+### Example of $\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta}$
 
 Consider a simple case with:
 
@@ -637,7 +405,7 @@ $$\Theta = \begin{pmatrix}
 
 Let's assume the true class $y$ is 2 (i.e., the second class).
 
-### Calculate Logits $z$
+#### Calculate Logits $z$
 
 First, compute the logits $z$:
 
@@ -654,7 +422,7 @@ x_2
 \Theta_{13} x_1 + \Theta_{23} x_2
 \end{pmatrix}$$
 
-### Calculate Softmax Probabilities $\sigma(z)$
+#### Calculate Softmax Probabilities $\sigma(z)$
 
 Next, compute the softmax probabilities:
 
@@ -672,7 +440,7 @@ $$\sigma(z_2) = \frac{\exp(z_2)}{\exp(z_1) + \exp(z_2) + \exp(z_3)}$$
 
 $$\sigma(z_3) = \frac{\exp(z_3)}{\exp(z_1) + \exp(z_2) + \exp(z_3)}$$
 
-### Calculate $\delta_{ky}$
+#### Calculate $\delta_{ky}$
 
 Given that the true class $y = 1$ (second class), the one-hot encoded vector $e_y$ is:
 
@@ -682,7 +450,7 @@ $$e_y = \begin{pmatrix}
 0
 \end{pmatrix}$$
 
-### Partial Derivative $\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{jk}}$
+#### Partial Derivative $\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{jk}}$
 
 We want to compute the partial derivative for each element $\Theta_{jk}$:
 
@@ -690,31 +458,31 @@ $$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{jk}} = x_j (\sigma(z_
 
 Let's compute a few of these explicitly using the symbolic expressions:
 
-#### For $j = 1$, $k = 1$:
+##### For $j = 1$, $k = 1$:
 
 $$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{11}} = x_1 (\sigma(z_1) - \delta_{1y}) = x_1 \left(\frac{\exp(z_1)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 0\right) = x_1 \left(\frac{\exp(z_1)}{\sum_{j=1}^3 \exp(z_j)}\right)$$
 
-#### For $j = 1$, $k = 2$:
+##### For $j = 1$, $k = 2$:
 
 $$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{12}} = x_1 (\sigma(z_2) - \delta_{2y}) = x_1 \left(\frac{\exp(z_2)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 1\right) = x_1 \left(\frac{\exp(z_2)}{\sum_{j=1}^3 \exp(z_j)} - 1\right)$$
 
-#### For $j = 1$, $k = 3$:
+##### For $j = 1$, $k = 3$:
 
 $$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{13}} = x_1 (\sigma(z_3) - \delta_{3y}) = x_1 \left(\frac{\exp(z_3)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 0\right) = x_1 \left(\frac{\exp(z_3)}{\sum_{j=1}^3 \exp(z_j)}\right)$$
 
-#### For $j = 2$, $k = 1$:
+##### For $j = 2$, $k = 1$:
 
 $$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{21}} = x_2 (\sigma(z_1) - \delta_{1y}) = x_2 \left(\frac{\exp(z_1)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 0\right) = x_2 \left(\frac{\exp(z_1)}{\sum_{j=1}^3 \exp(z_j)}\right)$$
 
-#### For $j = 2$, $k = 2$:
+##### For $j = 2$, $k = 2$:
 
 $$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{22}} = x_2 (\sigma(z_2) - \delta_{2y}) = x_2 \left(\frac{\exp(z_2)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 1\right) = x_2 \left(\frac{\exp(z_2)}{\sum_{j=1}^3 \exp(z_j)} - 1\right)$$
 
-#### For $j = 2$, $k = 3$:
+##### For $j = 2$, $k = 3$:
 
 $$\frac{\partial \ell_{\mathrm{softmax}}}{\partial \Theta_{23}} = x_2 (\sigma(z_3) - \delta_{3y}) = x_2 \left(\frac{\exp(z_3)}{\exp(z_1) + \exp(z_2) + \exp(z_3)} - 0\right) = x_2 \left(\frac{\exp(z_3)}{\sum_{j=1}^3 \exp(z_j)}\right)$$
 
-### Summary of Gradients
+#### Summary of Gradients
 
 Summarizing these, the gradients for the elements of $\Theta$ are:
 
@@ -727,11 +495,11 @@ x_2 \left(\frac{\exp(z_1)}{\sum_{j=1}^3 \exp(z_j)}\right) & x_2 \left(\frac{\exp
 \end{pmatrix}$$
 
 
-## Example with Matrix Dimensions
+### Example with Matrix Dimensions
 
 Let's use an example to illustrate this.
 
-### Weight Matrix $\Theta$:
+#### Weight Matrix $\Theta$:
 
 $$\Theta = \begin{pmatrix}
 \Theta_{11} & \Theta_{12} & \Theta_{13} \\
@@ -740,14 +508,14 @@ $$\Theta = \begin{pmatrix}
 
 Here, $\Theta$ is a $2 \times 3$ matrix for a model with 2 features and 3 classes.
 
-### Input Vector $x$:
+#### Input Vector $x$:
 
 $$x = \begin{pmatrix}
 x_1 \\
 x_2
 \end{pmatrix}$$
 
-### Softmax Probabilities $\sigma(z)$:
+#### Softmax Probabilities $\sigma(z)$:
 
 $$\sigma(z) = \begin{pmatrix}
 \sigma(z_1) \\
@@ -757,27 +525,23 @@ $$\sigma(z) = \begin{pmatrix}
 
 This is a $3 \times 1$ vector.
 
-### One-Hot Encoded True Class $e_y$:
+#### One-Hot Encoded True Class $e_y$:
 
 If the true class \(y\) is 2 (i.e., the second class), then:
 
-$$
-e_y = \begin{pmatrix}
+$$e_y = \begin{pmatrix}
 0 \\
 1 \\
 0
-\end{pmatrix}
-$$
+\end{pmatrix}$$
 
-### Gradient Matrix $\nabla_\Theta \ell_{\mathrm{softmax}}$:
+#### Gradient Matrix $\nabla_\Theta \ell_{\mathrm{softmax}}$:
 
 The gradient matrix is given by:
 
-$$
-\nabla_\Theta \ell_{\mathrm{softmax}} = x (\sigma(z) - e_y)^T
-$$
+$$\nabla_\Theta \ell_{\mathrm{softmax}} = x (\sigma(z) - e_y)^T$$
 
-### Calculating the Outer Product $x (\sigma(z) - e_y)^T$:
+#### Calculating the Outer Product $x (\sigma(z) - e_y)^T$:
 
 $$\sigma(z) - e_y = \begin{pmatrix}
 \sigma(z_1) \\
@@ -805,7 +569,7 @@ x_1 \sigma(z_1) & x_1 (\sigma(z_2) - 1) & x_1 \sigma(z_3) \\
 x_2 \sigma(z_1) & x_2 (\sigma(z_2) - 1) & x_2 \sigma(z_3)
 \end{pmatrix}$$
 
-### Updating the Weight Matrix $\Theta$
+#### Updating the Weight Matrix $\Theta$
 
 Using the gradient matrix, we update the weight matrix $Theta$ as follows:
 
@@ -818,8 +582,6 @@ x_1 \sigma(z_1) & x_1 (\sigma(z_2) - 1) & x_1 \sigma(z_3) \\
 x_2 \sigma(z_1) & x_2 (\sigma(z_2) - 1) & x_2 \sigma(z_3)
 \end{pmatrix}$$
 
-### Conclusion
+#### Conclusion
 
 The gradient matrix $\nabla_\Theta \ell_{\mathrm{softmax}}$ is separate from the weight matrix $\Theta$. It is used to compute the direction and magnitude of updates needed to minimize the loss function. The weight matrix $\Theta$ is updated iteratively using the gradient matrix during the training process through gradient descent or other optimization algorithms.
-
-
