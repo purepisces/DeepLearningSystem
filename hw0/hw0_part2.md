@@ -1,5 +1,3 @@
-
-
 ## Question 5: SGD for a two-layer neural network
 
 Now that you've written SGD for a linear classifier, let's consider the case of a simple two-layer neural network. Specifically, for input $x \in \mathbb{R}^n$, we'll consider a two-layer neural network (without bias terms) of the form
