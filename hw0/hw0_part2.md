@@ -46,3 +46,43 @@ $$\begin{equation}
   
 
 Using these gradients, now write the `nn_epoch()` function in the `src/simple_ml.py` file. As with the previous question, your solution should modify the `W1` and `W2` arrays in place. After implementing the function, run the following test. Be sure to use matrix operations as indicated by the expresssions above to implement the function: this will be _much_ faster, and more efficient, than attempting to use loops (and it requires far less code).
+
+
+### Key Terms
+
+- **Logits**: These are the **raw, unnormalized scores output by a neural network's final layer before applying an activation function like softmax**. Logits are used to compute probabilities.
+- **Probabilities**: These are the normalized scores obtained by applying the softmax function to the logits. They represent the predicted probabilities for each class.
+
+### Layers in the Two-Layer (layers with trainable parameters (i.e., weights)) Neural Network
+
+Network Structure: **Input Layer**, **First Layer: Hidden Layer (Input to Hidden)**, **Second Layer: Output Layer (Hidden to Output)**.
+
+#### Input to Hidden Layer
+
+- **Weight Matrix**: 
+  $W_1 \in \mathbb{R}^{n \times d}$ where $n$ is the number of input features and $d$ is the number of hidden units.
+- **Hidden Layer Activations**: 
+  $Z_1 = \mathrm{ReLU}(X W_1)$
+  - $X \in \mathbb{R}^{m \times n}$ is the input matrix.
+  - $Z_1 \in \mathbb{R}^{m \times d}$ is the output of the hidden layer after applying the ReLU activation function. These are the activations, not logits or probabilities.
+
+#### Hidden to Output Layer
+
+- **Weight Matrix**: 
+  $W_2 \in \mathbb{R}^{d \times k}$ where $d$ is the number of hidden units and $k$ is the number of output classes.
+- **Output Logits**: 
+  $Z_2 = Z_1 W_2$
+  - $Z_2 \in \mathbb{R}^{m \times k}$ are the logits for the output layer.
+
+#### Softmax Probabilities
+
+- **Probabilities**: 
+$P = \frac{\exp(Z_2)}{\sum \exp(Z_2)}$
+  - $P \in \mathbb{R}^{m \times k}$ are the probabilities after applying the softmax function to the logits.
+
+### Summary
+
+- $Z_1 = \mathrm{ReLU}(X W_1)$ are the activations of the hidden layer after applying the ReLU function.
+- $Z_2 = Z_1 W_2$ are the logits of the output layer.
+- $P = \frac{\exp(Z_2)}{\sum \exp(Z_2)}$ are the probabilities after applying the softmax function to the logits $Z_2$.
+
