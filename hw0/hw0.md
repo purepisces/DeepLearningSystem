@@ -1,5 +1,8 @@
 The assignment will require you to build a basic softmax regression algorithm, plus a simple two-layer neural network.  You will create these implementations both in native Python (using the numpy library), and (for softmax regression) in native C/C++. 
 
+Refer to slides - [Softmax Regression](softmax_regression.pdf)
+
+
 ## Dataset:
 
 The MNIST (Modified National Institute of Standards and Technology) dataset is a well-known dataset in the field of machine learning and computer vision. It consists of images of handwritten digits (0-9) and their corresponding labels. 
