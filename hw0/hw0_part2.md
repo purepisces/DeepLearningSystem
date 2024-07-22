@@ -175,4 +175,9 @@ $$\nabla_{W_1} \ell_{ce} (\sigma(XW_1) W_2, y) = X^T \left( (S - I_y) W_2^T \cir
 
 where $\circ$ denotes elementwise multiplication
 
+$$\sigma'(x) = \begin{cases}
+1 & \text{if } x > 0 \\
+0 & \text{if } x \leq 0
+\end{cases}$$
+
 
