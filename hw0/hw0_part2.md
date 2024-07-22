@@ -218,11 +218,11 @@ $$\implies \nabla_{W_i} \ell(Z_{L+1}, y) = Z_i^T \left( G_{i+1} \circ \sigma'(Z_
 
 Putting it all together, we can efficiently compute all the gradients we need for a neural network by following the procedure below
 
-$$\text{Forward pass}$$
+**Forward pass**
 1. Initialize: $Z_1 = X$
    Iterate: $Z_{i+1} = \sigma_i(Z_i W_i), \quad i = 1, \ldots, L$
 
-$$\text{Backward pass}$$
+**Backward pass}**
 
 2. Initialize: $G_{L+1} = \nabla_{Z_{L+1}} \ell(Z_{L+1}, y) = S - I_y$
    Iterate: $G_i = \left( G_{i+1} \circ \sigma'_i(Z_i W_i) \right) W_i^T, \quad i = L, \ldots, 1$
