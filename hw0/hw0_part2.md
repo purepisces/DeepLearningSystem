@@ -84,8 +84,8 @@ $P = \frac{\exp(Z_2)}{\sum \exp(Z_2)}$
 - $Z_1 = \mathrm{ReLU}(X W_1)$ are the activations of the hidden layer after applying the ReLU function.
 - $Z_2 = Z_1 W_2$ are the logits of the output layer.
 - $P = \frac{\exp(Z_2)}{\sum \exp(Z_2)}$ are the probabilities after applying the softmax function to the logits $Z_2$.
-------------------------------
-### Backpropagation Overview
+
+## Backpropagation Overview
 Backpropagation is the algorithm used to calculate the gradient of the loss function with respect to each parameter (weight) in a neural network. It allows the network to update these weights in a way that minimizes the loss function, enabling the network to learn from the data.
 
 #### Forward Pass:
