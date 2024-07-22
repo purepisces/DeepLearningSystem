@@ -1,4 +1,4 @@
-Refer to slides - [CMU 10714 Softmax-Regression PDF](softmax_regression.pdf)
+Refer to slides - [CMU 10714 Manual-Neural-Nets PDF](manual_neural_nets.pdf)
 
 ## Question 5: SGD for a two-layer neural network
 
