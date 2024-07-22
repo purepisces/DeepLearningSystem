@@ -104,5 +104,75 @@ The gradients with respect to the activations $Z_i$ are intermediate steps in th
 #### Gradients with Respect to Weights $W_i$
 The ultimate goal is to compute the gradients of the loss with respect to the weights $W_i$, denoted as $\frac{\partial \ell}{\partial W_i}$. These gradients tell us how to adjust the weights to minimize the loss.
 
+## Neural networks in machine learning
+
+Recall that neural networks just specify one of the "three" ingredients of a machine learning algorithm, also need:
+- Loss function: still cross entropy loss, like last time
+- Optimization procedure: still SGD, like last time
+
+In other words, we still want to solve the optimization problem
+
+$$\min_{\theta} \frac{1}{m} \sum_{i=1}^{m} \ell_{ce}(h_{\theta}(x^{(i)}), y^{(i)})$$
+
+using SGD, just with $h_{\theta}(x)$ now being a neural network.
+
+Requires computing the gradients $\nabla_{\theta} \ell_{ce}(h_{\theta}(x^{(i)}), y^{(i)})$ for each element of $\theta$.
+
+## The gradient(s) of a two-layer network part1
+
+Let's work through the derivation of the gradients for a simple two-layer network, written in batch matrix form, i.e.,
+
+$$\nabla_{\{W_1, W_2\}} \ell_{ce}(\sigma(XW_1)W_2, y)$$
+
+The gradient w.r.t. $W_2$ looks identical to the softmax regression case:
+
+$$\frac{\partial \ell_{ce}(\sigma(XW_1)W_2, y)}{\partial W_2} = \frac{\partial \ell_{ce}}{\partial \sigma(XW_1)W_2} \cdot \frac{\partial \sigma(XW_1)W_2}{\partial W_2}
+= (S - I_y) \cdot \sigma(XW_1), \quad [S = \text{softmax}(\sigma(XW_1)W_2)]$$
+
+so (matching sizes) the gradient is
+
+$$\nabla_{W_2} \ell_{ce}(\sigma(XW_1)W_2, y) = \sigma(XW_1)^T (S - I_y)$$
+
+
+> **Prove  $S - I_y$**
+> 
+> **1. First Prove $\ell_{ce}(h(x), y) = -h_y(x) + \log \sum_{j=1}^{k} \exp(h_j(x))$**
+> 
+> Let's convert the hypothesis function to a "probability" by exponentiating and normalizing its entries (to make them all positive and sum to one)
+> 
+> $$z_i = p(\text{label} = i) = \frac{\exp(h_i(x))}{\sum_{j=1}^{k} \exp(h_j(x))} \quad \Longleftarrow \quad z \equiv \text{softmax}(h(x))$$
+> 
+> Then let's define a loss to be the (negative) log probability of the true class: this is called softmax or cross-entropy loss
+> 
+> $$\ell_{ce}(h(x), y) = -\log p(\text{label} = y) = -h_y(x) + \log \sum_{j=1}^{k} \exp(h_j(x))$$
+> 
+> **2. Second prove $S - I_y$**
+> 
+>Let's start by deriving the gradient of the softmax loss itself: for vector $h \in \mathbb{R}^k$
+> 
+>$$\frac{\partial \ell_{ce} (h, y)}{\partial h_i} = \frac{\partial}{\partial h_i} \left( -h_y + \log \sum_{j=1}^{k} \exp h_j \right)$$
+>$$= -1 \{ i = y \} + \frac{\exp h_i}{\sum_{j=1}^{k} \exp h_j}$$
+> 
+>So, in vector form:
+> 
+>$$\nabla_h \ell_{ce} (h, y) = z - e_y, \text{ where } z = \text{softmax}(h)$$
+> 
+>In “matrix batch” form:
+> 
+>$$\nabla_h \ell_{ce} (X\theta, y) = S - I_y, \text{ where } S = \text{softmax}(X\theta)$$
+
+## The gradient(s) of a two-layer network part2
+
+Deep breath and let's do the gradient w.r.t. \( W_1 \)...
+
+$$\frac{\partial \ell_{ce} (\sigma(XW_1) W_2, y)}{\partial W_1} = \frac{\partial \ell_{ce} (\sigma(XW_1) W_2, y)}{\partial \sigma(XW_1) W_2} \cdot \frac{\partial \sigma(XW_1) W_2}{\partial \sigma(XW_1)} \cdot \frac{\partial \sigma(XW_1)}{\partial XW_1} \cdot \frac{\partial XW_1}{\partial W_1}$$
+
+$$= (S - I_y) \cdot W_2 \cdot \sigma'(XW_1) \cdot X$$
+
+and so the gradient is
+
+$$\nabla_{W_1} \ell_{ce} (\sigma(XW_1) W_2, y) = X^T \left( (S - I_y) W_2^T \circ \sigma'(XW_1) \right)$$
+
+where $\circ$ denotes elementwise multiplication
 
 
