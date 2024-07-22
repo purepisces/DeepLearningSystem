@@ -47,7 +47,6 @@ $$\begin{equation}
 
 Using these gradients, now write the `nn_epoch()` function in the `src/simple_ml.py` file. As with the previous question, your solution should modify the `W1` and `W2` arrays in place. After implementing the function, run the following test. Be sure to use matrix operations as indicated by the expresssions above to implement the function: this will be _much_ faster, and more efficient, than attempting to use loops (and it requires far less code).
 
-
 ### Key Terms
 
 - **Logits**: These are the **raw, unnormalized scores output by a neural network's final layer before applying an activation function like softmax**. Logits are used to compute probabilities.
@@ -85,4 +84,28 @@ $P = \frac{\exp(Z_2)}{\sum \exp(Z_2)}$
 - $Z_1 = \mathrm{ReLU}(X W_1)$ are the activations of the hidden layer after applying the ReLU function.
 - $Z_2 = Z_1 W_2$ are the logits of the output layer.
 - $P = \frac{\exp(Z_2)}{\sum \exp(Z_2)}$ are the probabilities after applying the softmax function to the logits $Z_2$.
+------------------------------
+### Backpropagation Overview
+Backpropagation is the algorithm used to calculate the gradient of the loss function with respect to each parameter (weight) in a neural network. It allows the network to update these weights in a way that minimizes the loss function, enabling the network to learn from the data.
+
+#### Forward Pass:
+- Input data passes through the network, and the output is calculated.
+- Activations and intermediate values (such as $Z_i$) are stored for use in the backward pass.
+
+#### Backward Pass:
+- The loss is computed using the output of the network and the true labels.
+- Gradients of the loss with respect to each parameter are calculated using the chain rule of calculus.
+- These gradients are used to update the parameters (weights) using an optimization algorithm like gradient descent.
+
+### Backpropagation with Respect to $Z_i$ and $W_i$
+
+In backpropagation, we need to calculate gradients with respect to both the activations $Z_i$ and the weights $W_i$. Here’s how this is done:
+
+#### Gradients with Respect to Activations $Z_i$
+The gradients with respect to the activations $Z_i$ are intermediate steps in the backpropagation process. They are used to calculate the gradients with respect to the weights. Specifically, for layer $i$, we compute $\frac{\partial \ell}{\partial Z_i}$, which represents how the loss changes with respect to the activations of that layer.
+
+#### Gradients with Respect to Weights $W_i$
+The ultimate goal is to compute the gradients of the loss with respect to the weights $W_i$, denoted as $\frac{\partial \ell}{\partial W_i}$. These gradients tell us how to adjust the weights to minimize the loss.
+
+
 
