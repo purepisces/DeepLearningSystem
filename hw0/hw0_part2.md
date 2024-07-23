@@ -254,5 +254,59 @@ This process can be generalized to arbitrary computation graphs: this is exactly
 
 ## Code Implementation
 ```python
+def nn_epoch(X, y, W1, W2, lr = 0.1, batch=100):
+    """ Run a single epoch of SGD for a two-layer neural network defined by the
+    weights W1 and W2 (with no bias terms):
+        logits = ReLU(X * W1) * W2
+    The function should use the step size lr, and the specified batch size (and
+    again, without randomizing the order of X).  It should modify the
+    W1 and W2 matrices in place.
 
+    Args:
+        X (np.ndarray[np.float32]): 2D input array of size
+            (num_examples x input_dim).
+        y (np.ndarray[np.uint8]): 1D class label array of size (num_examples,)
+        W1 (np.ndarray[np.float32]): 2D array of first layer weights, of shape
+            (input_dim, hidden_dim)
+        W2 (np.ndarray[np.float32]): 2D array of second layer weights, of shape
+            (hidden_dim, num_classes)
+        lr (float): step size (learning rate) for SGD
+        batch (int): size of SGD minibatch
+
+    Returns:
+        None
+    """
+    ### BEGIN YOUR CODE
+    num_examples = X.shape[0]
+    num_classes = W2.shape[1]
+
+    for start in range(0, num_examples, batch):
+        end = min(start + batch, num_examples)
+        X_batch = X[start:end]
+        y_batch = y[start:end]
+
+        # Forward pass: Compute Z1 and Z2 (the output logits)
+        Z1 = np.maximum(0, X_batch @ W1)  # ReLU activation
+        Z2 = Z1 @ W2
+
+        # Compute softmax probabilities
+        exp_logits = np.exp(Z2)
+        probs = exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
+
+        # Create a one-hot encoded matrix of the true labels
+        I_y = np.zeros((len(y_batch), num_classes))
+        I_y[np.arange(len(y_batch)), y_batch] = 1
+
+        # Backward pass: Compute gradients G2 and G1
+        G2 = probs - I_y
+        G1 = (Z1 > 0).astype(np.float32) * (G2 @ W2.T)
+        # Compute the gradients for W1 and W2
+        grad_W1 = X_batch.T @ G1 / batch
+        grad_W2 = Z1.T @ G2 / batch
+
+        # Perform the gradient descent step(Update the weights)
+        W1 -= lr * grad_W1
+        W2 -= lr * grad_W2
+    ### END YOUR CODE
+```
 
