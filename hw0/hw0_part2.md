@@ -379,6 +379,12 @@ With setting the seed to 0 again:
 >
 > Normal Distribution (np.random.randn): Suitable for tasks requiring values that follow a bell curve, especially beneficial for initializing neural network weights due to its properties that help in better training dynamics. Symmetry Breaking: If all weights are initialized to the same value (or from a uniform distribution that doesn't spread well), neurons in the same layer might learn the same features, making the network less expressive. Normally distributed weights help break symmetry and ensure that neurons learn diverse features.
 
+❓❓❓❓❓❓❓❓❓❓❓❓❓❓❓❓❓❓❓❓❓❓❓❓❓❓❓❓❓❓:
+Have confusion for why W1 scaled by hidden_dim not n, and why W2 scaled by k not hidden_dim?
+```python
+W1 = np.random.randn(n, hidden_dim).astype(np.float32) / np.sqrt(hidden_dim)
+W2 = np.random.randn(hidden_dim, k).astype(np.float32) / np.sqrt(k)
+```
 
 
 
