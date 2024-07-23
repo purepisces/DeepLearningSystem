@@ -222,11 +222,13 @@ Putting it all together, we can efficiently compute all the gradients we need fo
 
 **Forward pass**
 1. Initialize: $Z_1 = X$
+   
    Iterate: $Z_{i+1} = \sigma_i(Z_i W_i), \quad i = 1, \ldots, L$
 
 **Backward pass}**
 
 2. Initialize: $G_{L+1} = \nabla_{Z_{L+1}} \ell(Z_{L+1}, y) = S - I_y$
+   
    Iterate: $G_i = \left( G_{i+1} \circ \sigma'_i(Z_i W_i) \right) W_i^T, \quad i = L, \ldots, 1$
 
 And we can compute all the needed gradients along the way
