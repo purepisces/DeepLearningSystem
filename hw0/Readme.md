@@ -7,7 +7,7 @@ Hw0: Includes functions to read and parse the MNIST dataset, compute softmax los
 - **hw0_tech.md**: homework python technical
 - **hw0_original**: This folder contains the original homework without solutions. It includes the initial code and the original notebook to help you get started.
 - **hw0.ipynb**: The Jupyter notebook with the solution.
-- **hw0_solution**: Completed solution, delete further when finish question 6.
+- **hw0_solution**: Completed solution.
 - **manual_neural_nets.pdf**: Slides in course.
 - **softmax_regression.pdf**: Slides in course.
 
