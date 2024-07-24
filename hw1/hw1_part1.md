@@ -51,3 +51,45 @@ def add(a, b):
 - **Using `NDArray` in `compute`**: Keeps the method focused on efficient numerical operations.
 - **Using `Tensor` in the Rest of the Framework**: Manages the computational graph, tracks operations, and stores gradients for automatic differentiation.
 - **Separation of Concerns**: Ensures that numerical computations and gradient tracking are handled separately, leveraging the strengths of numpy for numerical tasks and `Tensor` for managing the differentiation process.
+
+#### `PowerScalar`: raise input to an integer (scalar) power
+```python
+
+```
+
+#### `EWiseDiv`: true division of the inputs, element-wise (2 inputs)
+
+#### `DivScalar`: true division of the input by a scalar, element-wise (1 input, `scalar` - number)
+**Example**
+
+If you have the following `ndarray` and scalar:
+
+- **Ndarray**: `np.array([10, 20, 30])`
+- **Scalar**: `2`
+
+The element-wise division would result in:
+
+- **Result**: `np.array([10/2, 20/2, 30/2])` which is `np.array([5, 10, 15])`
+
+```python
+class DivScalar(TensorOp):
+    def __init__(self, scalar):
+        self.scalar = scalar
+
+    def compute(self, a):
+        ### BEGIN YOUR SOLUTION
+        return a / self.scalar
+        ### END YOUR SOLUTION
+```
+
+#### `MatMul`: matrix multiplication of the inputs (2 inputs)
+
+#### `Summation`: sum of array elements over given axes (1 input, `axes` - tuple)
+
+#### `BroadcastTo`: broadcast an array to a new shape (1 input, `shape` - tuple)
+
+#### `Reshape`: gives a new shape to an array without changing its data (1 input, `shape` - tuple)
+
+#### `Negate`: numerical negative, element-wise (1 input)
+
+#### `Transpose`: reverses the order of two axes (axis1, axis2), defaults to the last two axes (1 input, `axes` - tuple)
