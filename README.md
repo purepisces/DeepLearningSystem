@@ -7,7 +7,7 @@ This repository contains a series of homework assignments for the CMU Deep Learn
 ### hw0
 **I still haven't finish question 6, the c++ part.**
 
-Hw0: Includes functions to read and parse the MNIST dataset, compute softmax loss, and perform SGD for both softmax regression and a two-layer neural network.
+Hw0: Includes functions to read and parse the MNIST dataset, compute softmax loss, and perform SGD for both softmax regression and a simple two-layer neural network that used for the MNIST digit classification problem.
 
 Pay attention to 
 - **src/simple.ml.py**
