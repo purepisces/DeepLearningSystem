@@ -1,6 +1,6 @@
 **I still haven't finish question 6, the c++ part.**
 
-Hw0: Includes functions to read and parse the MNIST dataset, compute softmax loss, and perform SGD for both softmax regression and a two-layer neural network.
+Hw0 includes functions to read and parse the MNIST dataset, compute softmax loss, and perform Stochastic Gradient Descent (SGD) for both softmax regression and a simple two-layer neural network, providing a foundational framework for the MNIST digit classification problem.
 
 - **hw0.ipynb**: The original Jupyter notebook.
 - **hw0_part1.md**: homework explanation
