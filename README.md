@@ -9,4 +9,7 @@ This repository contains a series of homework assignments for the CMU Deep Learn
 
 Hw0: Includes functions to read and parse the MNIST dataset, compute softmax loss, and perform SGD for both softmax regression and a two-layer neural network.
 
+Pay attention to 
+- **src/simple.ml.py**
+
 ### hw1
