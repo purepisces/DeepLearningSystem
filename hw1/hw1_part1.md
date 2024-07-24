@@ -1,8 +1,5 @@
 ## Question 1: Implementing forward computation
 
-## Question 1: Implementing forward computation [10 pts]
-
-
 First, you will implement the forward computation for new operators.  To see how this works, consider the `EWiseAdd` operator in the `ops/ops_mathematic.py` file:
 
 ```python
@@ -334,3 +331,6 @@ print(np.broadcast_to(c, new_shape))
 -   **Leading Dimensions**: `1` (original) vs. `3` (target) – these are compatible because 1 can be expanded to 3.
 
 Since the trailing dimensions do not match and are not compatible, broadcasting cannot proceed.
+
+## Question 2: Implementing backward computation
+
