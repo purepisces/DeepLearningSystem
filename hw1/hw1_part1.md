@@ -346,5 +346,143 @@ print(np.broadcast_to(c, new_shape))
 
 Since the trailing dimensions do not match and are not compatible, broadcasting cannot proceed.
 
-## Question 2: Implementing backward computation
+## Question 2: Implementing backward computation 
+
+Now that you have implemented the functions within our computation graph, in order to implement automatic differentiation using our computational graph, we need to be able to compute the backward pass, i.e., multiply the relevant derivatives of the function with the incoming backward gradients.
+
+The easiest way to perform these computations is, again, via taking "fake" partial derivatives (assuming everything is a scalar), and then matching sizes: here the tests we provide will automatically check against numerical derivatives to ensure that your solution is correct.
+
+The general goal of reverse mode autodifferentiation is to compute the gradient of some downstream function $\ell$ of $f(x,y)$ with respect to $x$ (or $y$). Written formally, we could write this as trying to compute
+
+$$\begin{equation}
+\frac{\partial \ell}{\partial x} = \frac{\partial \ell}{\partial f(x,y)} \frac{\partial f(x,y)}{\partial x}.
+\end{equation}$$
+
+The "incoming backward gradient" is precisely the term $\frac{\partial \ell}{\partial f(x,y)}$, so we want our `gradient()` function to ultimately compute the _product_ between this backward gradient the function's own derivative $\frac{\partial f(x,y)}{\partial x}$.
+
+To see how this works a bit more concretely, consider the elementwise addition function we presented above
+
+$$\begin{equation}
+f(x,y) = x + y.
+\end{equation}$$
+
+Let's suppose that in this setting $x,y\in \mathbb{R}^n$, so that $f(x,y) \in \mathbb{R}^n$ as well. Then via simple differentiation
+
+$$\begin{equation}
+\frac{\partial f(x,y)}{\partial x} = 1
+\end{equation}$$
+
+so that
+
+$$\begin{equation}
+\frac{\partial \ell}{\partial x} = \frac{\partial \ell}{\partial f(x,y)} \frac{\partial f(x,y)}{\partial x} = \frac{\partial \ell}{\partial f(x,y)}
+\end{equation}$$
+
+i.e., the product of the function's derivative with respect to its first argument $x$ is just exactly the same as the backward incoming gradient. The same is true of the gradient with respect to the second argument $y$. This is precisely what is captured by the following method of the `EWiseAdd` operator.
+
+```python
+def gradient(self, out_grad: Tensor, node: Tensor):
+	return out_grad, out_grad
+```
+i.e., the function just results the incoming backward gradient (which actually _is_ here the product between the backward incoming gradient and the derivative with respect to each argument of the function. And because the size of $f(x,y)$ is the same as the size of both $x$ and $y$, we don't even need to worry about dimensions here.
+
+-   Here, `out_grad` represents $\frac{\partial \ell}{\partial f(x, y)}$.
+-   Since $\frac{\partial f(x, y)}{\partial x} = 1$ and $\frac{\partial f(x, y)}{\partial y} = 1$, the gradients with respect to $x$ and $y$ are just `out_grad`.
+
+Now consider another example, the (elementwise) multiplication function
+
+$$\begin{equation}
+f(x,y) = x \circ y
+\end{equation}$$
+
+where $\circ$ denotes elementwise multiplication between $x$ and $y$. The partial of this function is given by
+
+$$\begin{equation}
+\frac{\partial f(x,y)}{\partial x} = y
+\end{equation}$$
+
+and similarly
+
+$$\begin{equation}
+\frac{\partial f(x,y)}{\partial y} = x
+\end{equation}$$
+
+  
+
+Thus to compute the product of the incoming gradient
+
+$$\begin{equation}
+\frac{\partial \ell}{\partial x} = \frac{\partial \ell}{\partial f(x,y)} \frac{\partial f(x,y)}{\partial x} = \frac{\partial \ell}{\partial f(x,y)} \cdot y
+\end{equation}$$
+
+If $x,y \in \mathbb{R}^n$ like in the previous example, then $f(x,y) \in \mathbb{R}^n$ as well so the first element returned back the graident function would just be the elementwise multiplication
+
+$$\begin{equation}
+\frac{\partial \ell}{\partial f(x,y)} \circ y
+\end{equation}$$
+
+This is captures in the `gradient()` call of the `EWiseMul` class.
+
+```python
+class EWiseMul(TensorOp):
+
+	def compute(self, a: NDArray, b: NDArray):
+		return a * b
+
+	def gradient(self, out_grad: Tensor, node: Tensor):
+		lhs, rhs = node.inputs
+		return out_grad * rhs, out_grad * lhs
+```
+>**out_grad:**
+>-   `out_grad` is the gradient of the loss function ℓ\ellℓ with respect to the output of the current operation.
+>- It is the gradient that comes from the next layer or operation in the graph during the backward pass.
+>
+>**Node:**
+>-   In automatic differentiation frameworks, a `node` typically represents a single operation (like addition, multiplication, etc.) in the computational graph.
+>-   The `node` object contains:
+>     -   `inputs`: A list of tensors that were the inputs to this operation during the forward pass. In this case, `node.inputs` would be a list containing the tensors `lhs` and `rhs` (i.e., the inputs to the elementwise multiplication).
+    
+### Implementing backward passes
+
+Note that, unlike the forward pass functions, the arguments to the `gradient` function are `needle` objects. It is important to implement the backward passes using only `needle` operations (i.e. those defined in `python/needle/ops/ops_mathematic.py`), rather than using `numpy` operations on the underlying `numpy` data, so that we can construct the gradients themselves via a computation graph (one excpetion is for the `ReLU` operation defined below, where you could directly access data within the Tensor without risk because the gradient itself is non-differentiable, but this is a special case).
+
+
+To complete this question, fill in the `gradient` function of the following classes:
+
+- `PowerScalar`
+
+- `EWiseDiv`
+
+- `DivScalar`
+
+- `MatMul`
+
+- `Summation`
+
+- `BroadcastTo`
+
+- `Reshape`
+
+- `Negate`
+
+- `Transpose`
+
+  
+
+All of the `gradient` functions can be computed using just the operations defined in `python/needle/ops/ops_mathematic.py`, so there is no need to define any additional forward functions.
+
+
+**Hint:** while gradients of multiplication, division, etc, may be relatively intuitive to compute it can seem a bit less intuitive to compute backward passes of items like `Broadcast` or `Summation`. To get a handle on these, you can check gradients numerically and print out their actual values, if you don't know where to start (see the `tests/test_autograd_hw.py`, specifically the `check_gradients()` function within that file to get a sense about how to do this). And remember that the side of `out_grad` will always be the size of the _output_ of the operation, whereas the sizes of the `Tensor` objects _returned_ by `graident()` have to always be the same as the original _inputs_ to the operator.
+
+
+### Checking backward passes
+
+To reiterate the above, remember that we can check that these backward passes are correct by doing numerical gradient checking as covered in lecture:
+
+$$\begin{equation}
+\delta^T \nabla_\theta f(\theta) = \frac{f(\theta + \epsilon \delta) - f(\theta - \epsilon \delta)}{2 \epsilon} + o(\epsilon^2)
+\end{equation}$$
+
+We provide the function `gradient_check` for doing this numerical checking in `tests/test_autograd_hw.py`.
+
 
