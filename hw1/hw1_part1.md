@@ -273,7 +273,9 @@ class Transpose(TensorOp):
         ### END YOUR SOLUTION
 ```
 
-> if we use
+> If we use `array_api.arange(a.ndim)`, it is creating an array of indices representing the axes of the input array `a`.
+> -   If `a` is a 2D array (`a.ndim` is `2`), `self.axis` will be `array([0, 1])`.
+> -   If `a` is a 3D array (`a.ndim` is `3`), `self.axis` will be `array([0, 1, 2])`.
 >```python
 > def compute(self, a):
 > 	### BEGIN YOUR SOLUTION
@@ -286,9 +288,6 @@ class Transpose(TensorOp):
 >	return array_api.transpose(a, self.axis)
 >	### END YOUR SOLUTION
 >```
-> 'array_api.arange(a.ndim)`, it is creating an array of indices representing the axes of the input array `a`.
-> -   If `a` is a 2D array (`a.ndim` is `2`), `self.axis` will be `array([0, 1])`.
-> -   If `a` is a 3D array (`a.ndim` is `3`), `self.axis` will be `array([0, 1, 2])`.
 > 
 > Given the requirement that `Transpose` should reverse the order of two axes (axis1, axis2), defaulting to the last two axes, the implementation can be simplified to handle exactly this case. The `axes` parameter should either be `None` (default case) or a tuple of two integers specifying which axes to swap.
 > 
