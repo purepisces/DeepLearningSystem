@@ -486,3 +486,146 @@ $$\begin{equation}
 We provide the function `gradient_check` for doing this numerical checking in `tests/test_autograd_hw.py`.
 
 
+
+----------------------------------
+### `PowerScalar`: raise input to an integer (scalar) power
+** Example**
+**Forward Pass**
+If you have the following `ndarray` and scalar:
+
+-   **Ndarray**: `np.array([2, 3, 4])`
+-   **Scalar**: `3`
+
+The element-wise power would result in:
+
+-   **Result**: `np.array([2**3, 3**3, 4**3])` which is `np.array([8, 27, 64])`
+
+**Backward Pass**
+During the backward pass, you want to calculate the gradient of the loss $\ell$ with respect to the input $x$ of the `PowerScalar` operation.
+
+- `out_grad` represents $\frac{\partial \ell}{\partial f}$, which is the gradient of the loss $\ell$ with respect to the output $f$ of the `PowerScalar` operation.
+- The chain rule states $\frac{\partial \ell}{\partial x} = \frac{\partial \ell}{\partial f} \cdot \frac{\partial f}{\partial x}$
+		For $f(x) = x^c$ 
+		$\frac{\partial f}{\partial x} =c \cdot x^{c-1}$.
+		Combining these using the chain rule:
+		$\frac{\partial \ell}{\partial x} = \frac{\partial \ell}{\partial f} \cdot \frac{\partial f}{\partial x} = \text{outgrad} \cdot c \cdot x^{c-1}$
+
+```python
+class PowerScalar(TensorOp):
+    """Op raise a tensor to an (integer) power."""
+    def __init__(self, scalar: int):
+        self.scalar = scalar
+    def compute(self, a: NDArray) -> NDArray:
+        ### BEGIN YOUR SOLUTION
+        return array_api.power(a, self.scalar)
+        ### END YOUR SOLUTION
+    def gradient(self, out_grad, node):
+        ### BEGIN YOUR SOLUTION
+        a = node.inputs[0]
+        return self.scalar * array_api.power(a, self.scalar - 1) * out_grad
+        ### END YOUR SOLUTION
+def power_scalar(a, scalar):
+    return PowerScalar(scalar)(a)
+```
+> -   `PowerScalar(scalar)` initializes a `PowerScalar` object with the given scalar value, it creates an instance of the operation..
+> -   `PowerScalar(scalar)(a)` calls the `__call__` method of the `PowerScalar` instance with `a` as the argument.
+> -   Inside the `__call__` method, `Tensor.make_from_op(self, (a,))` is called:
+>     -   `self` is the `PowerScalar` instance.
+>     -   `(a,)` is a tuple containing the input tensor `a`.
+>     
+> This results in creating a new `Tensor` object that represents the result of applying the `PowerScalar` operation to `a`. The `make_from_op` method constructs and initializes a new `Tensor` object.
+
+### `EWiseDiv`: true division of the inputs, element-wise (2 inputs)
+
+** Example**
+**Forward Pass**
+If you have the following `ndarrays`:
+
+- **Ndarray `a`**: `np.array([10, 20, 30])`
+- **Ndarray `b`**: `np.array([2, 4, 6])`
+
+The element-wise division would result in:
+
+- **Result**: `np.array([10/2, 20/4, 30/6])` which is `np.array([5, 5, 5])`
+
+**Backward Pass**
+
+During the backward pass, you want to calculate the gradient of the loss $\ell$ with respect to the inputs $a$ and $b$ of the `EWiseDiv` operation.
+
+- `out_grad` represents $\frac{\partial \ell}{\partial f}$, which is the gradient of the loss $\ell$ with respect to the output $f$ of the `EWiseDiv` operation.
+- The chain rule states:
+  $$\frac{\partial \ell}{\partial a} = \frac{\partial \ell}{\partial f} \cdot \frac{\partial f}{\partial a}$$
+  and $$\frac{\partial \ell}{\partial b} = \frac{\partial \ell}{\partial f} \cdot \frac{\partial f}{\partial b}$$
+
+For $f(a, b) = \frac{a}{b}$:
+
+- $\frac{\partial f}{\partial a} = \frac{1}{b}$
+- $\frac{\partial f}{\partial b} = -\frac{a}{b^2}$
+
+Combining these using the chain rule:
+
+- $$\frac{\partial \ell}{\partial a} = \frac{\partial \ell}{\partial f} \cdot \frac{1}{b} = \text{out\_grad} \cdot \frac{1}{b}$$
+
+- $$\frac{\partial \ell}{\partial b} = \frac{\partial \ell}{\partial f} \cdot -\frac{a}{b^2} = \text{out\_grad} \cdot -\frac{a}{b^2}$$
+
+```python
+class EWiseDiv(TensorOp):
+    """Op to element-wise divide two nodes."""
+
+    def compute(self, a, b):
+        ### BEGIN YOUR SOLUTION
+        return a / b
+        ### END YOUR SOLUTION
+
+    def gradient(self, out_grad, node):
+        ### BEGIN YOUR SOLUTION
+        a, b = node.inputs
+        return out_grad / b, -a * out_grad / (b * b)
+        ### END YOUR SOLUTION
+
+def divide(a, b):
+    return EWiseDiv()(a, b)
+```
+
+> In the `PowerScalar` class, writing `a = node.inputs` would be incorrect because `node.inputs` is a list containing one element, and you need to access that single element. In contrast, in the `EWiseDiv` class, `node.inputs` is a list containing two elements, so you unpack them into `a` and `b`.
+
+
+### `DivScalar`: true division of the input by a scalar, element-wise (1 input, `scalar` - number)
+
+**Example**
+**Forward Pass**
+If you have the following `ndarray` and scalar:
+
+- **Ndarray**: `np.array([10, 20, 30])`
+- **Scalar**: `2`
+
+The element-wise division would result in:
+
+- **Result**: `np.array([10/2, 20/2, 30/2])` which is `np.array([5, 10, 15])`
+
+**Backward Pass**
+
+During the backward pass, you want to calculate the gradient of the loss $\ell$ with respect to the input $a$ of the `DivScalar` operation.
+
+-   `out_grad` represents $\frac{\partial \ell}{\partial f}$, which is the gradient of the loss $\ell$ with respect to the output $f$ of the `DivScalar` operation.
+    
+-   Using the chain rule:
+	$\frac{\partial \ell}{\partial a} = \frac{\partial \ell}{\partial f} \cdot \frac{\partial f}{\partial a} = \text{out\_grad} \cdot \frac{1}{\text{scalar}}$
+```python
+class DivScalar(TensorOp):
+    def __init__(self, scalar):
+        self.scalar = scalar
+
+    def compute(self, a):
+        ### BEGIN YOUR SOLUTION
+        return a / self.scalar
+        ### END YOUR SOLUTION
+
+    def gradient(self, out_grad, node):
+        ### BEGIN YOUR SOLUTION
+        return out_grad /self.scalar
+        ### END YOUR SOLUTION
+        
+def divide_scalar(a, scalar):
+    return DivScalar(scalar)(a)
+```
