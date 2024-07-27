@@ -191,8 +191,11 @@ We provide the function `gradient_check` for doing this numerical checking in `t
 
 ----------------------------------
 ### `PowerScalar`: raise input to an integer (scalar) power
-** Example**
+
+**Example**
+
 **Forward Pass**
+
 If you have the following `ndarray` and scalar:
 
 -   **Ndarray**: `np.array([2, 3, 4])`
@@ -203,6 +206,7 @@ The element-wise power would result in:
 -   **Result**: `np.array([2**3, 3**3, 4**3])` which is `np.array([8, 27, 64])`
 
 **Backward Pass**
+
 During the backward pass, you want to calculate the gradient of the loss $\ell$ with respect to the input $x$ of the `PowerScalar` operation.
 
 - `out_grad` represents $\frac{\partial \ell}{\partial f}$, which is the gradient of the loss $\ell$ with respect to the output $f$ of the `PowerScalar` operation.
@@ -244,8 +248,10 @@ def power_scalar(a, scalar):
 
 ### `EWiseDiv`: true division of the inputs, element-wise (2 inputs)
 
-** Example**
+**Example**
+
 **Forward Pass**
+
 If you have the following `ndarrays`:
 
 - **Ndarray `a`**: `np.array([10, 20, 30])`
@@ -300,7 +306,9 @@ def divide(a, b):
 ### `DivScalar`: true division of the input by a scalar, element-wise (1 input, `scalar` - number)
 
 **Example**
+
 **Forward Pass**
+
 If you have the following `ndarray` and scalar:
 
 - **Ndarray**: `np.array([10, 20, 30])`
@@ -339,7 +347,9 @@ def divide_scalar(a, scalar):
 ### `MatMul`: matrix multiplication of the inputs (2 inputs)
 
 **Example**
+
 **Forward Pass**
+
 If you have the following `ndarrays`:
 
 - **Ndarray `a`**: `np.array([[1, 2], [3, 4]])`
@@ -402,6 +412,7 @@ def matmul(a, b):
 ### `Summation`: sum of array elements over given axes (1 input, `axes` - tuple)
 
 **Example**
+
 **Forward Pass**
 
 If you have the following `ndarray`:
@@ -437,7 +448,9 @@ class Summation(TensorOp):
 ### `BroadcastTo`: broadcast an array to a new shape (1 input, `shape` - tuple)
 
 **Example**
+
 **Forward Pass**
+
 If you have the following `ndarray`:
 
 - **Ndarray `a`**: `np.array([1, 2, 3])`
@@ -448,6 +461,7 @@ The broadcasting to the specified shape would result in:
 - **Result**: `np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]])`
 
 **Backward Pass**
+
 During the backward pass, you want to calculate the gradient of the loss $\ell$ with respect to the input `a` of the `BroadcastTo` operation.
 
 -   `out_grad` represents $\frac{\partial \ell}{\partial f}$, which is the gradient of the loss $\ell$ with respect to the output `f` of the `BroadcastTo` operation.
@@ -499,7 +513,9 @@ def broadcast_to(a, shape):
 ### `Reshape`: Gives a new shape to an array without changing its data (1 input, `shape` - tuple)
 
 **Example**
+
 **Forward Pass**
+
 If you have the following `ndarray`:
 
 - **Ndarray `a`**: `np.array([[1, 2, 3], [4, 5, 6]])`
@@ -510,6 +526,7 @@ The reshaping to the specified shape would result in:
 - **Result**: `np.array([[1, 2], [3, 4], [5, 6]])`
 
 **Backward Pass**
+
 During the backward pass, you want to calculate the gradient of the loss $\ell$ with respect to the input `a` of the `Reshape` operation.
 
 -   `out_grad` represents $\frac{\partial \ell}{\partial f}$, which is the gradient of the loss $\ell$ with respect to the output `f` of the `Reshape` operation.
@@ -556,6 +573,7 @@ def reshape(a, shape):
 ### `Negate`: Numerical negative, element-wise (1 input)
 
 **Example**
+
 **Forward Pass**
 
 If you have the following `ndarray`:
@@ -567,6 +585,7 @@ The negation would result in:
 - **Result**: `np.array([-1, 2, -3])`
 
 **Backward Pass**
+
 During the backward pass, you want to calculate the gradient of the loss $\ell$ with respect to the input `a` of the `Negate` operation.
 
 -   `out_grad` represents $\frac{\partial \ell}{\partial f}$, which is the gradient of the loss $\ell$ with respect to the output `f$ of the` Negate` operation.
@@ -599,6 +618,7 @@ def negate(a):
 ### `Transpose`: reverses the order of two axes (axis1, axis2), defaults to the last two axes (1 input, `axes` - tuple)
 
 **Forward Pass**
+
 **Example1**
 
 If you have the following `ndarray`:
@@ -622,6 +642,7 @@ The transposition would result in:
 -   **Result**: `np.array([[1, 4], [2, 5], [3, 6]])`
   
   **Backward Pass**
+  
   During the backward pass, you want to calculate the gradient of the loss $\ell$ with respect to the input `a` of the `Transpose` operation.
 
 -   `out_grad` represents $\frac{\partial \ell}{\partial f}$, which is the gradient of the loss $\ell$ with respect to the output $f$ of the` Transpose` operation.
