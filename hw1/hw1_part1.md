@@ -190,9 +190,6 @@ We provide the function `gradient_check` for doing this numerical checking in `t
 
 
 ----------------------------------
-
-
-----------------------------------
 ### `PowerScalar`: raise input to an integer (scalar) power
 ** Example**
 **Forward Pass**
@@ -274,9 +271,9 @@ For $f(a, b) = \frac{a}{b}$:
 
 Combining these using the chain rule:
 
-- $$\frac{\partial \ell}{\partial a} = \frac{\partial \ell}{\partial f} \cdot \frac{1}{b} = \text{out\_grad} \cdot \frac{1}{b}$$
+- $$\frac{\partial \ell}{\partial a} = \frac{\partial \ell}{\partial f} \cdot \frac{1}{b} = \text{outgrad} \cdot \frac{1}{b}$$
 
-- $$\frac{\partial \ell}{\partial b} = \frac{\partial \ell}{\partial f} \cdot -\frac{a}{b^2} = \text{out\_grad} \cdot -\frac{a}{b^2}$$
+- $$\frac{\partial \ell}{\partial b} = \frac{\partial \ell}{\partial f} \cdot -\frac{a}{b^2} = \text{outgrad} \cdot -\frac{a}{b^2}$$
 
 ```python
 class EWiseDiv(TensorOp):
@@ -320,7 +317,7 @@ During the backward pass, you want to calculate the gradient of the loss $\ell$ 
 -   `out_grad` represents $\frac{\partial \ell}{\partial f}$, which is the gradient of the loss $\ell$ with respect to the output $f$ of the `DivScalar` operation.
     
 -   Using the chain rule:
-	$\frac{\partial \ell}{\partial a} = \frac{\partial \ell}{\partial f} \cdot \frac{\partial f}{\partial a} = \text{out\_grad} \cdot \frac{1}{\text{scalar}}$
+	$\frac{\partial \ell}{\partial a} = \frac{\partial \ell}{\partial f} \cdot \frac{\partial f}{\partial a} = \text{outgrad} \cdot \frac{1}{\text{scalar}}$
 ```python
 class DivScalar(TensorOp):
     def __init__(self, scalar):
@@ -740,5 +737,4 @@ print(np.broadcast_to(c, new_shape))
 -   **Leading Dimensions**: `1` (original) vs. `3` (target) – these are compatible because 1 can be expanded to 3.
 
 Since the trailing dimensions do not match and are not compatible, broadcasting cannot proceed.
-
 
