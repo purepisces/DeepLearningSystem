@@ -8,4 +8,6 @@ Fill out the `find_topo_sort` method and the `topo_sort_dfs` helper method (in `
 - Ensure that you do a post-order depth-first search, otherwise the test cases will fail. 
 - The `topo_sort_dfs` method is not required, but we find it useful to use this as a recursive helper function. 
 - The "Reverse mode AD by extending computational graph" section of the Lecture 4 slides contains walks through an example of the proper node ordering. 
-- We will be traversing this sorting backwards in later parts of this homework, but the `find_topo_sort` should return the node ordering in the forward direction. 
+- We will be traversing this sorting backwards in later parts of this homework, but the `find_topo_sort` should return the node ordering in the forward direction.
+
+Refer to leetcode: https://leetcode.com/problems/course-schedule-ii/
