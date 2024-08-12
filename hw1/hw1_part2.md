@@ -63,7 +63,7 @@ As discussed in lecture the result of reverse mode AD is still a computational g
 
 -------------------------
 
- <img src="reverse-mode-ad.png" alt="reverse-mode-ad" width="400" height="300"/>
+ <img src="reverse-mode-ad.png" alt="reverse-mode-ad" width="700" height="450"/>
 
 
 
