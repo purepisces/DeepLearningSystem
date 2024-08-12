@@ -62,7 +62,12 @@ Once you have correctly implemented the topological sort, you will next leverage
 As discussed in lecture the result of reverse mode AD is still a computational graph. We can extend that graph further by composing more operations and run reverse mode AD again on the gradient (the last two tests of this problem). 
 
 -------------------------
+ <img src="forward-mode-ad.png" alt="forward-mode-ad" width="700" height="450"/>
+ <img src="limit-forward-mode-ad.png" alt="limit-forward-mode-ad" width="700" height="450"/>
 
+In lecture, adjoint is defined as the partial derivative from the output scalar with respect to each intermediate value node here,
+
+In this case, we want to derive it from the end of the computational graph.
  <img src="reverse-mode-ad.png" alt="reverse-mode-ad" width="700" height="450"/>
 
 
