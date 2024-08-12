@@ -22,3 +22,35 @@ However, this type of sorting is only possible if the graph doesn't contain any 
 To find a topological order, algorithms exist that can do this efficiently, meaning they can process the graph in time proportional to the number of nodes and edges.
 
 Topological sorting is widely used in various applications, such as scheduling tasks, resolving dependencies in programming (like determining the order in which to compile files), and ranking problems. Even if the graph has separate, unconnected parts, topological sorting can still be applied to each part independently.
+
+```python
+def find_topo_sort(node_list: List[Value]) -> List[Value]:
+    """Given a list of nodes, return a topological sort list of nodes ending in them.
+
+    A simple algorithm is to do a post-order DFS traversal on the given nodes,
+    going backwards based on input edges. Since a node is added to the ordering
+    after all its predecessors are traversed due to post-order DFS, we get a topological
+    sort.
+    """
+    ### BEGIN YOUR SOLUTION
+    visited = set()
+    topo_order = []
+
+    for node in node_list:
+        topo_sort_dfs(node, visited, topo_order)
+        
+    return topo_order
+    ### END YOUR SOLUTION
+
+
+def topo_sort_dfs(node, visited, topo_order):
+    """Post-order DFS"""
+    ### BEGIN YOUR SOLUTION
+    if node in visited:
+        return
+    visited.add(node)
+    for input_node in node.inputs:
+        topo_sort_dfs(input_node, visited, topo_order)
+    topo_order.append(node)
+    ### END YOUR SOLUTION
+```
