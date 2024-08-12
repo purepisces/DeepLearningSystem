@@ -61,4 +61,9 @@ Once you have correctly implemented the topological sort, you will next leverage
 
 As discussed in lecture the result of reverse mode AD is still a computational graph. We can extend that graph further by composing more operations and run reverse mode AD again on the gradient (the last two tests of this problem). 
 
+-------------------------
+
+ <img src="reverse-mode-ad.png" alt="reverse-mode-ad" width="400" height="300"/>
+
+
 
