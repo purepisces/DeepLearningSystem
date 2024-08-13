@@ -70,4 +70,35 @@ In lecture, adjoint is defined as the partial derivative from the output scalar 
 In this case, we want to derive it from the end of the computational graph.
  <img src="reverse-mode-ad.png" alt="reverse-mode-ad" width="700" height="450"/>
 
+```python
+def compute_gradient_of_variables(output_tensor, out_grad):
+    """Take gradient of output node with respect to each node in node_list.
+
+    Store the computed result in the grad field of each Variable.
+    """
+    # a map from node to a list of gradient contributions from each output node
+    node_to_output_grads_list: Dict[Tensor, List[Tensor]] = {}
+    # Special note on initializing gradient of
+    # We are really taking a derivative of the scalar reduce_sum(output_node)
+    # instead of the vector output_node. But this is the common case for loss function.
+    node_to_output_grads_list[output_tensor] = [out_grad]
+
+    # Traverse graph in reverse topological order given the output_node that we are taking gradient wrt.
+    reverse_topo_order = list(reversed(find_topo_sort([output_tensor])))
+
+    ### BEGIN YOUR SOLUTION
+    for node in reverse_topo_order:
+        node_grad = sum_node_list(node_to_output_grads_list[node])
+        if node.is_leaf():
+            node.grad = node_grad
+            continue
+        gradients = node.op.gradient_as_tuple(node_grad, node)
+        for i, inp in enumerate(node.inputs):
+            if inp not in node_to_output_grads_list:
+                node_to_output_grads_list[inp] = []
+            node_to_output_grads_list[inp].append(gradients[i])
+        node.grad = node_grad
+    return
+    ### END YOUR SOLUTION
+```
 
