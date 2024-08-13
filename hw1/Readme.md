@@ -12,6 +12,7 @@ For an introduction to the `needle` framework, refer to Lecture 5 in class and [
 
 For the purposes of this assignment, there are two important files in the `needle` library, the `python/needle/autograd.py` file (which defines the basics of the computational graph framework, and also will form the basis of the automatic differentation framework), and the `python/needle/ops/ops_mathematic.py`.file (which contains implementations of various operators that you will use implement throughout the assignment and the course).
 
+In hw1, implement reverse mode AD by extending computational graph instead of using backpropogation.
 
 - **hw1_combined.ipynb**: The original Jupyter notebook.
 - **hw1_part1.md**: homework explanation
