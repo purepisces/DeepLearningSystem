@@ -23,6 +23,7 @@ To find a topological order, algorithms exist that can do this efficiently, mean
 
 Topological sorting is widely used in various applications, such as scheduling tasks, resolving dependencies in programming (like determining the order in which to compile files), and ranking problems. Even if the graph has separate, unconnected parts, topological sorting can still be applied to each part independently.
 
+
 ```python
 def find_topo_sort(node_list: List[Value]) -> List[Value]:
     """Given a list of nodes, return a topological sort list of nodes ending in them.
@@ -70,6 +71,8 @@ In lecture, adjoint is defined as the partial derivative from the output scalar 
 
 In this case, we want to derive it from the end of the computational graph.
  <img src="reverse-mode-ad.png" alt="reverse-mode-ad" width="700" height="450"/>
+
+ <img src="reverse-ad-algorithm.png" alt="reverse-ad-algorithm" width="700" height="450"/>
 
 ```python
 def compute_gradient_of_variables(output_tensor, out_grad):
