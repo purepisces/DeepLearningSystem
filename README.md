@@ -13,3 +13,6 @@ Pay attention to
 - **src/simple.ml.py**
 
 ### hw1
+hw1 implement reverse mode AD by extending computational graph instead of using backpropogation.
+
+
