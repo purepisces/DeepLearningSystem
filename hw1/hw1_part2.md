@@ -71,4 +71,3 @@ In this case, we want to derive it from the end of the computational graph.
  <img src="reverse-mode-ad.png" alt="reverse-mode-ad" width="700" height="450"/>
 
 
-
