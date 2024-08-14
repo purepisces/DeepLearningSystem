@@ -48,7 +48,7 @@ For $f(a) = \log(a)$: $\frac{\partial f}{\partial a} = \frac{1}{a}$
 
 Combining these using the chain rule:
 
-$\frac{\partial \ell}{\partial a} = \frac{\partial \ell}{\partial f} \cdot \frac{\partial f}{\partial a} = \text{out\_grad} \cdot \frac{1}{a}$
+$\frac{\partial \ell}{\partial a} = \frac{\partial \ell}{\partial f} \cdot \frac{\partial f}{\partial a} = \text{outgrad} \cdot \frac{1}{a}$
 
 ```python
 class Log(TensorOp):
