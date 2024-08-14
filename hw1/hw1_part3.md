@@ -20,3 +20,51 @@ Once those operators have been implemented,
 4. Implement the function `softmax_loss` in `apps/simple_ml.py`. 
 
 You can start with your solution from Homework 0, and then modify it to be compatible with `needle` objects and operations. As with the previous homework, the function you implement should compute the _average_ softmax loss over a batch of size $m$, i.e. logits `Z` will be an $m \times k$ `Tensor` where each row represents one example, and `y_one_hot` will be an $m \times k$ `Tensor` that contains all zeros except for a 1 in the element corresponding to the true label for each row. Finally, note that the average softmax loss returned should also be a `Tensor`. 
+
+
+---------------------------
+### `Log`: Element-wise natural logarithm of the input
+
+**Example**
+
+**Forward Pass**
+
+If you have the following `ndarray`:
+
+- **Ndarray**: `np.array([1, 2, 4])`
+
+The element-wise natural logarithm would result in:
+
+- **Result**: `np.array([log(1), log(2), log(4)])` which is approximately `np.array([0, 0.693, 1.386])`
+
+**Backward Pass**
+
+During the backward pass, you want to calculate the gradient of the loss $\ell$ with respect to the input $a$ of the `Log` operation.
+
+- `out_grad` represents $\frac{\partial \ell}{\partial f}$, which is the gradient of the loss $\ell$ with respect to the output $f$ of the `Log` operation.
+- The chain rule states $\frac{\partial \ell}{\partial a} = \frac{\partial \ell}{\partial f} \cdot \frac{\partial f}{\partial a}$
+
+For $f(a) = \log(a)$: $\frac{\partial f}{\partial a} = \frac{1}{a}$
+
+Combining these using the chain rule:
+
+$\frac{\partial \ell}{\partial a} = \frac{\partial \ell}{\partial f} \cdot \frac{\partial f}{\partial a} = \text{out\_grad} \cdot \frac{1}{a}$
+
+```python
+class Log(TensorOp):
+    """Op that applies the natural logarithm element-wise to a tensor."""
+    
+    def compute(self, a: NDArray) -> NDArray:
+        ### BEGIN YOUR SOLUTION
+        return array_api.log(a)
+        ### END YOUR SOLUTION
+        
+    def gradient(self, out_grad, node):
+        ### BEGIN YOUR SOLUTION
+        a = node.inputs[0]
+        return out_grad / a
+        ### END YOUR SOLUTION
+        
+def log(a):
+    return Log()(a)
+```
