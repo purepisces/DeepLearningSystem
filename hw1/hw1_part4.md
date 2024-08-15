@@ -24,3 +24,63 @@ Then,
 
 Again, you can use your solution in Homework 0 for the `nn_epoch` function as a starting point. Note that unlike in Homework 0, the inputs `W1` and `W2` are `Tensors`. Inputs `X` and `y` however are still numpy arrays - you should iterate over minibatches of the numpy arrays `X` and `y` as you did in Homework 0, and then cast each `X_batch` as a `Tensor`, and one hot encode `y_batch` and cast as a `Tensor`. While last time we derived the backpropagation equations for this two-layer ReLU network directly, this time we will be using our autodifferentiation engine to compute the gradients generically by calling the `.backward()` method of the `Tensor` class. For each minibatch, after calling `.backward`, you should compute the updated values for `W1` and `W2` in `numpy`, and then create new `Tensors` for `W1` and `W2` with these `numpy` values. Your solution should return the final `W1` and `W2`  `Tensors`.
 
+---------------------------------------------------------
+
+## `ReLU`: Rectified Linear Unit Activation Function
+
+**Example**
+
+**Forward Pass**
+
+If you have the following `ndarray`:
+
+- **Ndarray `a`**: `np.array([-2, -1, 0, 1, 2])`
+
+The ReLU activation would result in:
+
+- **Result**: `np.array([0, 0, 0, 1, 2])`
+
+The ReLU function outputs the input directly if it is positive; otherwise, it outputs zero.
+
+**Backward Pass**
+
+During the backward pass, you want to calculate the gradient of the loss $\ell$ with respect to the input `a` of the `ReLU` operation.
+
+- `out_grad` represents $\frac{\partial \ell}{\partial f}$, which is the gradient of the loss $\ell$ with respect to the output $f$ of the `ReLU` operation.
+- The derivative of the ReLU function is defined as:
+  $$\frac{\partial f}{\partial a} = \begin{cases} 
+  1 & \text{if } a > 0 \\
+  0 & \text{if } a \leq 0 
+  \end{cases}$$
+
+Combining these using the chain rule:
+
+- $$\frac{\partial \ell}{\partial a} = \frac{\partial \ell}{\partial f} \cdot \frac{\partial f}{\partial a} = \text{outgrad} \cdot \text{ReLU}'(a)$$
+
+Where `ReLU'(a)` is `1` where `a > 0` and `0` where `a <= 0`.
+
+```python
+class ReLU(TensorOp):
+    """ReLU (Rectified Linear Unit) activation function."""
+
+    def compute(self, a):
+        ### BEGIN YOUR SOLUTION
+        # ReLU returns the maximum of 0 and the input
+        return array_api.maximum(a, 0)
+        ### END YOUR SOLUTION
+
+    def gradient(self, out_grad, node):
+        ### BEGIN YOUR SOLUTION
+        # Get the input tensor from the node
+        a = node.inputs[0].realize_cached_data()
+        
+        # The gradient of ReLU is 1 for elements > 0 and 0 otherwise
+        relu_grad = a > 0  # This will create a mask where a > 0 will be True (1) and else False (0)
+        
+        # Multiply the incoming gradient by the ReLU gradient
+        return out_grad * relu_grad
+        ### END YOUR SOLUTION
+
+def relu(a):
+    return ReLU()(a)
+```
