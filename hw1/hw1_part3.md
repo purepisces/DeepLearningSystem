@@ -57,7 +57,7 @@ def parse_mnist(image_filesname, label_filename):
         labels = np.frombuffer(lbl_f.read(num_items), dtype=np.uint8)
     
     # Read the images file
-    with gzip.open(image_filename, 'rb') as img_f:
+    with gzip.open(image_filesname, 'rb') as img_f:
         magic, num_images, num_rows, num_cols = struct.unpack(">IIII", img_f.read(16))
         if magic != 2051:
             raise ValueError(f"Invalid magic number in image file: {magic}")
