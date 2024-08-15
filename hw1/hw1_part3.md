@@ -25,7 +25,7 @@ You can start with your solution from Homework 0, and then modify it to be compa
 ---------------------------
 ## Parse_MNIST from previous homework
 
-```
+```python
 def parse_mnist(image_filesname, label_filename):
     """Read an images and labels file in MNIST format.  See this page:
     http://yann.lecun.com/exdb/mnist/ for a description of the file format.
