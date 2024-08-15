@@ -160,6 +160,7 @@ class Exp(TensorOp):
 def exp(a):
     return Exp()(a)
 ```
+## Implement the function softmax_loss in apps/simple_ml.py.
 
 
 
