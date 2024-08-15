@@ -61,25 +61,23 @@ Where `ReLU'(a)` is `1` where `a > 0` and `0` where `a <= 0`.
 
 ```python
 class ReLU(TensorOp):
-    """ReLU (Rectified Linear Unit) activation function."""
-
     def compute(self, a):
         ### BEGIN YOUR SOLUTION
-        # ReLU returns the maximum of 0 and the input
         return array_api.maximum(a, 0)
         ### END YOUR SOLUTION
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        # Get the input tensor from the node
+        # Get the input tensor's data as a NumPy array
         a = node.inputs[0].realize_cached_data()
-        
-        # The gradient of ReLU is 1 for elements > 0 and 0 otherwise
-        relu_grad = a > 0  # This will create a mask where a > 0 will be True (1) and else False (0)
-        
-        # Multiply the incoming gradient by the ReLU gradient
+    
+        # Create a mask where elements are 1 if the corresponding element in 'a' is > 0, otherwise 0
+        relu_grad = Tensor((a > 0).astype(array_api.float32))
+    
+        # Multiply the incoming gradient (Tensor) by the ReLU gradient (also a Tensor)
         return out_grad * relu_grad
         ### END YOUR SOLUTION
+
 
 def relu(a):
     return ReLU()(a)
