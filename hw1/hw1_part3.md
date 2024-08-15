@@ -98,18 +98,18 @@ $\frac{\partial \ell}{\partial a} = \frac{\partial \ell}{\partial f} \cdot \frac
 
 ```python
 class Log(TensorOp):
-    
-    def compute(self, a: NDArray) -> NDArray:
+    def compute(self, a):
         ### BEGIN YOUR SOLUTION
         return array_api.log(a)
         ### END YOUR SOLUTION
-        
+
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
         a = node.inputs[0]
         return out_grad / a
         ### END YOUR SOLUTION
-        
+
+
 def log(a):
     return Log()(a)
 ```
@@ -146,17 +146,18 @@ $$\frac{\partial \ell}{\partial a} = \frac{\partial \ell}{\partial f} \cdot \fra
 
 ```python
 class Exp(TensorOp):
-    def compute(self, a: NDArray) -> NDArray:
+    def compute(self, a):
         ### BEGIN YOUR SOLUTION
         return array_api.exp(a)
         ### END YOUR SOLUTION
-        
+
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
         a = node.inputs[0]
-        return out_grad * array_api.exp(a)
+        return out_grad * exp(a)
         ### END YOUR SOLUTION
-        
+
+
 def exp(a):
     return Exp()(a)
 ```
