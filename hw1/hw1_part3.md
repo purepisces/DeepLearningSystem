@@ -98,7 +98,6 @@ $\frac{\partial \ell}{\partial a} = \frac{\partial \ell}{\partial f} \cdot \frac
 
 ```python
 class Log(TensorOp):
-    """Op that applies the natural logarithm element-wise to a tensor."""
     
     def compute(self, a: NDArray) -> NDArray:
         ### BEGIN YOUR SOLUTION
@@ -114,3 +113,54 @@ class Log(TensorOp):
 def log(a):
     return Log()(a)
 ```
+
+## `Exp`: Element-wise Exponential of the Input
+
+**Example**
+
+**Forward Pass**
+
+If you have the following `ndarray`:
+
+- **Ndarray**: `np.array([0, 1, 2])`
+
+The element-wise exponential would result in:
+
+- **Result**: `np.array([exp(0), exp(1), exp(2)])` which is approximately `np.array([1, 2.718, 7.389])`
+
+**Backward Pass**
+
+During the backward pass, you want to calculate the gradient of the loss $\ell$ with respect to the input $a$ of the `Exp` operation.
+
+- `out_grad` represents $\frac{\partial \ell}{\partial f}$, which is the gradient of the loss $\ell$ with respect to the output $f$ of the `Exp` operation.
+- The chain rule states $\frac{\partial \ell}{\partial a} = \frac{\partial \ell}{\partial f} \cdot \frac{\partial f}{\partial a}$
+
+For $f(a) = \exp(a)$:
+
+$$\frac{\partial f}{\partial a} = \exp(a)$$
+
+Combining these using the chain rule:
+
+$$\frac{\partial \ell}{\partial a} = \frac{\partial \ell}{\partial f} \cdot \frac{\partial f}{\partial a} = \text{outgrad} \cdot \exp(a)$$
+
+
+```python
+class Exp(TensorOp):
+    def compute(self, a: NDArray) -> NDArray:
+        ### BEGIN YOUR SOLUTION
+        return array_api.exp(a)
+        ### END YOUR SOLUTION
+        
+    def gradient(self, out_grad, node):
+        ### BEGIN YOUR SOLUTION
+        a = node.inputs[0]
+        return out_grad * array_api.exp(a)
+        ### END YOUR SOLUTION
+        
+def exp(a):
+    return Exp()(a)
+```
+
+
+
+
