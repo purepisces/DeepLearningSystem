@@ -384,13 +384,9 @@ print(correct_class_logits)
 As you did in Homework 0, you will now implement stochastic gradient descent (SGD) for a simple two-layer neural network as defined in Question 5 of Homework 0. 
 
 Specifically, for input $x \in \mathbb{R}^n$, we'll consider a two-layer neural network (without bias terms) of the form
-\begin{equation}
-z = W_2^T \mathrm{ReLU}(W_1^T x)
-\end{equation}
+$$\begin{equation} z = W_2^T \mathrm{ReLU}(W_1^T x) \end{equation}$$
 where $W_1 \in \mathbb{R}^{n \times d}$ and $W_2 \in \mathbb{R}^{d \times k}$ represent the weights of the network (which has a $d$-dimensional hidden unit), and where $z \in \mathbb{R}^k$ represents the logits output by the network.  We again use the softmax / cross-entropy loss, meaning that we want to solve the optimization problem, overloading the notation to describe the batch form with matrix $X \in \mathbb{R}^{m \times n}$: 
-\begin{equation}
-\min_{W_1, W_2} \;\; \ell_{\mathrm{softmax}}(\mathrm{ReLU}(X W_1) W_2, y).
-\end{equation}
+$$\begin{equation} \min_{W_1, W_2} \;\; \ell_{\mathrm{softmax}}(\mathrm{ReLU}(X W_1) W_2, y). \end{equation}$$
 
 
 First, you will need to implement the forward and backward passes of the `relu` operator. 
