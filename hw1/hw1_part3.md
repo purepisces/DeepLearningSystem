@@ -315,14 +315,14 @@ def softmax_loss(Z, y_one_hot):
         Average softmax loss over the sample. (ndl.Tensor[np.float32])
     """
     ### BEGIN YOUR SOLUTION
-    # Compute the log-sum-exp for each row in Z
+    # Compute the log-sum-exp for each row in Z, this will be a 1D tensor of shape (batch_size,)
     log_sum_exp = ndl.log(ndl.summation(ndl.exp(Z), axes=1))
     # Note ndl.exp(Z).sum(axes=1) and ndl.summation(ndl.exp(Z), axes=1) are functionally equivalent, where sum defined in line346 in autograd.py, inside class Tensor.
 
-    # Extract the logits corresponding to the true class by multiplying Z with y_one_hot
+    # Extract the logits corresponding to the true class by multiplying Z with y_one_hot, result in 1D tensor of shape (batch_size,)
     correct_class_logits = ndl.summation(Z * y_one_hot, axes=1)
 
-    # Compute the loss for each sample
+    # Compute the loss for each sample, result in a 1D tensor of shape (batch_size,)
     losses = log_sum_exp - correct_class_logits
 
     # Return the average loss across the batch
