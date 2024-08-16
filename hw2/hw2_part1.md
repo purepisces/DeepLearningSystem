@@ -8,7 +8,6 @@ In this homework, make sure any tensor you create has `float32` data type to avo
 
 ## Question 1
 
-  
 
 In this first question, you will implement a few different methods for weight initialization. This will be done in the `python/needle/init/init_initializers.py` file, which contains a number of routines for initializing needle Tensors using various random and constant initializations. Following the same methodology of the existing initializers (you will want to call e.g. `init.rand` or `init.randn` implemented in `python/needle/init/init_basic.py` from your functions below, implement the following common initialization methods. In all cases, the functions should return `fan_in` by `fan_out` 2D tensors (extensions to other sizes can be done via e.g., reshaping).
 
@@ -518,7 +517,7 @@ Kaiming Normal Initialization
 **Concept**:
 
 -   Kaiming Normal Initialization is a weight initialization method specifically designed for deep neural networks using ReLU (Rectified Linear Unit) or similar activation functions. It was introduced by He et al. in their 2015 paper, _"Delving deep into rectifiers: Surpassing human-level performance on ImageNet classification."_
--   Unlike Xavier Initialization, which is designed for activations that can output both positive and negative values (like sigmoid or tanh), Kaiming Initialization accounts for the fact that ReLU activations only output positive values. This method helps to maintain the variance of the activations throughout the layers, preventing issues like vanishing or exploding gradients during training.
+-   Unlike Kaiming Uniform Initialization, which uses a uniform distribution, Kaiming Normal Initialization uses a normal (Gaussian) distribution to initialize the weights. This method is particularly useful for ensuring that the network starts with weights that maintain stable variances of activations, thereby preventing the gradients from either vanishing or exploding during backpropagation.
 
 **Why It's Used**:
 
