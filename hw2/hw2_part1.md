@@ -143,7 +143,7 @@ tensor4 = rand(3, 3, requires_grad=True)
 ```
 #### Understand Xavier uniform
 
-### Xavier Uniform Initialization
+Xavier Uniform Initialization
 
 **Concept**:
 
@@ -157,7 +157,7 @@ tensor4 = rand(3, 3, requires_grad=True)
 
 The weights are initialized using a uniform distribution with a range from $-a$ to $a$, where $a$ is computed as:
 
-$$a = \text{gain} \times \sqrt{\frac{6}{\text{fan\_in} + \text{fan\_out}}}$$
+$$a = \text{gain} \times \sqrt{\frac{6}{\text{fanin} + \text{fanout}}}$$
 
 - **fan\_in**: The number of input units in the layer.
 - **fan\_out**: The number of output units in the layer.
@@ -196,6 +196,7 @@ name = Alice
 age = 30
 job = Engineer
 ```
+
 
 ___
 
