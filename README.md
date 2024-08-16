@@ -13,6 +13,5 @@ Pay attention to
 - **src/simple.ml.py**
 
 ### hw1
-hw1 implement reverse mode AD by extending computational graph instead of using backpropogation.
-
+HW1 expands on HW0 by implementing forward and backward computations for various operators within a computational graph framework, enabling automatic differentiation. And also implement a topological sort for reverse-mode backpropagation, adapt the softmax loss function for tensors, and train a two-layer neural network using stochastic gradient descent (SGD). 
 
