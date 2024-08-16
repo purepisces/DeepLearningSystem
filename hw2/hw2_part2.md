@@ -19,4 +19,49 @@ Be careful to explicitly broadcast the bias term to the correct shape -- Needle 
 
 ##### Variables
 - `weight` - the learnable weights of shape (`in_features`, `out_features`). The values should be initialized with the Kaiming Uniform initialization with `fan_in = in_features`
-- `bias` - the learnable bias of shape (1, `out_features`). The values should be initialized with the Kaiming Uniform initialize with `fan_in = out_features`. **Note the difference in fan_in choice, due to their relative sizes**. 
+- `bias` - the learnable bias of shape (1, `out_features`). The values should be initialized with the Kaiming Uniform initialize with `fan_in = out_features`. **Note the difference in fan_in choice, due to their relative sizes**.
+
+**Code implementation**
+```python
+class Linear(Module):
+    def __init__(
+        self, in_features, out_features, bias=True, device=None, dtype="float32"
+    ):
+        super().__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+
+        ### BEGIN YOUR SOLUTION
+        # Initialize weights with Kaiming Uniform initialization (fan_in = in_features)
+        self.weight = Parameter(
+            init.kaiming_uniform(in_features, out_features, nonlinearity="relu", device=device, dtype=dtype)
+        )
+        # Initialize bias if applicable (shape = (1, out_features))
+        if bias:
+            # Initialize the bias, and then reshape it to (1, out_features)
+            self.bias = Parameter(
+                ops.reshape(
+                    init.kaiming_uniform(out_features, 1, nonlinearity="relu", device=device, dtype=dtype),
+                    (1, out_features)
+                )
+            )
+        else:
+            self.bias = None
+        ### END YOUR SOLUTION
+
+    def forward(self, X: Tensor) -> Tensor:
+        ### BEGIN YOUR SOLUTION
+        output = ops.matmul(X, self.weight)
+        if self.bias is not None:
+            self.bias = ops.broadcast_to(self.bias, output.shape)
+            output = ops.add(output, self.bias)
+        return output
+        ### END YOUR SOLUTION
+```
+
+### My explanation
+
+The `Linear` layer applies a transformation to the input data, where the input tensor `X` of shape $(N, H_{in})$ (with $H_{in}$ as `in_features`) is multiplied by a weight matrix `W` of shape $(H_{in}, H_{out})$ (with $H_{out}$ as `out_features`), resulting in an output tensor of shape $(N, H_{out})$. If a bias term is used, it is initialized as a learnable parameter with shape $(H_{out}, 1)$, then reshaped to $(1, H_{out})$ and broadcast to match the output's shape $(N, H_{out})$, ensuring proper element-wise addition. Both the weight and bias are wrapped in `Parameter` objects, marking them as learnable during training. The careful management of shapes ensures the layer performs the correct linear transformation, with the bias appropriately added across all samples in the batch.
+
+
+
