@@ -6,7 +6,7 @@ ___
 ### Linear
 `needle.nn.Linear(in_features, out_features, bias=True, device=None, dtype="float32")`
 
-Applies a linear transformation to the incoming data: $y = xA^T + b$. The input shape is $(N, H_{in})$ where $H_{in}=\text{in_features}$. The output shape is $(N, H_{out})$ where $H_{out}=\text{out_features}$.
+Applies a linear transformation to the incoming data: $y = xA^T + b$. The input shape is $(N, H_{in})$ where $H_{in}=\text{infeatures}$. The output shape is $(N, H_{out})$ where $H_{out}=\text{outfeatures}$.
 
 Be careful to explicitly broadcast the bias term to the correct shape -- Needle does not support implicit broadcasting.
 
