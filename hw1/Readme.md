@@ -1,15 +1,4 @@
-❓❓❓: matmul backward pass 
-
-summation backward pass 
-
-broadcastto backward pass 
-
-reshape backward pass 
-
-negate backward pass 
-
-transpose backward pass
-❓❓❓
+**I still haven't understand matmul backward pass, summation backward pass, broadcastto backward pass, reshape backward pass, negate backward pass, transpose backward pass.**
 
 Hw1: This homework will get you started with your implementation of the **needle** (**ne**cessary **e**lements of **d**eep **le**arning) library that you will develop throughout this course.  In particular, the goal of this assignment is to build a basic **automatic differentiation** frameowrk, then use this to re-implement the simple two-layer neural network you used for the MNIST digit classification problem in HW0.
 
