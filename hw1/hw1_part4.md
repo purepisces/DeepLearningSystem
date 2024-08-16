@@ -150,3 +150,6 @@ def nn_epoch(X, y, W1, W2, lr=0.1, batch=100):
     ### END YOUR SOLUTION
 ```
 > No New Graph Node: The operation new_W1 = ndl.Tensor(W1.numpy() - lr * W1.grad.numpy()) does not create a new node in the computational graph. Instead, it creates a new tensor that is detached from the graph, ensuring that subsequent operations on this tensor do not include the history of past computations.
+>
+> Incorrect W1 = W1 - lr * W1.grad: Directly performing operations like W1 = W1 - lr * W1.grad may seem equivalent to W1 = ndl.Tensor(W1.numpy() - lr * W1.grad.numpy()), but in some frameworks, the former may not be allowed or could cause unintended side effects. Specifically, in-place operations could cause issues when gradients are being tracked for backpropagation. And in many deep learning frameworks, such as PyTorch, TensorFlow, or potentially ndl, tensors are immutable, meaning that once a tensor is created, its data cannot be modified in place. Instead, any operation that would change a tensor's data creates a new tensor with the updated values.
+
