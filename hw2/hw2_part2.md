@@ -118,3 +118,83 @@ class ReLU(Module):
 
 
 ___
+
+
+### Sequential
+
+`needle.nn.Sequential(*modules)`
+
+Applies a sequence of modules to the input (in the order that they were passed to the constructor) and returns the output of the last module.
+
+These should be kept in a `.module` property: you should _not_ redefine any magic methods like `__getitem__`, as this may not be compatible with our tests.
+
+##### Parameters
+
+- `*modules` - any number of modules of type `needle.nn.Module`
+
+
+**Code implementation**
+```python
+class Sequential(Module):
+    def __init__(self, *modules):
+        super().__init__()
+        self.modules = modules
+
+    def forward(self, x: Tensor) -> Tensor:
+        ### BEGIN YOUR SOLUTION
+        for module in self.modules:
+            x = module(x)
+        return x
+        ### END YOUR SOLUTION
+```
+
+#### My explanation
+
+**Understanding Module**
+Based on the code, a `Module` is an abstract representation of a neural network component. It could be a layer (like a linear layer, convolutional layer), a function (like ReLU), or a composite structure that combines several layers (like `Sequential`). The `Module` class is designed to be subclassed so that specific layers and models can be created by extending it.
+
+```python
+ def __call__(self, *args, **kwargs):
+        return self.forward(*args, **kwargs)
+```
+The `__call__` method makes an instance of `Module` callable, meaning you can use it like a function. When you call an instance of a `Module`, it automatically invokes the `forward` method.
+
+**Understanding Sequential**
+The `Sequential` class is a specific type of `Module` that is designed to chain together multiple `Module` objects and apply them in sequence to an input tensor. The `Sequential` class makes it easy to define a neural network by simply listing out the layers or operations in the order they should be applied.
+
+```python
+class Sequential(Module):
+    def __init__(self, *modules):
+        super().__init__()
+        self.modules = modules
+
+    def forward(self, x: Tensor) -> Tensor:
+        ### BEGIN YOUR SOLUTION
+        for module in self.modules:
+            x = module(x)
+        return x
+        ### END YOUR SOLUTION
+```
+
+**Initialization (`__init__` method)**:
+
+-   The `__init__` method in the `Sequential` class takes any number of `Module` objects as arguments, using the `*modules` syntax. This allows you to pass in a flexible number of modules (layers, activations, etc.).
+-   These modules are stored in the `self.modules` attribute as a tuple.
+
+>### Understanding `*modules` Syntax
+>**`*args` in Python**:
+> -   When you define a function or method with an argument like `*args`, it means that the function can accept any number of positional arguments. All these arguments are then collected into a single tuple named `args`.
+> - For example:
+```python
+def example_function(*args):
+    print(args)
+example_function(1, 2, 3)
+# This will print: `(1, 2, 3)`.
+```
+Example usage:
+```python
+model = Sequential(Linear(10, 20), ReLU(), Linear(20, 10))
+output = model(input_tensor)
+```
+___
+
