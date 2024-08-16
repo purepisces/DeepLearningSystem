@@ -103,3 +103,5 @@ Use the recommended gain value for ReLU: $\text{gain}=\sqrt{2}$.
 - `fan_out` - dimensionality of output
 
 - `nonlinearity` - the non-linear function
+
+🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟
