@@ -403,6 +403,71 @@ Use the recommended gain value for ReLU: $\text{gain}=\sqrt{2}$.
 
 - `nonlinearity` - the non-linear function
 
+**Code implementation**
+```python
+def kaiming_uniform(fan_in, fan_out, nonlinearity="relu", **kwargs):
+    assert nonlinearity == "relu", "Only relu supported currently"
+    ### BEGIN YOUR SOLUTION
+    # Use the recommended gain value for ReLU: gain = sqrt(2)
+    gain = math.sqrt(2.0)
+    
+    # Calculate the bound for the uniform distribution
+    bound = gain * math.sqrt(3.0 / fan_in)
+    
+    # Generate and return a tensor with values uniformly distributed between -bound and bound
+    return rand(fan_in, fan_out, low=-bound, high=bound, **kwargs)
+    ### END YOUR SOLUTION
+```
+
+### My Explanation
+
+#### Understand Kaiming Uniform
+
+Kaiming Uniform Initialization
+
+**Concept**:
+
+-   Kaiming Uniform Initialization is a weight initialization method specifically designed for deep neural networks using ReLU (Rectified Linear Unit) or similar activation functions. It was introduced by He et al. in their 2015 paper, _"Delving deep into rectifiers: Surpassing human-level performance on ImageNet classification."_
+- Unlike Xavier Initialization, which is designed for activations that can output both positive and negative values (like sigmoid or tanh), Kaiming Initialization accounts for the fact that ReLU activations only output positive values. This method helps to maintain the variance of the activations throughout the layers, preventing issues like vanishing or exploding gradients during training.
+
+**Why It's Used**:
+
+- When training deep neural networks with ReLU activations, it's essential to initialize the weights in such a way that the variance of the activations remains stable as they propagate through the layers. Kaiming Uniform Initialization helps achieve this by selecting the weights from a uniform distribution with bounds that are tailored to the properties of ReLU activations. This ensures that the gradients remain well-behaved, facilitating efficient and stable training.
+
+**Mathematical Formula**:
+
+The weights are initialized using a uniform distribution with a range from -bound to bound, where bound is computed as:
+
+$$\text{bound} = \text{gain} \times \sqrt{\frac{3}{\text{fanin}}}$$
+
+-   **fan_in**: The number of input units in the layer.
+-   **fan_out**: The number of output units in the layer.
+-   **gain**: A scaling factor that accounts for the properties of the ReLU activation function. For ReLU, the recommended value is $\sqrt{2}$.
+
+```python
+def kaiming_uniform(fan_in, fan_out, nonlinearity="relu", **kwargs):
+    assert nonlinearity == "relu", "Only relu supported currently"
+    ### BEGIN YOUR SOLUTION
+    # Use the recommended gain value for ReLU: gain = sqrt(2)
+    gain = math.sqrt(2.0)
+    
+    # Calculate the bound for the uniform distribution
+    bound = gain * math.sqrt(3.0 / fan_in)
+    
+    # Generate and return a tensor with values uniformly distributed between -bound and bound
+    return rand(fan_in, fan_out, low=-bound, high=bound, **kwargs)
+    ### END YOUR SOLUTION
+```
+
+### Parameters:
+
+-   **fan_in**: Refers to the number of input neurons feeding into the layer.
+-   **fan_out**: Refers to the number of output neurons in the layer.
+-   **nonlinearity**: The non-linear function used in the network. This implementation currently supports only ReLU.
+-   **gain**: A scaling factor that adjusts the range of the uniform distribution. For ReLU, the recommended gain is $\sqrt{2}$.
+-   **kwargs**: Additional keyword arguments passed to the `rand` function, such as the device on which the tensor should be created or whether the tensor should require gradients.
+
+> Kaiming initialization was introduced specifically to handle the challenges posed by ReLU activation functions in deep neural networks. While Xavier initialization works well for activation functions that output both positive and negative values symmetrically, it does not optimally handle the characteristics of ReLU. Kaiming initialization adjusts for these characteristics, providing a more effective weight initialization strategy that helps maintain variance and improve training stability, especially in deeper networks.
 ___
 
   
@@ -426,4 +491,71 @@ Use the recommended gain value for ReLU: $\text{gain}=\sqrt{2}$.
 - `fan_out` - dimensionality of output
 
 - `nonlinearity` - the non-linear function
+
+
+**Code implementation**
+```python
+def kaiming_normal(fan_in, fan_out, nonlinearity="relu", **kwargs):
+    assert nonlinearity == "relu", "Only relu supported currently"
+    ### BEGIN YOUR SOLUTION
+    # Use the recommended gain value for ReLU: gain = sqrt(2)
+    gain = math.sqrt(2.0)
+    
+    # Calculate the standard deviation for the normal distribution
+    std = gain / math.sqrt(fan_in)
+    
+    # Generate and return a tensor with values from the normal distribution
+    return randn(fan_in, fan_out, mean=0.0, std=std, **kwargs)
+    ### END YOUR SOLUTION
+```
+
+### My Explanation
+
+#### Understand Kaiming Normal
+
+Kaiming Normal Initialization
+
+**Concept**:
+
+-   Kaiming Normal Initialization is a weight initialization method specifically designed for deep neural networks using ReLU (Rectified Linear Unit) or similar activation functions. It was introduced by He et al. in their 2015 paper, _"Delving deep into rectifiers: Surpassing human-level performance on ImageNet classification."_
+-   Unlike Xavier Initialization, which is designed for activations that can output both positive and negative values (like sigmoid or tanh), Kaiming Initialization accounts for the fact that ReLU activations only output positive values. This method helps to maintain the variance of the activations throughout the layers, preventing issues like vanishing or exploding gradients during training.
+
+**Why It's Used**:
+
+- When training deep neural networks with ReLU activations, it's crucial to initialize the weights in such a way that the variance of the activations remains stable as they propagate through the layers. Kaiming Normal Initialization helps achieve this by selecting the weights from a normal distribution with a standard deviation that is tailored to the properties of ReLU activations. This ensures that the gradients remain well-behaved, facilitating efficient and stable training.
+
+**Mathematical Formula**:
+
+The weights are initialized using a normal distribution with a mean of 0 and a standard deviation (std) computed as::
+
+$$\text{std} = \frac{\text{gain}}{\sqrt{\text{fanin}}}$$
+
+-   **fan_in**: The number of input units in the layer.
+-   **fan_out**: The number of output units in the layer.
+-   **gain**: A scaling factor that accounts for the properties of the ReLU activation function. For ReLU, the recommended value is $\sqrt{2}$.
+
+```python
+def kaiming_normal(fan_in, fan_out, nonlinearity="relu", **kwargs):
+    assert nonlinearity == "relu", "Only relu supported currently"
+    ### BEGIN YOUR SOLUTION
+    # Use the recommended gain value for ReLU: gain = sqrt(2)
+    gain = math.sqrt(2.0)
+    
+    # Calculate the standard deviation for the normal distribution
+    std = gain / math.sqrt(fan_in)
+    
+    # Generate and return a tensor with values from the normal distribution
+    return randn(fan_in, fan_out, mean=0.0, std=std, **kwargs)
+    ### END YOUR SOLUTION
+```
+
+
+### Parameters:
+
+-   **fan_in**: Refers to the number of input neurons feeding into the layer.
+-   **fan_out**: Refers to the number of output neurons in the layer.
+-   **nonlinearity**: The non-linear function used in the network. This implementation currently supports only ReLU.
+-   **gain**: A scaling factor that adjusts the standard deviation of the normal distribution. For ReLU, the recommended gain is $\sqrt{2}$.
+-   **kwargs**: Additional keyword arguments passed to the `randn` function, such as the device on which the tensor should be created or whether the tensor should require gradients.
+
 
