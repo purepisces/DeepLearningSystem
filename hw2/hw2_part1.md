@@ -57,6 +57,7 @@ def rand(*shape, low=0.0, high=1.0, device=None, dtype="float32", requires_grad=
     return ndl.Tensor(array, device=device, dtype=dtype, requires_grad=requires_grad)
 ```
 **Understanding `device.rand(*shape)`**
+
 The method `rand(*shape)` in the `CPUDevice` class is implemented(in python/needle/backend_numpy.py) as:
 ```python
 def rand(self, *shape):
