@@ -36,6 +36,14 @@ Pass remaining `**kwargs` parameters to the corresponding `init` random call.
 
 - `gain` - optional scaling factor
 
+
+
+### My Explanation
+
+
+
+
+
 ___
 
   
@@ -104,4 +112,3 @@ Use the recommended gain value for ReLU: $\text{gain}=\sqrt{2}$.
 
 - `nonlinearity` - the non-linear function
 
-🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟
