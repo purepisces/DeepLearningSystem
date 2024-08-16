@@ -59,6 +59,8 @@ Combining these using the chain rule:
 
 Where `ReLU'(a)` is `1` where `a > 0` and `0` where `a <= 0`.
 
+Code Implementation
+
 ```python
 class ReLU(TensorOp):
     def compute(self, a):
@@ -83,7 +85,7 @@ def relu(a):
     return ReLU()(a)
 ```
 ## nn_epoch
-Code Implementation
+**Code Implementation**
 ```python3
 def nn_epoch(X, y, W1, W2, lr=0.1, batch=100):
     """Run a single epoch of SGD for a two-layer neural network defined by the
@@ -147,3 +149,4 @@ def nn_epoch(X, y, W1, W2, lr=0.1, batch=100):
     return (W1, W2)
     ### END YOUR SOLUTION
 ```
+> No New Graph Node: The operation new_W1 = ndl.Tensor(W1.numpy() - lr * W1.grad.numpy()) does not create a new node in the computational graph. Instead, it creates a new tensor that is detached from the graph, ensuring that subsequent operations on this tensor do not include the history of past computations.
