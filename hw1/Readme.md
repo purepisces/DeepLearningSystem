@@ -11,9 +11,8 @@ HW1 expands on HW0 by implementing forward and backward computations for various
 - **hw1_combined.ipynb**: The original Jupyter notebook.
 - **hw1_part1.md**: homework explanation
 - **hw1_part2.md**: homework explanation
-- **hw1_tech.md**: homework python technical
+- **hw1_part3.md**: homework explanation
+- **hw1_part4.md**: homework explanation
 - **hw1_original**: This folder contains the original homework without solutions. It includes the initial code and the original notebook to help you get started. **You just need the hw1-main.zip and hw1_combined.ipynb to get start from scratch.**
 - **hw1_solution**: Completed solution.
-- **xxxx.pdf**: Slides in course.
-- **xxxx.pdf**: Slides in course.
-
+- **4-automatic-differentiation.pdf**: Slides in course.
