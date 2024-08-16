@@ -1,8 +1,13 @@
 ❓❓❓: matmul backward pass 
+
 summation backward pass 
+
 broadcastto backward pass 
+
 reshape backward pass 
+
 negate backward pass 
+
 transpose backward pass
 ❓❓❓
 
