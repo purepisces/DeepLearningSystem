@@ -82,3 +82,68 @@ class ReLU(TensorOp):
 def relu(a):
     return ReLU()(a)
 ```
+## nn_epoch
+Code Implementation
+```python3
+def nn_epoch(X, y, W1, W2, lr=0.1, batch=100):
+    """Run a single epoch of SGD for a two-layer neural network defined by the
+    weights W1 and W2 (with no bias terms):
+        logits = ReLU(X * W1) * W1
+    The function should use the step size lr, and the specified batch size (and
+    again, without randomizing the order of X).
+
+    Args:
+        X (np.ndarray[np.float32]): 2D input array of size
+            (num_examples x input_dim).
+        y (np.ndarray[np.uint8]): 1D class label array of size (num_examples,)
+        W1 (ndl.Tensor[np.float32]): 2D array of first layer weights, of shape
+            (input_dim, hidden_dim)
+        W2 (ndl.Tensor[np.float32]): 2D array of second layer weights, of shape
+            (hidden_dim, num_classes)
+        lr (float): step size (learning rate) for SGD
+        batch (int): size of SGD mini-batch
+
+    Returns:
+        Tuple: (W1, W2)
+            W1: ndl.Tensor[np.float32]
+            W2: ndl.Tensor[np.float32]
+    """
+
+    ### BEGIN YOUR SOLUTION
+    num_examples = X.shape[0]
+    num_classes = W2.shape[1]
+
+    for start in range(0, num_examples, batch):
+        end = min(start + batch, num_examples)
+        X_batch = X[start:end]
+        y_batch = y[start:end]
+
+        # Convert numpy arrays to tensors
+        X_batch_tensor = ndl.Tensor(X_batch)
+        y_batch_tensor = ndl.Tensor(y_batch)
+
+        # Forward pass: Compute logits
+        Z1 = ndl.relu(ndl.matmul(X_batch_tensor, W1))
+        Z2 = ndl.matmul(Z1, W2)
+
+        # Create a one-hot encoded matrix of the true labels using NumPy
+        I_y_np = np.zeros((len(y_batch), num_classes))
+        I_y_np[np.arange(len(y_batch)), y_batch] = 1
+
+        # Convert to ndl.Tensor
+        I_y = ndl.Tensor(I_y_np)
+
+        # Compute softmax loss
+        loss = softmax_loss(Z2, I_y)
+
+        # Backward pass: Compute gradients
+        loss.backward()
+
+        # Update the weights using gradient descent
+        new_W1 = ndl.Tensor(W1.numpy() - lr * W1.grad.numpy())
+        new_W2 = ndl.Tensor(W2.numpy() - lr * W2.grad.numpy())
+        W1, W2 = new_W1, new_W2
+
+    return (W1, W2)
+    ### END YOUR SOLUTION
+```
