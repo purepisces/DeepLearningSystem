@@ -66,7 +66,7 @@ def rand(self, *shape):
 This method uses `numpy.random.rand(*shape)` to generate random numbers. Here’s what it does:
 
 -   **`numpy.random.rand(*shape)`**:
-    -   This function generates random numbers uniformly distributed in the interval [0,1)[0, 1)[0,1).
+    -   This function generates random numbers uniformly distributed in the interval [0,1).
     -   The `*shape` argument allows you to specify the dimensions of the array (or tensor) you want to create. For example, if you pass `(3, 3)` as `shape`, it generates a 3x3 matrix where each element is a random number between 0 and 1.
     
 **Understanding `device.rand(*shape) * (high - low) + low`**
@@ -95,8 +95,8 @@ def rand(*shape, low=0.0, high=1.0, device=None, dtype="float32", requires_grad=
 
 -   After scaling the random numbers to the desired range, you add `low` to shift the entire range to start from the `low` value.
 -   Using the previous example with `low = 2.0`:
-    -   After scaling, the values are in the range [0,3)[0, 3)[0,3).
-    -   Adding `low` shifts this range to [2.0,5.0)[2.0, 5.0)[2.0,5.0), which is the desired range.
+    -   After scaling, the values are in the range [0,3).
+    -   Adding `low` shifts this range to [2.0,5.0), which is the desired range.
 
   **Understanding  Whole Code**
 ```python
