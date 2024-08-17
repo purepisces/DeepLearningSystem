@@ -439,39 +439,41 @@ $$f = \log \sum_{i=1}^{n} \exp(z_i - \max z) + \max z$$
 
 $$= \log \sum_{i=1}^{n} \exp \hat{z}_i + z_k$$
 
+
 ### Non-Maximum Case Derivation
 
 When $z_j \neq z_k$, the derivation of $\frac{\partial f}{\partial z_j}$ is as follows:
 
-$$\frac{\partial f}{\partial z_j} = \frac{\partial \left( \log \sum_{i=1}^{n} \exp \hat{z}_i \right)}{\partial z_j} + \frac{\partial z_k}{\partial z_j}$$
 
-$$= \frac{\partial \left( \log \sum_{i=1}^{n} \exp \hat{z}_i \right)}{\partial z_j} \cdot \frac{\sum_{i=1}^{n} \exp \hat{z}_i}{\partial z_j} + 0$$
-
-$$= \frac{1}{\sum_{i=1}^{n} \exp \hat{z}_i} \cdot \left(\sum_{i \neq j} \frac{\partial \exp \hat{z}_i}{\partial z_j} + \frac{\partial \exp \hat{z}_j}{\partial z_j}\right)$$
-
-$$= \frac{1}{\sum_{i=1}^{n} \exp \hat{z}_i} \cdot \left(0 + \exp \hat{z}_j\right)$$
-
-$$= \frac{\exp \hat{z}_j}{\sum_{i=1}^{n} \exp \hat{z}_i}$$
+$$\begin{equation}
+\begin{aligned}
+\frac{\partial f}{\partial z_j} &= \frac{\partial \left( \log \sum_{i=1}^{n} \exp \hat{z}_i \right)}{\partial z_j} + \frac{\partial z_k}{\partial z_j} \\
+&= \frac{\partial \left( \log \sum_{i=1}^{n} \exp \hat{z}_i \right)}{\partial z_j} \cdot \frac{\partial \sum_{i=1}^{n} \exp \hat{z}_i}{\partial z_j} + 0 \\
+&= \frac{1}{\sum_{i=1}^{n} \exp \hat{z}_i} \cdot \left(\sum_{i \neq j} \frac{\partial \exp \hat{z}_i}{\partial z_j} + \frac{\partial \exp \hat{z}_j}{\partial z_j}\right) \\
+&= \frac{1}{\sum_{i=1}^{n} \exp \hat{z}_i} \cdot \left(0 + \exp \hat{z}_j\right) \\
+&= \frac{\exp \hat{z}_j}{\sum_{i=1}^{n} \exp \hat{z}_i}
+\end{aligned}
+\end{equation}$$
 
 
 ### Maximum Case Derivation
 
 When $z_j = z_k$, the derivation of $\frac{\partial f}{\partial z_j}$ is as follows:
 
-$$\frac{\partial f}{\partial z_j} = \frac{\partial \left( \log \sum_{i=1}^{n} \exp \hat{z}_i \right)}{\partial z_j} + \frac{\partial z_k}{\partial z_j}$$
+$$\begin{equation}
+\begin{aligned}
+\frac{\partial f}{\partial z_j} &= \frac{\partial \left( \log \sum_{i=1}^{n} \exp \hat{z}_i \right)}{\partial z_j} + \frac{\partial z_k}{\partial z_j} \\
+&= \frac{\partial \left( \log \sum_{i=1}^{n} \exp \hat{z}_i \right)}{\partial z_j} \cdot \frac{\partial \sum_{i=1}^{n} \exp \hat{z}_i}{\partial z_j} + 1 \\
+&= \frac{1}{\sum_{i=1}^{n} \exp \hat{z}_i} \cdot \left[ \sum_{z_i \neq z_k} \frac{\partial \exp(z_i - z_k)}{\partial z_j} + \sum_{z_i = z_k} \frac{\partial \exp(z_i - z_k)}{\partial z_j} \right] + 1 \\
+&= \frac{1}{\sum_{i=1}^{n} \exp \hat{z}_i} \cdot \left[ \sum_{z_i \neq z_k} - \exp(z_i - z_k) + 0 \right] + 1
+\end{aligned}\end{equation}$$
 
+Note, in the above equation, $z_j = z_k$
 
-$$= \frac{\partial \left( \log \sum_{i=1}^{n} \exp \hat{z}_i \right)}{\partial z_j} \cdot \frac{\sum_{i=1}^{n} \exp \hat{z}_i}{\partial z_j} + 1$$
-
-$$= \frac{1}{\sum_{i=1}^{n} \exp \hat{z}_i} \cdot \left[ \sum_{z_i \neq z_k} \frac{\partial \exp(z_i - z_k)}{\partial z_j} + \sum_{z_i = z_k} \frac{\partial \exp(z_i - z_k)}{\partial z_j} \right] + 1$$
-
-$$= \frac{1}{\sum_{i=1}^{n} \exp \hat{z}_i} \cdot \left[ \sum_{z_i \neq z_k} - \exp(z_i - z_k) + 0 \right] + 1$$
-
-注意，上式中有 $z_j = z_k$
-
-$$= 1 - \frac{\sum_{z_i \neq z_k} \exp(z_i - z_k)}{\sum_{i=1}^{n} \exp \hat{z}_i}$$
-
-$$= \frac{\exp \hat{z}_j}{\sum_{i=1}^{n} \exp \hat{z}_i}$$
+$$\begin{equation}
+\begin{aligned} &= 1 - \frac{\sum_{z_i \neq z_k} \exp(z_i - z_k)}{\sum_{i=1}^{n} \exp \hat{z}_i}\\
+&= \frac{\exp \hat{z}_j}{\sum_{i=1}^{n} \exp \hat{z}_i}
+\end{aligned}\end{equation}$$
 
 ### General Case
 
