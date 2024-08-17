@@ -420,6 +420,114 @@ out = np.array([3.4076, 6.4076])  # Shape: (2,)
 6.  **`log_sum_exp_shifted`**: Shape `(2,)` — Logarithm of the summed exponentiated values.
 7.  **`out`**: Shape `(2,)` — Final result after adding back the max values without dimensions.
 
+### My explanation for  def gradient(self, out_grad, node):
+```python
+def gradient(self, out_grad, node):
+```
+
+### Derivation Process 
+#### Symbol Explanation 
+The symbols used in the derivation process are explained as follows:
+
+$$z \in \mathbb{R}^n$$
+
+$$z_k = \max z$$
+
+$$\hat{z} = z - \max z$$
+
+$$f = \log \sum_{i=1}^{n} \exp(z_i - \max z) + \max z$$
+
+$$= \log \sum_{i=1}^{n} \exp \hat{z}_i + z_k$$
+
+### Non-Maximum Case Derivation
+
+When $z_j \neq z_k$, the derivation of $\frac{\partial f}{\partial z_j}$ is as follows:
+
+$$\frac{\partial f}{\partial z_j} = \frac{\partial \left( \log \sum_{i=1}^{n} \exp \hat{z}_i \right)}{\partial z_j} + \frac{\partial z_k}{\partial z_j}$$
+
+$$= \frac{\partial \left( \log \sum_{i=1}^{n} \exp \hat{z}_i \right)}{\partial z_j} \cdot \frac{\sum_{i=1}^{n} \exp \hat{z}_i}{\partial z_j} + 0$$
+
+$$= \frac{1}{\sum_{i=1}^{n} \exp \hat{z}_i} \cdot \left(\sum_{i \neq j} \frac{\partial \exp \hat{z}_i}{\partial z_j} + \frac{\partial \exp \hat{z}_j}{\partial z_j}\right)$$
+
+$$= \frac{1}{\sum_{i=1}^{n} \exp \hat{z}_i} \cdot \left(0 + \exp \hat{z}_j\right)$$
+
+$$= \frac{\exp \hat{z}_j}{\sum_{i=1}^{n} \exp \hat{z}_i}$$
 
 
+### Maximum Case Derivation
 
+When $z_j = z_k$, the derivation of $\frac{\partial f}{\partial z_j}$ is as follows:
+
+$$\frac{\partial f}{\partial z_j} = \frac{\partial \left( \log \sum_{i=1}^{n} \exp \hat{z}_i \right)}{\partial z_j} + \frac{\partial z_k}{\partial z_j}$$
+
+
+$$= \frac{\partial \left( \log \sum_{i=1}^{n} \exp \hat{z}_i \right)}{\partial z_j} \cdot \frac{\sum_{i=1}^{n} \exp \hat{z}_i}{\partial z_j} + 1$$
+
+$$= \frac{1}{\sum_{i=1}^{n} \exp \hat{z}_i} \cdot \left[ \sum_{z_i \neq z_k} \frac{\partial \exp(z_i - z_k)}{\partial z_j} + \sum_{z_i = z_k} \frac{\partial \exp(z_i - z_k)}{\partial z_j} \right] + 1$$
+
+$$= \frac{1}{\sum_{i=1}^{n} \exp \hat{z}_i} \cdot \left[ \sum_{z_i \neq z_k} - \exp(z_i - z_k) + 0 \right] + 1$$
+
+注意，上式中有 $z_j = z_k$
+
+$$= 1 - \frac{\sum_{z_i \neq z_k} \exp(z_i - z_k)}{\sum_{i=1}^{n} \exp \hat{z}_i}$$
+
+$$= \frac{\exp \hat{z}_j}{\sum_{i=1}^{n} \exp \hat{z}_i}$$
+
+### General Case
+
+Note that whether $z_j$ is the maximum value or not, the following holds:
+
+$$\frac{\partial f}{\partial z_j} = \frac{\exp \hat{z}_j}{\sum_{i=1}^{n} \exp \hat{z}_i} = \exp(z_j - \text{LogSumExp}(z) )$$
+
+### Prove $\frac{\exp \hat{z}_j}{\sum_{i=1}^{n} \exp \hat{z}_i} = \exp(z_j - \text{LogSumExp}(z) )$
+We need to prove that:
+
+$$\frac{\exp(Z_i - \max(Z))}{\sum_{j} \exp(Z_j - \max(Z))} = \exp\left(Z_i - \text{LogSumExp}(Z)\right)$$
+
+#### Step 1: Start with the Left Side
+Start with the left side:
+
+$$\frac{\exp(Z_i - \max(Z))}{\sum_{j} \exp(Z_j - \max(Z))}$$
+
+#### Step 2: Express the Denominator Using Logarithm and Exponential
+Recognize that the denominator can be rewritten using the logarithm-exponential identity:
+
+$$\sum_{j} \exp(Z_j - \max(Z)) = \exp\left(\log\left(\sum_{j} \exp(Z_j - \max(Z))\right)\right)$$
+
+Thus, the expression becomes:
+
+$$\frac{\exp(Z_i - \max(Z))}{\exp\left(\log\left(\sum_{j} \exp(Z_j - \max(Z))\right)\right)}$$
+
+#### Step 3: Simplify the Fraction
+Now, recall the identity:
+
+$$\frac{\exp(A)}{\exp(B)} = \exp(A - B)$$
+
+Applying this identity to our expression:
+
+$$\frac{\exp(Z_i - \max(Z))}{\exp\left(\log\left(\sum_{j} \exp(Z_j - \max(Z))\right)\right)} = \exp\left((Z_i - \max(Z)) - \log\left(\sum_{j} \exp(Z_j - \max(Z))\right)\right)$$
+
+#### Step 4: Combine the Terms
+Simplify the expression by combining terms:
+
+$$\exp\left(Z_i - \max(Z) - \log\left(\sum_{j} \exp(Z_j - \max(Z))\right)\right)$$
+
+#### Step 5: Recognize the Expression for LogSumExp
+Recall that:
+
+$$\text{LogSumExp}(Z) = \log\left(\sum_{j} \exp(Z_j - \max(Z))\right) + \max(Z)$$
+
+So:
+
+$$\exp\left(Z_i - \max(Z) - \log\left(\sum_{j} \exp(Z_j - \max(Z))\right)\right) = \exp\left(Z_i - \left[\log\left(\sum_{j} \exp(Z_j - \max(Z))\right) + \max(Z)\right]\right)$$
+
+
+#### Step 6: Simplify to the Final Form
+Finally, recognize that the expression we've derived on the right is exactly the right side of the original equation:
+
+$$\exp\left(Z_i - \text{LogSumExp}(Z)\right)$$
+
+#### Conclusion
+We have successfully shown that starting from the left side of the equation and using basic logarithm and exponential identities, we can derive the right side. This proves that:
+
+$$\frac{\exp(Z_i - \max(Z))}{\sum_{j} \exp(Z_j - \max(Z))} = \exp\left(Z_i - \text{LogSumExp}(Z)\right)$$
