@@ -452,7 +452,7 @@ $$\begin{equation}\begin{aligned}
 &= \frac{1}{\sum_{i=1}^{n} \exp \hat{z}_i} \cdot \left(0 + \exp \hat{z}_j\right) \\
 &= \frac{\exp \hat{z}_j}{\sum_{i=1}^{n} \exp \hat{z}_i}\end{aligned}\end{equation}$$
 
-<img src="Non-Maximum.jpg" alt="Non-Maximum" width="400" height="300"/>
+<img src="Non-Maximum.jpg" alt="Non-Maximum" width="400" height="500"/>
 
 ### Maximum Case Derivation
 
@@ -473,7 +473,7 @@ $$\begin{equation}
 &= \frac{\exp \hat{z}_j}{\sum_{i=1}^{n} \exp \hat{z}_i}
 \end{aligned}\end{equation}$$
 
-<img src="Maximum-Case.jpeg" alt="Maximum-Case" width="400" height="300"/>
+<img src="Maximum-Case.jpeg" alt="Maximum-Case" width="400" height="500"/>
 
 ### General Case
 
