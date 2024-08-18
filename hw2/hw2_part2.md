@@ -445,15 +445,12 @@ $$= \log \sum_{i=1}^{n} \exp \hat{z}_i + z_k$$
 When $z_j \neq z_k$, the derivation of $\frac{\partial f}{\partial z_j}$ is as follows:
 
 
-$$\begin{equation}
-\begin{aligned}
+$$\begin{equation}\begin{aligned}
 \frac{\partial f}{\partial z_j} &= \frac{\partial \left( \log \sum_{i=1}^{n} \exp \hat{z}_i \right)}{\partial z_j} + \frac{\partial z_k}{\partial z_j} \\
 &= \frac{\partial \left( \log \sum_{i=1}^{n} \exp \hat{z}_i \right)}{\partial z_j} \cdot \frac{\partial \sum_{i=1}^{n} \exp \hat{z}_i}{\partial z_j} + 0 \\
 &= \frac{1}{\sum_{i=1}^{n} \exp \hat{z}_i} \cdot \left(\sum_{i \neq j} \frac{\partial \exp \hat{z}_i}{\partial z_j} + \frac{\partial \exp \hat{z}_j}{\partial z_j}\right) \\
 &= \frac{1}{\sum_{i=1}^{n} \exp \hat{z}_i} \cdot \left(0 + \exp \hat{z}_j\right) \\
-&= \frac{\exp \hat{z}_j}{\sum_{i=1}^{n} \exp \hat{z}_i}
-\end{aligned}
-\end{equation}$$
+&= \frac{\exp \hat{z}_j}{\sum_{i=1}^{n} \exp \hat{z}_i}\end{aligned}\end{equation}$$
 
 
 ### Maximum Case Derivation
