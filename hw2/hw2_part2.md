@@ -482,6 +482,7 @@ Note that whether $z_j$ is the maximum value or not, the following holds:
 $$\frac{\partial f}{\partial z_j} = \frac{\exp \hat{z}_j}{\sum_{i=1}^{n} \exp \hat{z}_i} = \exp(z_j - \text{LogSumExp}(z) )$$
 
 ### Prove $\frac{\exp \hat{z}_j}{\sum_{i=1}^{n} \exp \hat{z}_i} = \exp(z_j - \text{LogSumExp}(z) )$
+
 We need to prove that:
 
 $$\frac{\exp(Z_i - \max(Z))}{\sum_{j} \exp(Z_j - \max(Z))} = \exp\left(Z_i - \text{LogSumExp}(Z)\right)$$
