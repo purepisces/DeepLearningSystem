@@ -664,7 +664,7 @@ The gradient of $f(z)$ with respect to $z_j$ can be found using the chain rule:
 
 $$\frac{\partial f(z)}{\partial z_j} = \frac{1}{S(z)} \cdot \frac{\partial S(z)}{\partial z_j}.$$
 
-#### Step 2: Differentiate \( S(z) \) with Respect to \( z_j \)
+#### Step 2: Differentiate $S(z)$ with Respect to $z_j$
 The function $S(z) = \sum_{i=1}^{n} \exp(z_i)$ is a sum of exponentials. The derivative of \( S(z) \) with respect to $z_j$ is simply the derivative of the $j$-th term in the sum, since all other terms are independent of $z_j$:
 
 $$\frac{\partial S(z)}{\partial z_j} = \exp(z_j).$$
