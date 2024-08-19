@@ -778,7 +778,7 @@ class SoftmaxLoss(Module):
     def forward(self, logits: Tensor, y: Tensor):
         ### BEGIN YOUR SOLUTION
         batch_size = logits.shape[0]
-        num_class = logis.shape[1]
+        num_class = logits.shape[1]
         # Step 1: Compute the log-sum-exp for each row in logits, this will be a 1D tensor of shape (batch_size,)
         log_sum_exp = ops.logsumexp(logits, axes=1)
         
