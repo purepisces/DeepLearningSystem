@@ -1,3 +1,7 @@
+To do:
+
+Make all the axes to be tuples, such like in summation, remove the check if isinstance(self.axes, int):, because according to the notebook, the axes should be tuples.
+
 # Deep Learning System
 
 This repository contains a series of homework assignments for the CMU Deep Learning System course. There are 4 homework assignments in total, from hw0 to hw4.
