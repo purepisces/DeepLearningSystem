@@ -752,6 +752,32 @@ $$\exp\left(z_j - \log\left(\sum_{i=1}^{n} \exp(z_i)\right)\right).$$
 
 This formulation shows that the gradient of the log-sum-exp function is essentially a "softmax" function in a different form.
 
+___
 
+### SoftmaxLoss
+
+  
+
+`needle.nn.SoftmaxLoss()`
+
+  
+
+Applies the softmax loss as defined below (and as implemented in Homework 1), taking in as input a Tensor of logits and a Tensor of the true labels (expressed as a list of numbers, *not* one-hot encoded).
+
+  
+
+Note that you can use the `init.one_hot` function now instead of writing this yourself. Note: You will need to use the numerically stable logsumexp operator you just implemented for this purpose.
+
+  
+
+\begin{equation}
+
+\ell_\text{softmax}(z,y) = \log \sum_{i=1}^k \exp z_i - z_y
+
+\end{equation}
+
+  
+
+___
 ## Reference:
 1. logsumexp的first solution参考了知乎大佬潜龙勿用的推导
