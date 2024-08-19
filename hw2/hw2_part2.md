@@ -605,7 +605,7 @@ Let’s say `Z` has a shape `(3, 4, 5)` and `self.axes = (1, 2)`.
     -   `node.reshape(shape)` results in a tensor with shape `(3, 1, 1)`.
     -   Broadcasting this to `z.shape` results in a tensor of shape `(3, 4, 5)`, which can now be subtracted from `z` in the element-wise operation.
 
-### Second Solution: My explanation for  def gradient(self, out_grad, node):
+### Second Solution: My explanation for  def gradient(self, out_grad, node):(Prefer this one🌟)
 ```python
 def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
@@ -751,3 +751,7 @@ $$\exp\left(z_j - \log\left(\sum_{i=1}^{n} \exp(z_i)\right)\right).$$
   $$\frac{\partial f(z)}{\partial z_j} = \exp\left(z_j - \log\left(\sum_{i=1}^{n} \exp(z_i)\right)\right).$$
 
 This formulation shows that the gradient of the log-sum-exp function is essentially a "softmax" function in a different form.
+
+
+Reference:
+1. logsumexp的first solution参考了知乎大佬潜龙勿用的推导
