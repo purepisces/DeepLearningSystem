@@ -208,20 +208,15 @@ class BroadcastTo(TensorOp):
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        a = node.inputs[0]
-        input_shape = a.shape
+        input_shape = node.inputs[0].shape
         output_shape = out_grad.shape
+        # Align input_shape to output_shape by filling missing dimensions with 1s on the left
+        aligned_shape = [1] * (len(output_shape) - len(input_shape)) + list(input_shape)
         grad = out_grad
-
-        # Summing over the extra dimensions added by broadcasting
-        for i in range(len(output_shape) - len(input_shape)):
-            grad = summation(grad, axes=0)
-        
-        # Summing over the dimensions where the input shape is 1
-        for i, dim in enumerate(input_shape):
-            if dim == 1:
-                grad = summation(grad, axes=i)
-                
+        # Sum over expanded dimensions and reshape to input shape
+        for i in range(len(output_shape)):
+            if output_shape[i] != aligned_shape[i]:
+                grad = summation(grad, axes=(i,))
         return reshape(grad, input_shape)
         ### END YOUR SOLUTION
 
