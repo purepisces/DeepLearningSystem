@@ -756,29 +756,188 @@ This formulation shows that the gradient of the log-sum-exp function is essentia
 
 ___
 
+
 ### SoftmaxLoss
 
   
-
 `needle.nn.SoftmaxLoss()`
 
   
-
 Applies the softmax loss as defined below (and as implemented in Homework 1), taking in as input a Tensor of logits and a Tensor of the true labels (expressed as a list of numbers, *not* one-hot encoded).
 
-  
 
 Note that you can use the `init.one_hot` function now instead of writing this yourself. Note: You will need to use the numerically stable logsumexp operator you just implemented for this purpose.
 
-  
-
-\begin{equation}
-
-\ell_\text{softmax}(z,y) = \log \sum_{i=1}^k \exp z_i - z_y
-
-\end{equation}
+ 
+$$\ell_\text{softmax}(z,y) = \log \sum_{i=1}^k \exp z_i - z_y$$
 
   
+Code Implementation:
+```python
+class SoftmaxLoss(Module):
+    def forward(self, logits: Tensor, y: Tensor):
+        ### BEGIN YOUR SOLUTION
+        batch_size = logits.shape[0]
+        num_class = logis.shape[1]
+        # Step 1: Compute the log-sum-exp for each row in logits, this will be a 1D tensor of shape (batch_size,)
+        log_sum_exp = ops.logsumexp(logits, axes=1)
+        
+        # Step 2: Extract the logits corresponding to the true class labels
+        # Convert y (true labels) into a one-hot encoded matrix, the shape of `y_one_hot` is (batch_size, num_class)
+        y_one_hot = init.one_hot(num_class, y)
+        # Compute the correct class logits by multiplying logits with y_one_hot and summing over the class dimension. logits shape is (batch_size, num_class), y_one_hot shape is (batch_size, num_class), they multiplied element-wise. The shape of correct_class_logits is (batch_size,)
+        correct_class_logits = ops.summation(logits * y_one_hot, axes=1)
+        
+        # Step 3: Compute the loss for each sample, the shape of losses is (batch_size,)
+        losses = log_sum_exp - correct_class_logits
+        
+        # Step 4: Return the average loss across the batch, it is a scalar value
+        return ops.summation(losses) / batch_size
+        ### END YOUR SOLUTION
+```
+
+Example
+```python
+import numpy as np
+
+# Logits for a batch of 3 samples and 4 classes
+Z = np.array([[2.0, 1.0, 0.1, 0.5],
+              [1.5, 2.1, 0.2, 0.7],
+              [1.1, 1.8, 0.3, 0.4]])
+
+# True labels for the 3 samples (in integer form, not one-hot encoded)
+y = np.array([0, 1, 2])  # Corresponds to classes 0, 1, and 2 for each sample
+
+print("Logits (Z):")
+print(Z)
+# Output:
+# [[2.0 1.0 0.1 0.5]
+#  [1.5 2.1 0.2 0.7]
+#  [1.1 1.8 0.3 0.4]]
+
+print("\nTrue labels (y):")
+print(y)
+# Output:
+# [0 1 2]
+--------------------------------------
+# For the first sample:
+# log(sum(exp([2.0, 1.0, 0.1, 0.5]))) = log(exp(2.0) + exp(1.0) + exp(0.1) + exp(0.5))
+# = log(7.3891 + 2.7183 + 1.1052 + 1.6487) = log(12.8613) ≈ 2.554
+
+# For the second sample:
+# log(sum(exp([1.5, 2.1, 0.2, 0.7]))) = log(exp(1.5) + exp(2.1) + exp(0.2) + exp(0.7))
+# = log(4.4817 + 8.1662 + 1.2214 + 2.0138) = log(15.8831) ≈ 2.764
+
+# For the third sample:
+# log(sum(exp([1.1, 1.8, 0.3, 0.4]))) = log(exp(1.1) + exp(1.8) + exp(0.3) + exp(0.4))
+# = log(3.0042 + 6.0496 + 1.3499 + 1.4918) = log(11.8955) ≈ 2.476
+
+log_sum_exp = np.array([2.554, 2.764, 2.476])
+print("\nLog-Sum-Exp for each sample:")
+print(log_sum_exp)
+# Output:
+# [2.554 2.764 2.476]
+--------------------------------------
+# Convert y (true labels) to one-hot encoded matrix
+y_one_hot = np.eye(4)[y]
+
+print("\nOne-hot encoded true labels (y_one_hot):")
+print(y_one_hot)
+# Output:
+# [[1. 0. 0. 0.]
+#  [0. 1. 0. 0.]
+#  [0. 0. 1. 0.]]
+--------------------------------------
+# Element-wise multiplication of Z and y_one_hot
+Z_times_y = Z * y_one_hot
+
+print("\nElement-wise multiplication of Z and y_one_hot:")
+print(Z_times_y)
+# Output:
+# [[2.0 0.0 0.0 0.0]
+#  [0.0 2.1 0.0 0.0]
+#  [0.0 0.0 0.3 0.0]]
+
+# Summation along axis 1 to extract the correct class logits
+correct_class_logits = np.sum(Z_times_y, axis=1)
+
+print("\nCorrect class logits after summation:")
+print(correct_class_logits)
+# Output: [2.0 2.1 0.3]
+--------------------------------------
+# Subtract the correct class logits from the log-sum-exp values
+losses = log_sum_exp - correct_class_logits
+
+print("\nLosses for each sample:")
+print(losses)
+# Output:
+# [0.554 0.664 2.176]
+--------------------------------------
+# Average the losses across all samples
+average_loss = np.mean(losses)
+
+print("\nAverage softmax loss:")
+print(average_loss)
+# Output: 1.131
+```
+
+## Prove the equation $\ell_\text{softmax}(z,y) = \log \sum_{i=1}^k \exp z_i - z_y$
+
+**Equation for All Training Examples**:
+
+$$H(Y, P) = -\sum_{i=1}^k Y_i \log(P_i) = H(Y, \sigma(z)) = -\sum\limits_{i=1}^k Y_i \log(\sigma(z)_i)$$
+
+**Equation for One Training Example**:
+
+$$H(Y, \sigma(z)) = -\log(\sigma(z)y) = -\log\left( \frac{\exp(z_y)}{\sum\limits_{j=1}^k \exp(z_j)} \right)$$
+
+
+**Simplified Equation for One Training Example**:
+
+$$H(Y, \sigma(z)) = -z_y + \log\left( \sum\limits_{j=1}^k \exp(z_j) \right)$$
+
+This equation can be rewritten using the LogSumExp trick for numerical stability:
+
+$$H(Y, \sigma(z)) = -z_y + \text{LogSumExp}(z)$$
+
+Where:
+
+$$\text{LogSumExp}(z) = \log \left(\sum_{j=1}^k \exp \left(z_j - \max(z)\right)\right) + \max(z)$$
+
+#### Softmax Function
+
+The softmax function converts logits (raw scores) into probabilities. For a vector of logits $z$ of length $k$, the softmax function $\sigma(z)$ is defined as:
+
+$$\sigma(z)i = \frac{\exp(z_i)}{\sum\limits_{j=1}^k \exp(z_j)}$$
+
+for $i = 1, \ldots, k$.
+
+#### Cross-Entropy Loss
+
+The cross-entropy loss measures the difference between the true labels and the predicted probabilities. For a true label vector $Y$ (one-hot encoded) and a predicted probability vector $P$ (output of the softmax function), the cross-entropy loss $H(Y, P)$ is defined as:
+
+$$H(Y, P) = -\sum_{i=1}^k Y_i \log(P_i)$$
+
+#### Connection Between Softmax and Cross-Entropy
+
+When using the softmax function as the final layer in a neural network for multi-class classification, the predicted probability vector $P$ is given by:
+
+$$P_i = \sigma(z) i = \frac{\exp(z_i)}{\sum\limits_{j=1}^k \exp(z_j)}$$
+
+The cross-entropy loss then becomes:
+
+$$H(Y, \sigma(z)) = -\sum_{i=1}^k Y_i \log(\sigma(z)_i)$$
+
+For a single training example where the true class is $y$, $Y$ is a one-hot encoded vector where $Y_y = 1$ and $Y_i = 0$ for $i \neq y$. Thus, the cross-entropy loss simplifies to:
+
+$$H(Y, \sigma(z)) = -\log(\sigma(z)y) = -\log\left( \frac{\exp(z_y)}{\sum\limits_{j=1}^k \exp(z_j)} \right)$$
+
+Using properties of logarithms, this can be rewritten as:
+
+$$H(Y, \sigma(z)) = -\left( \log(\exp(z_y)) - \log\left( \sum\limits_{j=1}^k \exp(z_j) \right) \right)$$
+
+$$H(Y, \sigma(z)) = -z_y + \log\left( \sum\limits_{j=1}^k \exp(z_j) \right)$$
+
 
 ___
 ## Reference:
