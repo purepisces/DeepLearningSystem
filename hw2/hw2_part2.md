@@ -420,9 +420,18 @@ out = np.array([3.4076, 6.4076])  # Shape: (2,)
 6.  **`log_sum_exp_shifted`**: Shape `(2,)` — Logarithm of the summed exponentiated values.
 7.  **`out`**: Shape `(2,)` — Final result after adding back the max values without dimensions.
 
-### My explanation for  def gradient(self, out_grad, node):
+
+### First Solution: My explanation for  def gradient(self, out_grad, node):
 ```python
 def gradient(self, out_grad, node):
+        ### BEGIN YOUR SOLUTION
+        if self.axes is None:
+            self.axes = tuple(range(len(node.inputs[0].shape)))
+        z = node.inputs[0]
+        shape = [1 if i in self.axes else z.shape[i] for i in range(len(z.shape))]
+        gradient = exp(z - node.reshape(shape).broadcast_to(z.shape))
+        return out_grad.reshape(shape).broadcast_to(z.shape)*gradient
+        ### END YOUR SOLUTION
 ```
 
 ### Derivation Process 
@@ -452,7 +461,6 @@ $$\begin{equation}\begin{aligned}
 &= \frac{1}{\sum_{i=1}^{n} \exp \hat{z}_i} \cdot \left(0 + \exp \hat{z}_j\right) \\
 &= \frac{\exp \hat{z}_j}{\sum_{i=1}^{n} \exp \hat{z}_i}\end{aligned}\end{equation}$$
 
-<img src="Non-Maximum.jpg" alt="Non-Maximum" width="400" height="500"/>
 
 ### Maximum Case Derivation
 
@@ -473,8 +481,6 @@ $$\begin{equation}
 &= \frac{\exp \hat{z}_j}{\sum_{i=1}^{n} \exp \hat{z}_i}
 \end{aligned}\end{equation}$$
 
-<img src="Maximum-Case.jpeg" alt="Maximum-Case" width="400" height="500"/>
-
 ### General Case
 
 Note that whether $z_j$ is the maximum value or not, the following holds:
@@ -482,7 +488,6 @@ Note that whether $z_j$ is the maximum value or not, the following holds:
 $$\frac{\partial f}{\partial z_j} = \frac{\exp \hat{z}_j}{\sum_{i=1}^{n} \exp \hat{z}_i} = \exp(z_j - \text{LogSumExp}(z) )$$
 
 ### Prove $\frac{\exp \hat{z}_j}{\sum_{i=1}^{n} \exp \hat{z}_i} = \exp(z_j - \text{LogSumExp}(z) )$
-
 We need to prove that:
 
 $$\frac{\exp(Z_i - \max(Z))}{\sum_{j} \exp(Z_j - \max(Z))} = \exp\left(Z_i - \text{LogSumExp}(Z)\right)$$
@@ -534,3 +539,190 @@ $$\exp\left(Z_i - \text{LogSumExp}(Z)\right)$$
 We have successfully shown that starting from the left side of the equation and using basic logarithm and exponential identities, we can derive the right side. This proves that:
 
 $$\frac{\exp(Z_i - \max(Z))}{\sum_{j} \exp(Z_j - \max(Z))} = \exp\left(Z_i - \text{LogSumExp}(Z)\right)$$
+
+### Understanding `if self.axes is None: self.axes = tuple(range(len(node.inputs[0].shape)))`
+
+**`self.axes`**: These are the axes along which the `LogSumExp` was computed. If `self.axes` is `None`, it means the `LogSumExp` was computed across all axes, resulting in a scalar output.
+
+
+### Understanding `shape = [1 if i in self.axes else z.shape[i] for i in range(len(z.shape))]`
+
+### Example
+
+Suppose:
+
+-   `z.shape` is `(2, 3, 4)`
+-   `self.axes` is `(1, 2)`
+
+The list comprehension would generate `shape` as follows:
+
+-   **For `i = 0`**: `0` is **not** in `self.axes`, so `shape[0]` will be `z.shape[0] = 2`.
+-   **For `i = 1`**: `1` **is** in `self.axes`, so `shape[1]` will be `1`.
+-   **For `i = 2`**: `2` **is** in `self.axes`, so `shape[2]` will be `1`.
+
+Thus, `shape` will be `[2, 1, 1]`.
+
+
+
+### Understanding `node.reshape(shape).broadcast_to(z.shape)`
+
+
+### Example
+
+Let’s say `Z` has a shape `(3, 4, 5)` and `self.axes = (1, 2)`.
+
+1.  **Original `Z` Shape**: `(3, 4, 5)`
+2.  **Output `node` Shape**: After the `LogSumExp`, if computed along axes `(1, 2)`, the shape of `node` would be `(3,)`, as the `LogSumExp` reduces the second and third dimensions.
+3.  **`shape` Computation**:
+    -   `self.axes` is `(1, 2)`, so we want to reduce these dimensions in `shape`.
+    -   `shape` becomes `[3, 1, 1]`, which aligns with `z.shape` but reduces the dimensions where `LogSumExp` was applied.
+4.  **Reshape and Broadcast**:
+    -   `node.reshape(shape)` results in a tensor with shape `(3, 1, 1)`.
+    -   Broadcasting this to `z.shape` results in a tensor of shape `(3, 4, 5)`, which can now be subtracted from `z` in the element-wise operation.
+
+### Second Solution: My explanation for  def gradient(self, out_grad, node):
+```python
+def gradient(self, out_grad, node):
+        ### BEGIN YOUR SOLUTION
+        if self.axes is None:
+            self.axes = tuple(range(len(node.inputs[0].shape)))
+        z = node.inputs[0]
+        shape = [1 if i in self.axes else z.shape[i] for i in range(len(z.shape))]
+        gradient = exp(z - node.reshape(shape).broadcast_to(z.shape))
+        return out_grad.reshape(shape).broadcast_to(z.shape)*gradient
+        ### END YOUR SOLUTION
+```
+
+$$f = \log \sum_{i=1}^{n} \exp(z_i - \max z) + \max z$$
+
+#### Prove $\log\left(\sum \exp(z - C)\right) + C = \log\left(\sum \exp(z)\right)$ 
+The expression $\log\left(\sum \exp(z - C)\right) + C = \log\left(\sum \exp(z)\right)$ is true because the term $C$ inside the exponential function acts as a constant offset that can be factored out of the sum, simplifying the logarithm.
+
+Here's how it works:
+
+#### Starting with the Left-Hand Side
+
+$$\log\left(\sum \exp(z - C)\right) + C$$
+
+#### Factor the Exponential Term
+Inside the summation, $z - C$ can be rewritten as $\exp(z) \cdot \exp(-C)$. Since $\exp(-C)$ is independent of $z$, it can be factored out of the sum:
+
+$$\log\left(\sum \exp(z - C)\right) = \log\left(\sum \exp(z) \cdot \exp(-C)\right)$$
+
+$$= \log\left(\exp(-C) \sum \exp(z)\right)$$
+
+#### Apply the Logarithm Property
+Use the logarithm property $\log(ab) = \log(a) + \log(b)$:
+
+$$\log\left(\exp(-C) \sum \exp(z)\right) = \log\left(\exp(-C)\right) + \log\left(\sum \exp(z)\right)$$
+
+Since $\log(\exp(-C)) = -C$, this becomes:
+
+$$-C + \log\left(\sum \exp(z)\right)$$
+
+
+#### Add $C$ to Both Sides
+Now, add the $C$ term that was outside the logarithm:
+
+$$-C + \log\left(\sum \exp(z)\right) + C$$
+
+The $-C$ and $+C$ cancel out, leaving:
+
+$$\log\left(\sum \exp(z)\right)$$
+
+
+#### Conclusion
+Therefore, the equality holds:
+
+$$\log\left(\sum \exp(z - C)\right) + C = \log\left(\sum \exp(z)\right)$$
+
+
+This property is useful for numerical stability when computing the log-sum-exp function, especially when \(z\) contains large values that might cause overflow in the exponential calculation. By subtracting a constant $C$, often chosen as $\max(z)$, you can stabilize the computation without changing the result of the logarithm.
+
+### Gradient of the Log-Sum-Exp Function
+
+Let's find the gradient of the function:
+
+$$f = \log \sum_{i=1}^{n} \exp(z_i - \max z) + \max z = f(z) = \log\left(\sum_{i=1}^{n} \exp(z_i)\right)$$
+
+with respect to each $z_j$.
+
+#### Step 1: Differentiate the Log-Sum-Exp Function
+The function can be rewritten as:
+
+$$
+f(z) = \log S(z),
+$$
+
+where
+
+$$
+S(z) = \sum_{i=1}^{n} \exp(z_i).
+$$
+
+The gradient of $f(z)$ with respect to $z_j$ can be found using the chain rule:
+
+$$\frac{\partial f(z)}{\partial z_j} = \frac{1}{S(z)} \cdot \frac{\partial S(z)}{\partial z_j}.$$
+
+#### Step 2: Differentiate \( S(z) \) with Respect to \( z_j \)
+The function $S(z) = \sum_{i=1}^{n} \exp(z_i)$ is a sum of exponentials. The derivative of \( S(z) \) with respect to $z_j$ is simply the derivative of the $j$-th term in the sum, since all other terms are independent of $z_j$:
+
+$$\frac{\partial S(z)}{\partial z_j} = \exp(z_j).$$
+
+#### Step 3: Combine the Gradients
+Substituting the result from Step 2 into the chain rule from Step 1:
+
+$$\frac{\partial f(z)}{\partial z_j} = \frac{\exp(z_j)}{\sum_{i=1}^{n} \exp(z_i)}.$$
+
+#### Conclusion
+The gradient of 
+
+$$f(z) = \log\left(\sum_{i=1}^{n} \exp(z_i)\right)$$
+
+with respect to each $z_j$ is:
+
+$$\frac{\partial f(z)}{\partial z_j} = \frac{\exp(z_j)}{\sum_{i=1}^{n} \exp(z_i)}.$$
+
+This expression is also known as the softmax function, where each gradient term corresponds to the normalized exponential of the input values $z_i$.
+
+### Rewriting the Gradient in Exponential Form
+
+The expression
+
+$$\frac{\exp(z_j)}{\sum_{i=1}^{n} \exp(z_i)}$$
+
+can be rewritten as
+
+$$\exp\left(z_j - \log\left(\sum_{i=1}^{n} \exp(z_i)\right)\right).$$
+
+#### Explanation:
+
+- **Starting Point**:
+  
+  We have the gradient expression:
+
+  $$\frac{\partial f(z)}{\partial z_j} = \frac{\exp(z_j)}{\sum_{i=1}^{n} \exp(z_i)}.$$
+
+- **Rewriting the Denominator**:
+  
+  We know that the denominator is:
+
+  $$ \sum_{i=1}^{n} \exp(z_i).$$
+
+  Taking the logarithm of this sum, we can express the gradient as:
+
+  $$\frac{\partial f(z)}{\partial z_j} = \frac{\exp(z_j)}{\exp\left(\log\left(\sum_{i=1}^{n} \exp(z_i)\right)\right)}.$$
+
+- **Simplifying Using Exponential and Logarithm Properties**:
+  
+  Since $\exp(\log(x)) = x$, we can rewrite the expression as:
+
+  $$\frac{\partial f(z)}{\partial z_j} = \exp\left(z_j - \log\left(\sum_{i=1}^{n} \exp(z_i)\right)\right).$$
+
+- **Conclusion**:
+  
+  Thus, the gradient can be expressed equivalently as:
+
+  $$ \frac{\partial f(z)}{\partial z_j} = \exp\left(z_j - \log\left(\sum_{i=1}^{n} \exp(z_i)\right)\right).$$
+
+This formulation shows that the gradient of the log-sum-exp function is essentially a "softmax" function in a different form.
