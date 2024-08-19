@@ -1,4 +1,6 @@
-To do:
+Emergency To do:
+
+1. Check summation gradient make hw1's solution to hw2's summation
 
 Make all the axes to be tuples, such like in summation, remove the check if isinstance(self.axes, int):, because according to the notebook, the axes should be tuples.
 
