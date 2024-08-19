@@ -753,5 +753,5 @@ $$\exp\left(z_j - \log\left(\sum_{i=1}^{n} \exp(z_i)\right)\right).$$
 This formulation shows that the gradient of the log-sum-exp function is essentially a "softmax" function in a different form.
 
 
-Reference:
+## Reference:
 1. logsumexp的first solution参考了知乎大佬潜龙勿用的推导
