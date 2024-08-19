@@ -297,7 +297,7 @@ $$H(Y, \sigma(z)) = -z_y + \log\left( \sum\limits_{j=1}^k \exp(z_j) \right)$$
 ### For hw1
 
 
-Code:
+Code Implementation:
 ```python3
 def softmax_loss(Z, y_one_hot):
     """Return softmax loss.  Note that for the purposes of this assignment,
