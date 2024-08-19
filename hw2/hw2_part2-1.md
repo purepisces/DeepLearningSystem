@@ -236,8 +236,6 @@ class LogSumExp(TensorOp):
         ### BEGIN YOUR SOLUTION
         if self.axes is None:
             self.axes = tuple(range(len(node.inputs[0].shape)))
-        elif isinstance(self.axes, int):
-            self.axes = (self.axes,)  # Ensure self.axes is always a tuple
         z = node.inputs[0]
         shape = [1 if i in self.axes else z.shape[i] for i in range(len(z.shape))]
         gradient = exp(z - node.reshape(shape).broadcast_to(z.shape))
@@ -247,7 +245,6 @@ class LogSumExp(TensorOp):
 
 def logsumexp(a, axes=None):
     return LogSumExp(axes=axes)(a)
-
 ```
 
 ### My explanation for  def compute(self, Z)
@@ -454,8 +451,6 @@ def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
         if self.axes is None:
             self.axes = tuple(range(len(node.inputs[0].shape)))
-	elif isinstance(self.axes, int):
-            self.axes = (self.axes,)  # Ensure self.axes is always a tuple
         z = node.inputs[0]
         shape = [1 if i in self.axes else z.shape[i] for i in range(len(z.shape))]
         gradient = exp(z - node.reshape(shape).broadcast_to(z.shape))
@@ -615,8 +610,6 @@ def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
         if self.axes is None:
             self.axes = tuple(range(len(node.inputs[0].shape)))
-	elif isinstance(self.axes, int):
-            self.axes = (self.axes,)  # Ensure self.axes is always a tuple
         z = node.inputs[0]
         shape = [1 if i in self.axes else z.shape[i] for i in range(len(z.shape))]
         gradient = exp(z - node.reshape(shape).broadcast_to(z.shape))
@@ -780,14 +773,14 @@ class SoftmaxLoss(Module):
         batch_size = logits.shape[0]
         num_class = logits.shape[1]
         # Step 1: Compute the log-sum-exp for each row in logits, this will be a 1D tensor of shape (batch_size,)
-        log_sum_exp = ops.logsumexp(logits, axes=1)
+        log_sum_exp = ops.logsumexp(logits, axes=(1,))
         
         # Step 2: Extract the logits corresponding to the true class labels
         # Convert y (true labels) into a one-hot encoded matrix, the shape of `y_one_hot` is (batch_size, num_class)
         y_one_hot = init.one_hot(num_class, y)
         # Compute the correct class logits by multiplying logits with y_one_hot and summing over the class dimension. logits shape is (batch_size, num_class), y_one_hot shape is (batch_size, num_class), they multiplied element-wise. The shape of correct_class_logits is (batch_size,)
-        correct_class_logits = ops.summation(logits * y_one_hot, axes=1)
-        
+        correct_class_logits = ops.summation(logits * y_one_hot, axes=(1,))
+    
         # Step 3: Compute the loss for each sample, the shape of losses is (batch_size,)
         losses = log_sum_exp - correct_class_logits
         
