@@ -236,6 +236,8 @@ class LogSumExp(TensorOp):
         ### BEGIN YOUR SOLUTION
         if self.axes is None:
             self.axes = tuple(range(len(node.inputs[0].shape)))
+        elif isinstance(self.axes, int):
+            self.axes = (self.axes,)  # Ensure self.axes is always a tuple
         z = node.inputs[0]
         shape = [1 if i in self.axes else z.shape[i] for i in range(len(z.shape))]
         gradient = exp(z - node.reshape(shape).broadcast_to(z.shape))
@@ -452,6 +454,8 @@ def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
         if self.axes is None:
             self.axes = tuple(range(len(node.inputs[0].shape)))
+	elif isinstance(self.axes, int):
+            self.axes = (self.axes,)  # Ensure self.axes is always a tuple
         z = node.inputs[0]
         shape = [1 if i in self.axes else z.shape[i] for i in range(len(z.shape))]
         gradient = exp(z - node.reshape(shape).broadcast_to(z.shape))
@@ -611,6 +615,8 @@ def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
         if self.axes is None:
             self.axes = tuple(range(len(node.inputs[0].shape)))
+	elif isinstance(self.axes, int):
+            self.axes = (self.axes,)  # Ensure self.axes is always a tuple
         z = node.inputs[0]
         shape = [1 if i in self.axes else z.shape[i] for i in range(len(z.shape))]
         gradient = exp(z - node.reshape(shape).broadcast_to(z.shape))
@@ -675,15 +681,11 @@ with respect to each $z_j$.
 #### Step 1: Differentiate the Log-Sum-Exp Function
 The function can be rewritten as:
 
-$$
-f(z) = \log S(z),
-$$
+$$f(z) = \log S(z),$$
 
 where
 
-$$
-S(z) = \sum_{i=1}^{n} \exp(z_i).
-$$
+$$S(z) = \sum_{i=1}^{n} \exp(z_i).$$
 
 The gradient of $f(z)$ with respect to $z_j$ can be found using the chain rule:
 
