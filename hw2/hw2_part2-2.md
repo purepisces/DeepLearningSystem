@@ -231,3 +231,9 @@ Broadcasted mean:
  [ 6.5  6.5  6.5  6.5]
  [10.5 10.5 10.5 10.5]]
  ```
+___
+
+### Flatten
+`needle.nn.Flatten()`
+
+Takes in a tensor of shape `(B,X_0,X_1,...)`, and flattens all non-batch dimensions so that the output is of shape `(B, X_0 * X_1 * ...)`
