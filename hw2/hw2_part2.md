@@ -723,6 +723,6 @@ $$\exp\left(z_j - \log\left(\sum_{i=1}^{n} \exp(z_i)\right)\right).$$
   
   Thus, the gradient can be expressed equivalently as:
 
-  $$ \frac{\partial f(z)}{\partial z_j} = \exp\left(z_j - \log\left(\sum_{i=1}^{n} \exp(z_i)\right)\right).$$
+  $$\frac{\partial f(z)}{\partial z_j} = \exp\left(z_j - \log\left(\sum_{i=1}^{n} \exp(z_i)\right)\right).$$
 
 This formulation shows that the gradient of the log-sum-exp function is essentially a "softmax" function in a different form.
