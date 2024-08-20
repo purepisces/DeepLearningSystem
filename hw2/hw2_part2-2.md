@@ -323,6 +323,7 @@ Flattening this tensor would combine the dimensions 3, 4, and 5 into one, giving
 ___
 
 
+
 ### BatchNorm1d
 
 `needle.nn.BatchNorm1d(dim, eps=1e-5, momentum=0.1, device=None, dtype="float32")`
@@ -447,12 +448,6 @@ def data(self):
 ```
 **Getter (`return self.detach()`)**: When you access `tensor.data`, it calls the `detach()` method to return a new tensor that is detached from the computational graph.
 ```python
-def detach(self):
-    """Create a new tensor that shares the data but detaches from the graph."""
-    return Tensor.make_const(self.realize_cached_data())
-```
-**`detach(self)`**: The `detach()` method calls `Tensor.make_const`, which creates a new tensor with the same `cached_data` as the original tensor but with `requires_grad=False`. This means that the returned tensor is not connected to the original computational graph, and any operations on it will not be tracked for gradients.
-```python
 @classmethod
     def make_const(cls, data, *, requires_grad=False):
         value = cls.__new__(cls)
@@ -467,13 +462,12 @@ def detach(self):
 
 This code snippet defines a `classmethod` called `make_const` in the `Tensor` class (or a similar class derived from `Value`). This method is used to create a new `Tensor` (or `Value`) object that represents a constant value, meaning it doesn't require gradient computation and is not part of the computational graph.
 
-**`detach`:**
-
--   It creates a new tensor that is disconnected from the computational graph.
--   The new tensor shares the same numerical data as the original tensor.
--   Operations on the detached tensor will not be tracked for gradients, making it independent of the computational graph.
-
- `detach` creates a new tensor that shares the same data but is disconnected from the graph used for automatic differentiation.
+```python
+def detach(self):
+    """Create a new tensor that shares the data but detaches from the graph."""
+    return Tensor.make_const(self.realize_cached_data())
+```
+**`detach(self)`**: The `detach()` method calls `Tensor.make_const`, which creates a new tensor with the same `cached_data` (same numerical data) as the original tensor but with `requires_grad=False`. This means that the returned tensor is disconnected from the original computational graph used for automatic differentiation. Any operations on the detached tensor will not be tracked for gradients, making it independent of the computational graph.
 
 #### Why Use `detach()`:
 
@@ -594,3 +588,4 @@ Where:
 -   **Mean and Variance Calculation**:
     -   **LayerNorm**: Calculates the mean and variance across the features of a single example.
     -   **BatchNorm**: Calculates the mean and variance across the batch for each feature.
+
