@@ -234,6 +234,96 @@ Broadcasted mean:
 ___
 
 ### Flatten
+
 `needle.nn.Flatten()`
 
+  
+
 Takes in a tensor of shape `(B,X_0,X_1,...)`, and flattens all non-batch dimensions so that the output is of shape `(B, X_0 * X_1 * ...)`
+
+Code Implementation:
+```python
+class Flatten(Module):
+    def forward(self, X):
+        ### BEGIN YOUR SOLUTION
+        batch_size = X.shape[0]
+        flattened_shape = (batch_size, -1)
+        return X.reshape(flattened_shape)
+        ### END YOUR SOLUTION
+```
+___
+
+### Explanation of `Flatten` module
+The explanation describes what the `Flatten` module does in terms of transforming the shape of a tensor. Let's break it down with an example:
+
+### What Does Flatten Do?
+
+When we talk about a tensor with shape `(B, X_0, X_1, ...)`, it means:
+
+-   **`B`**: The batch size, which is the number of examples in the batch.
+-   **`X_0, X_1, ...`**: The dimensions of each example in the batch.
+
+The `Flatten` operation transforms the tensor by flattening all dimensions except the batch size. This means it combines all the non-batch dimensions into a single dimension.
+
+### Example 1: Flattening a 3D Tensor
+
+Let's say we have a tensor with the shape `(2, 3, 4)`:
+
+-   **Batch size (`B`)**: 2
+-   **Other dimensions (`X_0`, `X_1`)**: 3 and 4
+
+The tensor might look like this (simplified):
+```python
+[
+  [[a, b, c, d],   # First example
+   [e, f, g, h],
+   [i, j, k, l]],
+
+  [[m, n, o, p],   # Second example
+   [q, r, s, t],
+   [u, v, w, x]]
+]
+```
+Here, we have:
+
+-   2 examples (the outermost list)
+-   Each example is a 3x4 matrix.
+
+**Flattening** this tensor means we combine the 3 and 4 dimensions into one, making each example a single vector of 12 elements.
+
+So, after flattening, the shape of the tensor will be `(2, 12)`:
+```python
+[
+  [a, b, c, d, e, f, g, h, i, j, k, l],  # First example
+  [m, n, o, p, q, r, s, t, u, v, w, x]   # Second example
+]
+```
+### Example 2: Flattening a 4D Tensor
+
+Consider a tensor with the shape `(2, 3, 4, 5)`:
+
+-   **Batch size (`B`)**: 2
+-   **Other dimensions (`X_0`, `X_1`, `X_2`)**: 3, 4, and 5
+
+This tensor could represent 2 examples where each example is a 3D object with dimensions 3x4x5.
+
+Flattening this tensor would combine the dimensions 3, 4, and 5 into one, giving the resulting shape `(2, 60)`:
+```python
+[
+  [a1, a2, ..., a60],  # First example
+  [b1, b2, ..., b60]   # Second example
+]
+```
+### Summary
+
+-   The **Flatten** operation keeps the batch size the same.
+-   It combines all other dimensions into a single dimension, making each example a long vector.
+-   The result is useful in neural networks where you want to pass a multi-dimensional input (like an image) into a fully connected layer that expects a flat vector as input.
+
+### Explanation of X.reshape((batch_size, -1))
+
+-   **`X`**: This is a tensor or a multi-dimensional array.
+-   **`batch_size`**: This represents the number of examples or samples in a batch. Typically, this is the first dimension of your tensor.
+-   **`-1`**: This is a special value in reshaping operations that tells the reshaping function to automatically calculate the size of this dimension based on the remaining dimensions and the total number of elements in the tensor.
+  
+___
