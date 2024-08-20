@@ -322,6 +322,7 @@ Flattening this tensor would combine the dimensions 3, 4, and 5 into one, giving
   
 ___
 
+
 ### BatchNorm1d
 
 `needle.nn.BatchNorm1d(dim, eps=1e-5, momentum=0.1, device=None, dtype="float32")`
@@ -390,19 +391,21 @@ class BatchNorm1d(Module):
             batch_size = x.shape[0]
             # The shape of batch_mean is (features, )
             batch_mean = ops.divide_scalar(ops.summation(x, axes=(0,)),batch_size)
-            # The batch_mean have the shape (features,). It first reshaped to (1, features) 
-        # and then broadcasted to (batch_size,features).
+            # The batch_mean has the shape (features,). It is first reshaped to (1, features)
+            # and then broadcasted to (batch_size, features).
             broadcast_batch_mean = ops.broadcast_to(ops.reshape(batch_mean, (1, -1)), x.shape)
+            
             # The shape of batch_var is (features, )
             batch_var =ops.divide_scalar(ops.summation(ops.power_scalar((x - broadcast_batch_mean),2), axes=(0,)), batch_size)
-              # The batch_var have the shape (features,). It first reshaped to (1, features) 
-        # and then broadcasted to (batch_size,features).
+            # The batch_var has the shape (features,). It is first reshaped to (1, features)
+            # and then broadcasted to (batch_size, features).
             broadcast_batch_var = ops.broadcast_to(ops.reshape(batch_var, (1, -1)), x.shape)
             
             # Update running mean and variance
             # Both self.running_mean and self.running_var have shape (dim,) = (features,)
-            # 必须使用detach后的mean和var(即使用.data)，否则self.running_mean和self.running_var的require_grad属性会变为True
-            
+            # We must use the detached `batch_mean` and `batch_var` (i.e., using `.data`), 
+            # otherwise the `requires_grad` attribute of `self.running_mean` and `self.running_var` 
+            # will become `True`.
             self.running_mean = (1 - self.momentum) * self.running_mean + self.momentum * batch_mean.data
             self.running_var = (1 - self.momentum) * self.running_var + self.momentum * batch_var.data
 
@@ -411,18 +414,22 @@ class BatchNorm1d(Module):
             x_hat = (x - broadcast_batch_mean) / ops.power_scalar(broadcast_batch_var + self.eps, 0.5)
         else:
             # Use running mean and variance during evaluation
-            # Both self.running_mean and self.running_var have the shape (features,). They are first reshaped to (1, features) 
-        # and then broadcasted to (batch_size, features).
+            # Both self.running_mean and self.running_var have the shape (features,). 
+            # They are first reshaped to (1, features) and then broadcasted to (batch_size, features).
             broadcast_running_mean = ops.broadcast_to(ops.reshape(self.running_mean, (1, -1)), x.shape)
             broadcast_running_var = ops.broadcast_to(ops.reshape(self.running_var, (1, -1)), x.shape)
+            
             # The shape of x_hat = (batch_size, features)
-            # self.eps is a scalar value, when add self.eps to broadcast_running_var, it is automatically broadcasted to match the shape of broadcast_running_var, which is (batch_size, features).
+            # self.eps is a scalar value, when added to broadcast_running_var, 
+            # it is automatically broadcasted to match the shape of broadcast_running_var, 
+            # which is (batch_size, features).
             x_hat = (x - broadcast_running_mean) / ops.power_scalar(broadcast_running_var + self.eps, 0.5)
-        # Both self.weight and self.bias have the shape (features,). They are first reshaped to (1, features)
-        # and then broadcasted to (batch_size, features).
+        
+        # Both self.weight and self.bias have the shape (features,). 
+        # They are first reshaped to (1, features) and then broadcasted to (batch_size, features).
         broadcast_weight = ops.broadcast_to(ops.reshape(self.weight, (1, -1)), x.shape)
         broadcast_bias = ops.broadcast_to(ops.reshape(self.bias, (1, -1)), x.shape)
-
+        
         # Apply learnable scale (weight) and shift (bias)
         # Element-wise multiplication of broadcast_weight and x_hat (batch_size, features)
         return broadcast_weight * x_hat + broadcast_bias
@@ -430,6 +437,47 @@ class BatchNorm1d(Module):
 ```
 ___
 
+### Explanation For detach
+In python/needle/autograd.py
+When access `batch_mean.data` and `batch_var.data`, it calls the `data` property method, which is the getter:
+```python
+@property
+def data(self):
+    return self.detach()
+```
+**Getter (`return self.detach()`)**: When you access `tensor.data`, it calls the `detach()` method to return a new tensor that is detached from the computational graph.
+```python
+def detach(self):
+    """Create a new tensor that shares the data but detaches from the graph."""
+    return Tensor.make_const(self.realize_cached_data())
+```
+**`detach(self)`**: The `detach()` method calls `Tensor.make_const`, which creates a new tensor with the same `cached_data` as the original tensor but with `requires_grad=False`. This means that the returned tensor is not connected to the original computational graph, and any operations on it will not be tracked for gradients.
+```python
+@classmethod
+    def make_const(cls, data, *, requires_grad=False):
+        value = cls.__new__(cls)
+        value._init(
+            None,
+            [],
+            cached_data=data,
+            requires_grad=requires_grad,
+        )
+        return value
+```
+
+This code snippet defines a `classmethod` called `make_const` in the `Tensor` class (or a similar class derived from `Value`). This method is used to create a new `Tensor` (or `Value`) object that represents a constant value, meaning it doesn't require gradient computation and is not part of the computational graph.
+
+**`detach`:**
+
+-   It creates a new tensor that is disconnected from the computational graph.
+-   The new tensor shares the same numerical data as the original tensor.
+-   Operations on the detached tensor will not be tracked for gradients, making it independent of the computational graph.
+
+ `detach` creates a new tensor that shares the same data but is disconnected from the graph used for automatic differentiation.
+
+#### Why Use `detach()`:
+
+-   **Preventing Gradients**: By using `batch_mean.data` and `batch_var.data`, you ensure that the `running_mean` and `running_var` are updated with the raw numerical values from `batch_mean` and `batch_var` without tracking these operations in the computational graph. This prevents `self.running_mean` and `self.running_var` from requiring gradients, which is the intended behavior.
 
 ### Normalize the input $\frac{z_i - \textbf{E}[x]}{((\textbf{Var}[x]+\epsilon)^{1/2})}$ 
 
@@ -449,18 +497,16 @@ Running estimates in the context of Batch Normalization refer to the continuousl
 
 During training, for each mini-batch, the mean and variance are calculated for the features in that mini-batch. The running estimates (mean and variance) are then updated as follows:
 
--   **Running Mean Update**:
-  
-$$\hat{\mu}{\text{new}} = (1 - m) \cdot \hat{\mu}{\text{old}} + m \cdot \mu_{\text{batch}}$$
+-   **Running Mean Update**: 
+$$\hat{\mu}_{\text{new}} = (1 - m) \cdot \hat{\mu}_{\text{old}} + m \cdot \mu_{\text{batch}}$$
     
--   **Running Variance Update**:
-  
+-   **Running Variance Update**: 
 $$\hat{\sigma}^2_{\text{new}} = (1 - m) \cdot \hat{\sigma}^2_{\text{old}} + m \cdot \sigma^2_{\text{batch}}$$
     
 
 Where:
 
--   $\hat{\mu}{\text{old}}$ and $\hat{\sigma}^2_{\text{old}}$ are the previous running estimates.
+-   $\hat{\mu}_{\text{old}}$ and $\hat{\sigma}^2_{\text{old}}$ are the previous running estimates.
 -   $\mu_{\text{batch}}$ and $\sigma^2_{\text{batch}}$​ are the mean and variance computed from the current mini-batch.
 -   $m$ is the momentum, controlling how much of the current batch's statistics influence the running estimates.
 
@@ -510,7 +556,7 @@ In BatchNorm1d, the momentum hyperparameter controls how quickly the running est
 
 The running estimates for the mean $\hat{\mu}$​ and variance $\hat{\sigma}^2$ are updated using the following formula:
 
-$$\hat{x}{\text{new}} = (1 - m) \hat{x}{\text{old}} + m \cdot x_{\text{observed}}$$
+$$\hat{x}_{\text{new}} = (1 - m) \hat{x}_{\text{old}} + m \cdot x_{\text{observed}}$$
 
 Where:
 
