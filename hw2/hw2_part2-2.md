@@ -451,7 +451,7 @@ During training, for each mini-batch, the mean and variance are calculated for t
 
 -   **Running Mean Update**:
   
-$$\hat{\mu}_{\text{new}} = (1 - m) \cdot \hat{\mu}_{\text{old}} + m \cdot \mu_{\text{batch}}$$
+$$\hat{\mu}{\text{new}} = (1 - m) \cdot \hat{\mu}{\text{old}} + m \cdot \mu_{\text{batch}}$$
     
 -   **Running Variance Update**:
   
@@ -460,7 +460,7 @@ $$\hat{\sigma}^2_{\text{new}} = (1 - m) \cdot \hat{\sigma}^2_{\text{old}} + m \c
 
 Where:
 
--   $\hat{\mu}_{\text{old}}$ and $\hat{\sigma}^2_{\text{old}}$ are the previous running estimates.
+-   $\hat{\mu}{\text{old}}$ and $\hat{\sigma}^2_{\text{old}}$ are the previous running estimates.
 -   $\mu_{\text{batch}}$ and $\sigma^2_{\text{batch}}$​ are the mean and variance computed from the current mini-batch.
 -   $m$ is the momentum, controlling how much of the current batch's statistics influence the running estimates.
 
