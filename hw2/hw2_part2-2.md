@@ -508,7 +508,7 @@ In BatchNorm1d, the momentum hyperparameter controls how quickly the running est
 
 The running estimates for the mean $\hat{\mu}$​ and variance $\hat{\sigma}^2$ are updated using the following formula:
 
-$\hat{x}_{\text{new}} = (1 - m) \hat{x}_{\text{old}} + m \cdot x_{\text{observed}}$
+$$\hat{x}{\text{new}} = (1 - m) \hat{x}{\text{old}} + m \cdot x_{\text{observed}}$$
 
 Where:
 
