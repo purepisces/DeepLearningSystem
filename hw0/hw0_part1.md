@@ -17,6 +17,7 @@ Each example in the dataset consists of:
 Image: A 28x28 grayscale image of a handwritten digit.
 Label: A label corresponding to the digit in the image (0-9).
 
+Code Implementation:
 ```python
 def parse_mnist(image_filename, label_filename):
     """ Read an images and labels file in MNIST format.  See this page:
@@ -75,6 +76,7 @@ Note that as described in its docstring, `softmax_loss()` takes a _2D array_ of 
 
 Note that for "real" implementation of softmax loss you would want to scale the logits to prevent numerical overflow, but we won't worry about that here (the rest of the assignment will work fine even if you don't worry about this). 
 
+Code Implementation:
 ```python
 def softmax_loss(Z, y):
     """ Return softmax loss.  Note that for the purposes of this assignment,
