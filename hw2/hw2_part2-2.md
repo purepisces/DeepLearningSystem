@@ -1,19 +1,12 @@
-
 ### LayerNorm1d
 
 `needle.nn.LayerNorm1d(dim, eps=1e-5, device=None, dtype="float32")`
 
-  
-
 Applies layer normalization over a mini-batch of inputs as described in the paper [Layer Normalization](https://arxiv.org/abs/1607.06450).
 
-  
 $$y = w \circ \frac{x_i - \textbf{E}[x]}{((\textbf{Var}[x]+\epsilon)^{1/2})} + b$$
   
-
 where $\textbf{E}[x]$ denotes the empirical mean of the inputs, $\textbf{Var}[x]$ denotes their empirical variance (note that here we are using the "biased" estimate of the variance, i.e., dividing by $N$ rather than by $N-1$), and $w$ and $b$ denote learnable scalar weights and biases respectively. Note you can assume the input to this layer is a 2D tensor, with batches in the first dimension and features in the second. You might need to broadcast the weight and bias before applying them.
-
-  
 
 ##### Parameters
 
@@ -38,8 +31,9 @@ class LayerNorm1d(Module):
         self.dim = dim
         self.eps = eps
         ### BEGIN YOUR SOLUTION
-        self.weight = Parameter(init.ones(dim, device=device, dtype=dtype))
-        self.bias = Parameter(init.zeros(dim, device=device, dtype=dtype))
+        # Both self.weight and self.bias have the shape (dim,) = (features,)
+        self.weight = Parameter(init.ones(self.dim, device=device, dtype=dtype))
+        self.bias = Parameter(init.zeros(self.dim, device=device, dtype=dtype))
         ### END YOUR SOLUTION
 
     def forward(self, x: Tensor) -> Tensor:
