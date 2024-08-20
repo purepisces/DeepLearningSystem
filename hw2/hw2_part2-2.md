@@ -449,10 +449,12 @@ Running estimates in the context of Batch Normalization refer to the continuousl
 
 During training, for each mini-batch, the mean and variance are calculated for the features in that mini-batch. The running estimates (mean and variance) are then updated as follows:
 
--   **Running Mean Update**: 
+-   **Running Mean Update**:
+  
 $$\hat{\mu}_{\text{new}} = (1 - m) \cdot \hat{\mu}_{\text{old}} + m \cdot \mu_{\text{batch}}$$
     
--   **Running Variance Update**: 
+-   **Running Variance Update**:
+  
 $$\hat{\sigma}^2_{\text{new}} = (1 - m) \cdot \hat{\sigma}^2_{\text{old}} + m \cdot \sigma^2_{\text{batch}}$$
     
 
