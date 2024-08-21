@@ -903,6 +903,7 @@ def rand(self, *shape):
 ___
 
 
+
 ### Residual
 
 `needle.nn.Residual(fn: Module)`
@@ -1107,5 +1108,4 @@ print("Output:", output)
 - **Enabling Deeper Networks**: ResNet made it possible to train networks with hundreds of layers, achieving better performance on complex tasks.
 
 In summary, ResNet is a groundbreaking architecture that revolutionized deep learning by enabling the training of very deep networks and setting new standards in image recognition.
-
 
