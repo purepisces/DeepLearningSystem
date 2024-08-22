@@ -142,7 +142,7 @@ In the code, `self.u` is not "composed of" `self.momentum`, but rather, `self.mo
 A moving or running average is a technique used to smooth out fluctuations in data over time by calculating the average of a subset of data points, typically a fixed number of recent observations. In the context of optimization, such as in momentum-based gradient descent, a moving average is used to maintain a running total of past gradients. This approach helps in stabilizing the updates by reducing the impact of short-term variations in the gradients, thereby allowing the optimization process to focus on more consistent trends. The moving average is continuously updated as new data comes in, making it a dynamic tool for tracking trends over time.
 
 
-### Explanation of `grad = ndl.Tensor(param.grad, dtype='float32').data + self.weight_decay * param.data`
+### Explanation of `regularized_grad = ndl.Tensor(param.grad, dtype='float32').data + self.weight_decay * param.data`
 
 In the context of stochastic gradient descent (SGD) with momentum and L2 regularization, the update rule can be expressed as:
 
@@ -174,7 +174,7 @@ $$u_{t+1} = \beta u_t + (1-\beta) \left( \frac{\partial \mathcal{L}(\theta_t)}{\
 
 ### Connection to the Code
 
-The code `grad = ndl.Tensor(param.grad, dtype='float32').data + self.weight_decay * param.data` is performing this exact operation. It adds the weight decay term $\lambda \theta$ (where $\lambda$ is `self.weight_decay`) to the original gradient $\frac{\partial L(\theta)}{\partial \theta}$ to compute the regularized gradient before applying the momentum update.
+The code `regularized_grad = ndl.Tensor(param.grad, dtype='float32').data + self.weight_decay * param.data` is performing this exact operation. It adds the weight decay term $\lambda \theta$ (where $\lambda$ is `self.weight_decay`) to the original gradient $\frac{\partial L(\theta)}{\partial \theta}$ to compute the regularized gradient before applying the momentum update.
 
 
 ### Explanation of param.grad
