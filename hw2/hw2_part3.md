@@ -228,3 +228,213 @@ obj.grad = 5
 print(obj.grad)  # Outputs: 5
 ```
 ___
+
+### Adam
+
+`needle.optim.Adam(params, lr=0.01, beta1=0.9, beta2=0.999, eps=1e-8, weight_decay=0.0)`
+
+Implements Adam algorithm, proposed in [Adam: A Method for Stochastic Optimization](https://arxiv.org/abs/1412.6980).
+
+ 
+$$\begin{equation}
+\begin{split}
+u_{t+1} &= \beta_1 u_t + (1-\beta_1) \nabla_\theta f(\theta_t) \\
+v_{t+1} &= \beta_2 v_t + (1-\beta_2) (\nabla_\theta f(\theta_t))^2 \\
+\hat{u}_{t+1} &= \frac{u_{t+1}}{1 - \beta_1^t} \quad \text{(bias correction)} \\
+\hat{v}_{t+1} &= \frac{v_{t+1}}{1 - \beta_2^t} \quad \text{(bias correction)} \\
+\theta_{t+1} &= \theta_t - \alpha \frac{\hat{u}_{t+1}}{\sqrt{\hat{v}_{t+1}} + \epsilon}
+\end{split}
+\end{equation}$$
+
+
+**Important:** Pay attention to whether or not you are applying bias correction.
+
+##### Parameters
+
+- `params` - iterable of parameters of type `needle.nn.Parameter` to optimize
+
+- `lr` (*float*) - learning rate
+
+- `beta1` (*float*) - coefficient used for computing running average of gradient
+
+- `beta2` (*float*) - coefficient used for computing running average of square of gradient
+
+- `eps` (*float*) - term added to the denominator to improve numerical stability
+
+- `weight_decay` (*float*) - weight decay (L2 penalty)
+
+Code Implementation
+```python
+class Adam(Optimizer):
+    def __init__(
+        self,
+        params,
+        lr=0.01,
+        beta1=0.9,
+        beta2=0.999,
+        eps=1e-8,
+        weight_decay=0.0,
+    ):
+        super().__init__(params)
+        self.lr = lr
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.eps = eps
+        self.weight_decay = weight_decay
+        self.t = 0
+
+        self.m = {}
+        self.v = {}
+
+    def step(self):
+        ### BEGIN YOUR SOLUTION
+        self.t += 1  # Increment time step
+        
+        for param in self.params:
+            # Compute the gradient with L2 regularization (weight decay)
+            regularized_grad = ndl.Tensor(param.grad, dtype='float32').data + self.weight_decay * param.data
+            
+            # Retrieve the previous first moment (m_t) and second moment (v_t) estimates, or use 0 if they don't exist
+            m_t = self.m.get(param, 0)
+            v_t = self.v.get(param, 0)
+            
+            # Update the first moment (m_t_plus_1) using the beta1 coefficient and the current gradient
+            m_t_plus_1 = self.beta1 * m_t + (1 - self.beta1) * regularized_grad
+            
+            # Update the second moment (v_t_plus_1) using the beta2 coefficient and the square of the current gradient
+            v_t_plus_1 = self.beta2 * v_t + (1 - self.beta2) * (regularized_grad ** 2)
+    
+            # Apply bias correction to the first moment (m_hat_plus_1)
+            m_hat_plus_1 = m_t_plus_1 / (1 - self.beta1 ** self.t)
+            
+            # Apply bias correction to the second moment (v_hat_plus_1)
+            v_hat_plus_1 = v_t_plus_1 / (1 - self.beta2 ** self.t)
+    
+            # Update the parameter using the bias-corrected moment estimates, the learning rate, and epsilon for numerical stability
+            param.data -= self.lr * m_hat_plus_1 / (v_hat_plus_1 ** 0.5 + self.eps)
+            
+            # Store the updated first moment and second moment estimates for the next iteration
+            self.m[param] = m_t_plus_1
+            self.v[param] = v_t_plus_1
+        ### END YOUR SOLUTION
+```
+
+### Explanation of the Adam Optimizer
+
+The Adam optimizer is a widely used optimization algorithm in training neural networks and other machine learning models. It combines the benefits of two other popular optimization methods: Momentum and RMSProp. Adam stands for **Adaptive Moment Estimation**, and it adapts the learning rate for each parameter based on the estimates of the first and second moments of the gradients.
+
+#### Key Concepts:
+
+**First Moment Estimate (`u_t`):**
+
+- This is the exponential moving average of the gradients. It is similar to the concept of momentum, where the optimizer retains a running average of past gradients to smooth out the updates.
+- The update rule for the first moment is:
+  
+  $$u_{t+1} = \beta_1 u_t + (1-\beta_1) \nabla_\theta f(\theta_t)$$
+  
+- Here, $\beta_1$ is a coefficient that controls how much of the past gradients (momentum) are retained. A typical value for $\beta_1$ is 0.9.
+
+**Second Moment Estimate (`v_t`):**
+
+- This is the exponential moving average of the squared gradients. It helps to adjust the learning rate for each parameter based on the magnitude of the gradients.
+- The update rule for the second moment is:
+  
+  $$v_{t+1} = \beta_2 v_t + (1-\beta_2) (\nabla_\theta f(\theta_t))^2$$
+  
+- Here, $\beta_2$ is a coefficient that controls the moving average of the squared gradients. A typical value for $\beta_2$ is 0.999.
+
+**Bias Correction:**
+
+- The moving averages $u_t$ and $v_t$ are initialized to zero, which introduces a bias towards zero in the early stages of training. To correct this bias, Adam applies the following corrections:
+
+  $$\hat{u}_{t+1} = \frac{u_{t+1}}{1 - \beta_1^t}$$
+  
+  $$\hat{v}_{t+1} = \frac{v_{t+1}}{1 - \beta_2^t}$$
+  
+- These corrections adjust the estimates so they are unbiased, particularly during the initial steps when the optimizer hasn't seen enough data to produce accurate estimates.
+
+
+### Explanation of `regularized_grad = ndl.Tensor(param.grad, dtype='float32').data + self.weight_decay * param.data`
+
+In the context of stochastic gradient descent (SGD) with momentum and L2 regularization, the update rule can be expressed as:
+
+$$u_{t+1} = \beta u_t + (1-\beta) \nabla_\theta f(\theta_t)$$
+
+Here, the gradient term $\nabla_\theta f(\theta_t)$ is computed as:
+
+$$\frac{\partial \mathcal{L}(\theta_t)}{\partial \theta_t} = \nabla_\theta f(\theta_t)$$
+
+When incorporating L2 regularization (also known as weight decay), the gradient update becomes:
+
+$$u_{t+1} = \beta u_t + (1-\beta) \left( \frac{\partial \mathcal{L}(\theta_t)}{\partial \theta_t} + \lambda \theta_t \right)$$
+
+#### Detailed Explanation
+
+1. **Original Loss Function with L2 Regularization:**
+
+   Given a loss function $L(\theta)$, the L2 regularized loss function is expressed as:
+
+   $$L_{\text{reg}}(\theta) = L(\theta) + \frac{\lambda}{2} \sum_{i} \theta_i^2$$
+
+2. **Gradient of the Regularized Loss:**
+
+   When you calculate the gradient of this regularized loss function with respect to the weights $\theta$, it results in:
+
+   $$\frac{\partial L_{\text{reg}}(\theta)}{\partial \theta} = \frac{\partial L(\theta)}{\partial \theta} + \lambda \theta$$
+
+   This equation shows that the gradient of the regularized loss is composed of the gradient of the original loss function $\frac{\partial L(\theta)}{\partial \theta}$ plus an additional term proportional to the weights $\lambda \theta$, which is introduced by the L2 regularization.
+
+### Connection to the Code
+
+The code `regularized_grad = ndl.Tensor(param.grad, dtype='float32').data + self.weight_decay * param.data` is performing this exact operation. It adds the weight decay term $\lambda \theta$ (where $\lambda$ is `self.weight_decay`) to the original gradient $\frac{\partial L(\theta)}{\partial \theta}$ to compute the regularized gradient before applying the momentum update.
+
+### Explanation of param.grad
+
+In python/needle/autograd.py
+```python
+def backward(self, out_grad=None):
+        out_grad = (
+            out_grad
+            if out_grad
+            else init.ones(*self.shape, dtype=self.dtype, device=self.device)
+        )
+        compute_gradient_of_variables(self, out_grad)
+```
+We define `node.grad` in `compute_gradient_of_variables`, the `grad` attribute is dynamically added to the tensor when needed (e.g., during backpropagation). Python allows this dynamic behavior, so you can access `param.grad` after it has been set by the gradient computation process, even though it wasn't initialized in the `__init__` method.
+
+```python
+def compute_gradient_of_variables(output_tensor, out_grad):
+    """Take gradient of output node with respect to each node in node_list.
+
+    Store the computed result in the grad field of each Variable.
+    """
+    node_to_output_grads_list: Dict[Tensor, List[Tensor]] = {}
+    node_to_output_grads_list[output_tensor] = [out_grad]
+    reverse_topo_order = list(reversed(find_topo_sort([output_tensor])))
+    for node in reverse_topo_order:
+        node_grad = sum_node_list(node_to_output_grads_list[node])
+        if node.is_leaf():
+            node.grad = node_grad
+            continue
+        gradients = node.op.gradient_as_tuple(node_grad, node)
+        for i, inp in enumerate(node.inputs):
+            if inp not in node_to_output_grads_list:
+                node_to_output_grads_list[inp] = []
+            node_to_output_grads_list[inp].append(gradients[i])
+        node.grad = node_grad
+    return
+    ### END YOUR SOLUTION
+    ```
+Example
+```python
+class Example:
+    def __init__(self, value):
+        self.value = value
+
+obj = Example(10)
+print(hasattr(obj, 'grad'))  # False, 'grad' not defined yet
+
+# Dynamically adding 'grad' attribute
+obj.grad = 5
+print(obj.grad)  # Outputs: 5
+```
