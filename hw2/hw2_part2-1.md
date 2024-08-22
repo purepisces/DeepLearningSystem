@@ -47,6 +47,7 @@ class Linear(Module):
             )
         else:
             self.bias = None
+
         ### END YOUR SOLUTION
 
     def forward(self, X: Tensor) -> Tensor:
