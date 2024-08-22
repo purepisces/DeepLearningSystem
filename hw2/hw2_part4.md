@@ -111,4 +111,5 @@ print(flipped_array)
 -   **`np.max(axis=1)`**: Finds the maximum value across columns for each row.
 -   **`np.flip(axis=1)`**: Reverses the order of elements within each row, flipping the array horizontally.
 
+___
 
