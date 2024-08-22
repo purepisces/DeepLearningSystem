@@ -60,10 +60,28 @@ class Linear(Module):
         return output
         ### END YOUR SOLUTION
 ```
-
+___
 ### My explanation
 
 The `Linear` layer performs a linear transformation on the input data, where the input tensor `X` has a shape of $(N, H_{in})$ (with $H_{in}$ representing `in_features`). This tensor is multiplied by a weight matrix `W`, initialized with the Kaiming Uniform method, and has a shape of $(H_{in}, H_{out})$ (with $H_{out}$ representing `out_features`), producing an output tensor of shape $(N, H_{out})$. If a bias term is included, it is also initialized with the Kaiming Uniform method, starting with a shape of $(H_{out}, 1)$ and then reshaped to $(1, H_{out})$. This reshaped bias is explicitly broadcasted to match the output tensor's shape of $(N, H_{out})$, allowing it to be added element-wise to the output. Both the weight and bias are encapsulated in `Parameter` objects, which the framework recognizes as learnable during the training process. This meticulous handling of shapes, initialization, and broadcasting ensures the layer accurately performs the linear transformation, with the bias being correctly applied across all batch samples.
+
+### Incorrect Implementation
+```python
+def forward(self, X: Tensor) -> Tensor:
+    ### BEGIN YOUR SOLUTION
+    output = ops.matmul(X, self.weight)
+    if self.bias is not None:
+	self.bias = ops.broadcast_to(self.bias, output.shape)
+	output = ops.add(output, broadcasted_bias)
+    return output
+    ### END YOUR SOLUTION
+```
+In this implementation, the line `self.bias = ops.broadcast_to(self.bias, output.shape)` directly modifies `self.bias`. This means that after the `broadcast_to` operation, `self.bias` is no longer in its original shape but is instead reshaped to match the `output.shape`.
+
+**Issues with Direct Modification:**
+
+-   **Persistence of Changes:** Any change to `self.bias` persists after this method finishes executing. This can cause problems if `forward` is called multiple times, as `self.bias` might not have the expected shape the next time it's used.
+-   **Unintended Side Effects:** If `self.bias` is used elsewhere in the model, its altered shape could lead to unexpected behavior or errors, especially if other parts of the model assume that `self.bias` is in its original shape.
 
 ___
 ### ReLU
