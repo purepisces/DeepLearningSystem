@@ -53,8 +53,9 @@ class Linear(Module):
         ### BEGIN YOUR SOLUTION
         output = ops.matmul(X, self.weight)
         if self.bias is not None:
-            self.bias = ops.broadcast_to(self.bias, output.shape)
-            output = ops.add(output, self.bias)
+            # Create a broadcasted version of bias without modifying the original bias tensor
+            bias_broadcasted = ops.broadcast_to(self.bias, output.shape)
+            output = ops.add(output, bias_broadcasted)
         return output
         ### END YOUR SOLUTION
 ```
