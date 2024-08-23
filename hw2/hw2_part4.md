@@ -562,3 +562,5 @@ image_reshaped = image.reshape(28, 28)
 image_reshaped_via_np = np.reshape(image, (28, 28))
 ```
 Both methods are correct and will give the same result, but `image.reshape(...)` is generally preferred for its readability and directness when you're already working with the array.
+
+___
