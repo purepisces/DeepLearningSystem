@@ -433,7 +433,9 @@ class MNISTDataset(Dataset):
         if self.transforms:
             # Reshape the flat image (784,) to (28, 28, -1) before applying transforms
             image = image.reshape((28, 28, -1))
+            # Apply the sequence of transformations to the image
             image = self.apply_transforms(image)
+            # After transformations, reshape the image back to its original flat shape (784,)
             image = image.reshape(28 * 28)
         return image, label
         ### END YOUR SOLUTION
