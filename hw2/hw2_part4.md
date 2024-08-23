@@ -370,6 +370,7 @@ from ..data_basic import Dataset
 import numpy as np
 
 import gzip
+import struct
 
 def parse_mnist(image_filesname, label_filename):
     """Read an images and labels file in MNIST format.  See this page:
