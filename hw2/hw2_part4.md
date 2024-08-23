@@ -521,6 +521,32 @@ class RandomCrop(Transform):
         Note: generate the image shifted by shift_x, shift_y specified below
         """
  ```
+The `apply_transforms` method in the `Dataset` class is designed to apply a series of transformations to a data sample, such as an image, before it is returned by the dataset.
+```python
+class Dataset:
+    r"""An abstract class representing a `Dataset`.
+
+    All subclasses should overwrite :meth:`__getitem__`, supporting fetching a
+    data sample for a given key. Subclasses must also overwrite
+    :meth:`__len__`, which is expected to return the size of the dataset.
+    """
+
+    def __init__(self, transforms: Optional[List] = None):
+        self.transforms = transforms
+
+    def __getitem__(self, index) -> object:
+        raise NotImplementedError
+
+    def __len__(self) -> int:
+        raise NotImplementedError
+    
+    def apply_transforms(self, x):
+        if self.transforms is not None:
+            # apply the transforms
+            for tform in self.transforms:
+                x = tform(x)
+        return x
+```
 ### Choosing Between `reshape` Method and `np.reshape` Function in NumPy
 When working with NumPy arrays, you have two options for reshaping: using the instance method `reshape` directly on the array, or using the standalone function `np.reshape`.
 ```python
