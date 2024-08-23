@@ -340,3 +340,199 @@ print(img[0])
 print(img[2][0][0])
 # Output: 7
 ```
+___
+### Dataset
+
+ 
+Each `Dataset` subclass must implement three functions: `__init__`, `__len__`, and `__getitem__`. The `__init__` function initializes the images, labels, and transforms. The `__len__` function returns the number of samples in the dataset. The `__getitem__` function retrieves a sample from the dataset at a given index `idx`, calls the transform functions on the image (if applicable), converts the image and label to a numpy array (the data will be converted to Tensors elsewhere). The output of `__getitem__` and `__next__` should be NDArrays, and you should follow the shapes such that you're accessing an array of size (Datapoint Number, Feature Dim 1, Feature Dim 2, ...).
+
+Fill out these functions in the `MNISTDataset` class in `needle/data/datasets/mnist_dataset.py`. You can use your solution to `parse_mnist` from the previous homework for the `__init__` function.
+
+  
+### MNISTDataset
+
+`needle.data.MNISTDataset(image_filesname, label_filesname, transforms)`
+
+  
+
+##### Parameters
+
+- `image_filesname` - path of file containing images
+
+- `label_filesname` - path of file containing labels
+
+- `transforms` - an optional list of transforms to apply to data
+
+Code Implementation:
+```python
+from typing import List, Optional
+from ..data_basic import Dataset
+import numpy as np
+
+import gzip
+
+def parse_mnist(image_filesname, label_filename):
+    """Read an images and labels file in MNIST format.  See this page:
+    http://yann.lecun.com/exdb/mnist/ for a description of the file format.
+
+    Args:
+        image_filename (str): name of gzipped images file in MNIST format
+        label_filename (str): name of gzipped labels file in MNIST format
+
+    Returns:
+        Tuple (X,y):
+            X (numpy.ndarray[np.float32]): 2D numpy array containing the loaded
+                data.  The dimensionality of the data should be
+                (num_examples x input_dim) where 'input_dim' is the full
+                dimension of the data, e.g., since MNIST images are 28x28, it
+                will be 784.  Values should be of type np.float32, and the data
+                should be normalized to have a minimum value of 0.0 and a
+                maximum value of 1.0.
+
+            y (numpy.ndarray[dypte=np.int8]): 1D numpy array containing the
+                labels of the examples.  Values should be of type np.int8 and
+                for MNIST will contain the values 0-9.
+    """
+    ### BEGIN YOUR SOLUTION
+    # Read the labels file
+    with gzip.open(label_filename, 'rb') as lbl_f:
+        magic, num_items = struct.unpack(">II", lbl_f.read(8))
+        if magic != 2049:
+            raise ValueError(f"Invalid magic number in label file: {magic}")
+        labels = np.frombuffer(lbl_f.read(num_items), dtype=np.uint8)
+    
+    # Read the images file
+    with gzip.open(image_filesname, 'rb') as img_f:
+        magic, num_images, num_rows, num_cols = struct.unpack(">IIII", img_f.read(16))
+        if magic != 2051:
+            raise ValueError(f"Invalid magic number in image file: {magic}")
+        images = np.frombuffer(img_f.read(num_images * num_rows * num_cols), dtype=np.uint8)
+        images = images.reshape(num_images, num_rows * num_cols).astype(np.float32)
+        images /= 255.0  # Normalize to range [0, 1]
+    
+    return images, labels
+    ### END YOUR SOLUTION
+
+class MNISTDataset(Dataset):
+    def __init__(
+        self,
+        image_filename: str,
+        label_filename: str,
+        transforms: Optional[List] = None,
+    ):
+        ### BEGIN YOUR SOLUTION
+        self.images, self.labels = parse_mnist(image_filename, label_filename)
+        self.transforms = transforms
+        ### END YOUR SOLUTION
+
+    def __getitem__(self, index) -> object:
+        ### BEGIN YOUR SOLUTION
+        # Shape of image: (784,), label is a single scalar value
+        image = self.images[index]
+        label = self.labels[index]
+        if self.transforms:
+            # Reshape the flat image (784,) to (28, 28, -1) before applying transforms
+            image = image.reshape((28, 28, -1))
+            image = self.apply_transforms(image)
+            image = image.reshape(28 * 28)
+        return image, label
+        ### END YOUR SOLUTION
+
+    def __len__(self) -> int:
+        ### BEGIN YOUR SOLUTION
+        return self.images.shape[0]
+        ### END YOUR SOLUTION
+```
+
+### Explanation of the whole code
+
+The provided code defines a custom dataset class `MNISTDataset` that is designed to handle the MNIST dataset, which consists of handwritten digit images and their corresponding labels. This class is a subclass of a base class `Dataset` and implements the required methods for working with the data: `__init__`, `__len__`, and `__getitem__`.
+
+#### Breakdown of the Code
+
+1.  **`parse_mnist` Function**:
+    
+    -   **Purpose**: This function reads and parses the MNIST image and label files. The MNIST data is stored in a specific binary format, so this function extracts the images and labels, normalizes the images, and returns them as NumPy arrays.
+    -   **Details**:
+        -   The labels are read and stored as a 1D array of integers (`labels`), where each value corresponds to the digit in the image (0-9).
+        -   The images are read and stored as a 2D array (`images`) with shape `(num_images, 784)`, where each row represents a flattened 28x28 pixel image.
+        -   The images are normalized to have values between 0.0 and 1.0 by dividing by 255.0.
+2.  **`MNISTDataset` Class**:
+    
+    -   **`__init__` Method**:
+        
+        -   **Purpose**: Initializes the dataset by loading the images and labels using the `parse_mnist` function and optionally applies a list of transformations to the data.
+        -   **Details**: The `image_filename` and `label_filename` are passed to `parse_mnist` to load the data, and any transformations provided are stored for later use.
+    -   **`__getitem__` Method**:
+        
+        -   **Purpose**: Retrieves a single sample (image and label) from the dataset based on the given index.
+        -   **Details**:
+            -   The image corresponding to the specified `index` is retrieved from `self.images`. Since `self.images` is a 2D array with each row representing a flattened image, the shape of `image` is `(784,)`.
+            -   The corresponding label is also retrieved from `self.labels` as a scalar value.
+            -   If transformations are provided, the image is reshaped into a 3D array with shape `(28, 28, 1)` to allow spatial transformations (such as flipping or cropping) to be applied correctly.
+            -   After applying the transformations, the image is reshaped back to its flattened form `(784,)`.
+            -   The method returns the transformed image and its label.
+    -   **`__len__` Method**:
+        
+        -   **Purpose**: Returns the number of samples in the dataset.
+        -   **Details**: The number of images (and hence the number of labels) is determined by the first dimension of `self.images`, which is accessed using `self.images.shape[0]`. This provides the total number of data points in the dataset.
+
+#### Summary:
+
+-   The `MNISTDataset` class allows for loading, transforming, and accessing individual samples from the MNIST dataset.
+-   The `__getitem__` method handles retrieving and optionally transforming each image, ensuring that spatial transformations are applied correctly by reshaping the image into its original dimensions before and after transformations.
+-   The `__len__` method provides the total number of images in the dataset, making it easy to iterate over the dataset in a structured manner.
+
+### Explanation of `__getitem__`
+
+The transformations, such as `RandomFlipHorizontal` and `RandomCrop`, expect the input image to be in a 3D format where `H` represents height, `W` represents width, and `C` represents the number of channels. This is crucial because these transformations operate on the spatial dimensions of the image. Without reshaping the flat MNIST image array (originally 784 elements) into a 3D format (28x28 with 1 channel), the transformations wouldn't be able to correctly interpret and manipulate the image. After applying the transformations, the image is often reshaped back to a flat array if required by the downstream model, ensuring both compatibility and correct functionality of the transformations.
+
+```python
+import numpy as np
+
+class Transform:
+    def __call__(self, x):
+        raise NotImplementedError
+
+class RandomFlipHorizontal(Transform):
+    def __init__(self, p = 0.5):
+        self.p = p
+
+    def __call__(self, img):
+        """
+        Horizonally flip an image, specified as an H x W x C NDArray.
+        Args:
+            img: H x W x C NDArray of an image
+        Returns:
+            H x W x C ndarray corresponding to image flipped with probability self.p
+        Note: use the provided code to provide randomness, for easier testing
+        """
+
+class RandomCrop(Transform):
+    def __init__(self, padding=3):
+        self.padding = padding
+
+    def __call__(self, img):
+        """ Zero pad and then randomly crop an image.
+        Args:
+             img: H x W x C NDArray of an image
+        Return 
+            H x W x C NAArray of cliped image
+        Note: generate the image shifted by shift_x, shift_y specified below
+        """
+ ```
+### Choosing Between `reshape` Method and `np.reshape` Function in NumPy
+When working with NumPy arrays, you have two options for reshaping: using the instance method `reshape` directly on the array, or using the standalone function `np.reshape`.
+```python
+import numpy as np
+
+# Example array
+image = np.arange(784)
+
+# Using the instance method
+image_reshaped = image.reshape(28, 28)
+
+# Using the np.reshape function
+image_reshaped_via_np = np.reshape(image, (28, 28))
+```
+Both methods are correct and will give the same result, but `image.reshape(...)` is generally preferred for its readability and directness when you're already working with the array.
