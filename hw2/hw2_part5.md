@@ -16,7 +16,7 @@ Given you have now implemented all the necessary components for our neural netwo
 Implements a residual block as follows:
 
   
-<img src="residualblock.png" alt="residualblock" width="400" height="300"/>
+<img src="residualblock.png" alt="residualblock" width="400" height="500"/>
 
 
 **NOTE**: if the figure does not render, please see the figure in the `figures` directory.
@@ -53,11 +53,8 @@ Implements an MLP ResNet as follows:
 
   
 
-<p  align="center">
+<img src="mlp-resnet.png" alt="mlp-resnet" width="400" height="500"/>
 
-<img  src="https://i.ibb.co/4WmvkVS/mlp-resnet.png"  alt="MLP Resnet"/>
-
-</p>
 
   
 
