@@ -685,8 +685,16 @@ class DataLoader:
         ### BEGIN YOUR SOLUTION
         if self.shuffle:
             # Generate a new shuffled array of indices
+            # e.g. permutation = np.random.permutation(10) = array([2 8 4 9 1 0 7 3 6 5])
             permutation = np.random.permutation(len(self.dataset))
             # Split the shuffled indices into batches
+            # e.g. self.ordering = np.array_split(array([2, 8, 4, 9, 1, 0, 7, 3, 6, 5]), [3, 6, 9]) 
+            # self.ordering = [
+            #   array([2, 8, 4]),  # First batch
+            #   array([9, 1, 0]),  # Second batch
+            #   array([7, 3, 6]),  # Third batch
+            #   array([5])         # Remaining elements in the final batch
+            # ]
             self.ordering = np.array_split(permutation, range(self.batch_size, len(self.dataset), self.batch_size))
         self.index = 0
         ### END YOUR SOLUTION
