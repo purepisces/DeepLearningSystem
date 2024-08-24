@@ -1023,24 +1023,24 @@ self.ordering = np.array_split(array([2, 8, 4, 9, 1, 0, 7, 3, 6, 5]), [3, 6, 9])
 
 ### Explanation of `def __iter__(self)`
 ```python
-    def __iter__(self):
-        ### BEGIN YOUR SOLUTION
-        if self.shuffle:
-            # Generate a new shuffled array of indices
-            # e.g. permutation = np.random.permutation(10) = array([2 8 4 9 1 0 7 3 6 5])
-            permutation = np.random.permutation(len(self.dataset))
-            # Split the shuffled indices into batches
-            # e.g. self.ordering = np.array_split(array([2, 8, 4, 9, 1, 0, 7, 3, 6, 5]), [3, 6, 9]) 
-            # self.ordering = [
-            #   array([2, 8, 4]),  # First batch
-            #   array([9, 1, 0]),  # Second batch
-            #   array([7, 3, 6]),  # Third batch
-            #   array([5])         # Remaining elements in the final batch
-            # ]
-            self.ordering = np.array_split(permutation, range(self.batch_size, len(self.dataset), self.batch_size))
-        self.index = 0
-        ### END YOUR SOLUTION
-        return self
+def __iter__(self):
+    ### BEGIN YOUR SOLUTION
+    if self.shuffle:
+        # Generate a new shuffled array of indices
+        # e.g. permutation = np.random.permutation(10) = array([2 8 4 9 1 0 7 3 6 5])
+        permutation = np.random.permutation(len(self.dataset))
+        # Split the shuffled indices into batches
+        # e.g. self.ordering = np.array_split(array([2, 8, 4, 9, 1, 0, 7, 3, 6, 5]), [3, 6, 9]) 
+        # self.ordering = [
+        #   array([2, 8, 4]),  # First batch
+        #   array([9, 1, 0]),  # Second batch
+        #   array([7, 3, 6]),  # Third batch
+        #   array([5])         # Remaining elements in the final batch
+        # ]
+        self.ordering = np.array_split(permutation, range(self.batch_size, len(self.dataset), self.batch_size))
+    self.index = 0
+    ### END YOUR SOLUTION
+    return self
 ```
 #### Understanding Iterable vs. Iterator
 -   **Iterable**: An object is considered iterable if it can return an iterator, allowing you to loop over its elements, typically using a `for` loop. To be iterable, an object must implement the `__iter__()` method, which returns an iterator. While the iterable itself doesn’t generate the sequence of items, it provides an iterator that does.
