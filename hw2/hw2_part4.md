@@ -1275,18 +1275,28 @@ If `images` has a shape of `(num_images, 784)`:
 ### Explanation of `Tensor.make_const(x) for x in self.dataset[self.ordering[self.index]]`
 ```python
 # Retrieve the batch of indices for the current batch
-# Example: batch_indices could be something like array([9, 1, 0])
+# Example: batch_indices could be something like array([7, 2, 1, 0, 4])
 batch_indices = self.ordering[self.index]   
 # Fetch the actual data for these indices from the dataset
+# self.dataset[batch_indices] = self.dataset[array([7, 2, 1, 0, 4]]:
+# (
+#     array([
+#         [0., 0., 0., ..., 0., 0., 0.],
+#         [0., 0., 0., ..., 0., 0., 0.],
+#         [0., 0., 0., ..., 0., 0., 0.],
+#         [0., 0., 0., ..., 0., 0., 0.],
+#         [0., 0., 0., ..., 0., 0., 0.]
+#     ], dtype=float32),
+#     
+#     array([7, 2, 1, 0, 4], dtype=uint8)
+# )
 # Example of what batch_data might look like:
 # [needle.Tensor([[0. 0. 0. ... 0. 0. 0.],
 #                 [0. 0. 0. ... 0. 0. 0.],
 #                 [0. 0. 0. ... 0. 0. 0.],
-#                 ...
-#                 [0. 0. 0. ... 0. 0. 0.],
 #                 [0. 0. 0. ... 0. 0. 0.],
 #                 [0. 0. 0. ... 0. 0. 0.]]), 
-#  needle.Tensor([7, 2, 1, 0, 4, 1, 4, 9, 5, 9])]
+#  needle.Tensor([7, 2, 1, 0, 4])]
 batch_data = [Tensor.make_const(x) for x in self.dataset[batch_indices]]
 ```
 ```python
