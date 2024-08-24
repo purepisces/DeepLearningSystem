@@ -956,7 +956,7 @@ self.ordering = [
     array([9])         # Remainder
 ]
 ```
-### Explanation of `np.random.permutation` and `            self.ordering = np.array_split(permutation, range(self.batch_size, len(self.dataset), self.batch_size))`
+### Explanation of `np.random.permutation` and `self.ordering = np.array_split(permutation, range(self.batch_size, len(self.dataset), self.batch_size))`
 
 `np.random.permutation` is a function in NumPy that generates a randomly permuted (shuffled) version of a sequence of numbers or an array. It's commonly used when you need to randomize the order of elements in an array, such as shuffling a dataset before splitting it into training and testing sets.
 
