@@ -1,4 +1,3 @@
-
 ## Question 2
 
 In this question, you will implement additional modules in `python/needle/nn/nn_basic.py`. Specifically, for the following modules described below, initialize any variables of the module in the constructor, and fill out the `forward` method. **Note:** Be sure that you are using the `init` functions that you just implemented to initialize the parameters, and don't forget to pass the `dtype` argument.
@@ -858,11 +857,13 @@ class SoftmaxLoss(Module):
         y_one_hot = init.one_hot(num_class, y)
         # Compute the correct class logits by multiplying logits with y_one_hot and summing over the class dimension. logits shape is (batch_size, num_class), y_one_hot shape is (batch_size, num_class), they multiplied element-wise. The shape of correct_class_logits is (batch_size,)
         correct_class_logits = ops.summation(logits * y_one_hot, axes=(1,))
-    
-        # Step 3: Compute the loss for each sample, the shape of losses is (batch_size,)
+        
+        # Step 3: Compute the loss for each sample.
+        # The 'losses' tensor has shape (batch_size,), containing individual loss values for each example in the batch.
         losses = log_sum_exp - correct_class_logits
         
-        # Step 4: Return the average loss across the batch, it is a scalar value
+        # Step 4: Return the average loss across the batch
+        # The result is a 0-dimensional tensor (a scalar tensor)
         return ops.summation(losses) / batch_size
         ### END YOUR SOLUTION
 ```
@@ -949,9 +950,33 @@ average_loss = np.mean(losses)
 
 print("\nAverage softmax loss:")
 print(average_loss)
-# Output: 1.131
+# Output: 1.131 which is a scalar value
 ```
+> Note that in Needle, scalar values (such as a single loss value) are often represented as 0-dimensional tensors. This approach maintains consistency in tensor operations and allows these values to be part of the computational graph, which is crucial for tasks like backpropagation. In contrast, NumPy typically returns a Python scalar (like a float or int) when you compute a reduction operation, such as the mean of an array, rather than a 0-dimensional NumPy array. This is why `average_loss` in NumPy is a scalar value rather than a 0-dimensional tensor.
 
+**Explanation for why ops.summation(losses) / batch_size is a scalar tensor**
+The `Summation` class inherits from `TensorOp`. In the `TensorOp` class, the `__call__` method is overridden. This `__call__` method ensures that when you call an instance of `Summation` (as in `Summation(axes)(a)`), it returns a `Tensor` object.
+```python
+class TensorOp(Op):
+    def __call__(self, *args):
+        return Tensor.make_from_op(self, args)
+```
+When you call `summation(a, axes)`, it creates an instance of `Summation` and immediately calls it with the tensor `a`. This triggers the `__call__` method of `TensorOp`, which in turn calls `Tensor.make_from_op(self, args)`, creating and returning a `Tensor` object.
+```python
+def summation(a, axes=None):
+    return Summation(axes)(a)
+```
+```python
+ @staticmethod
+    def make_from_op(op: Op, inputs: List["Value"]):
+        tensor = Tensor.__new__(Tensor)
+        tensor._init(op, inputs)
+        if not LAZY_MODE:
+            if not tensor.requires_grad:
+                return tensor.detach()
+            tensor.realize_cached_data()
+        return tensor
+```
 ## Prove the equation $\ell_\text{softmax}(z,y) = \log \sum_{i=1}^k \exp z_i - z_y$
 
 **Equation for All Training Examples**:
