@@ -1,3 +1,4 @@
+
 ## Question 2
 
 In this question, you will implement additional modules in `python/needle/nn/nn_basic.py`. Specifically, for the following modules described below, initialize any variables of the module in the constructor, and fill out the `forward` method. **Note:** Be sure that you are using the `init` functions that you just implemented to initialize the parameters, and don't forget to pass the `dtype` argument.
@@ -177,7 +178,30 @@ Based on the code, a `Module` is an abstract representation of a neural network 
  def __call__(self, *args, **kwargs):
         return self.forward(*args, **kwargs)
 ```
-The `__call__` method makes an instance of `Module` callable, meaning you can use it like a function. When you call an instance of a `Module`, it automatically invokes the `forward` method.
+The `__call__` method makes an instance of `Module` callable, meaning you can use it like a function. When you call an instance of a `Module`, it automatically invokes the `forward` method. 
+
+Example:
+```python
+class MyModule(Module):
+    def __init__(self):
+        super().__init__()
+        self.linear = nn.Linear(10, 5)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        x = self.linear(x)
+        x = self.relu(x)
+        return x
+# Create an instance of MyModule
+model = MyModule()
+
+# Create some input tensor (e.g., random tensor with shape (2, 10))
+input_tensor = torch.randn(2, 10)
+
+# Call the model instance with the input tensor
+output = model(input_tensor)
+```
+When you write `model(input_tensor)`, you are effectively "calling" the instance `model` with `input_tensor` as the argument. This is the same as writing `model.__call__(input_tensor)`. In other words, `model(input_tensor)` is simply shorthand for `model.__call__(input_tensor)`.
 
 **Understanding Sequential**
 The `Sequential` class is a specific type of `Module` that is designed to chain together multiple `Module` objects and apply them in sequence to an input tensor. The `Sequential` class makes it easy to define a neural network by simply listing out the layers or operations in the order they should be applied.
@@ -211,14 +235,48 @@ def example_function(*args):
 example_function(1, 2, 3)
 # This will print: `(1, 2, 3)`.
 ```
-Example usage:
+Example usage for nn.Sequential:
+1. **Separate Arguments:**
+You can pass each layer as a separate argument to `nn.Sequential`:
 ```python
-model = Sequential(Linear(10, 20), ReLU(), Linear(20, 10))
+model = nn.Sequential(
+    nn.Linear(input_dim, hidden_dim),
+    nn.ReLU(),
+    nn.Linear(hidden_dim, output_dim)
+)
 output = model(input_tensor)
 ```
+2. **Unpacked List:**
+
+You can define a list of layers and use the `*` operator to unpack them into `nn.Sequential`:
+
+```python
+layers = [
+    nn.Linear(input_dim, hidden_dim),
+    nn.ReLU(),
+    nn.Linear(hidden_dim, output_dim)
+]
+
+model = nn.Sequential(*layers)
+```
+3. **Combination:**
+You can mix both approaches, passing some layers as separate arguments and others as an unpacked list:
+```python
+additional_layers = [
+    nn.Linear(hidden_dim, hidden_dim),
+    nn.BatchNorm1d(hidden_dim)
+]
+
+model = nn.Sequential(
+    nn.Linear(input_dim, hidden_dim),
+    nn.ReLU(),
+    *additional_layers,  # Unpacking the list of additional layers
+    nn.Linear(hidden_dim, output_dim)
+)
+```
+All these approaches are valid and can be used depending on your specific needs for constructing a model with `nn.Sequential`.
+
 ___
-
-
 
 
 ### LogSumExp
