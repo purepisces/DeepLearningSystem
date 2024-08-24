@@ -427,19 +427,38 @@ class MNISTDataset(Dataset):
         ### END YOUR SOLUTION
 
     def __getitem__(self, index) -> object:
-        ### BEGIN YOUR SOLUTION
-        # Shape of image: (784,), label is a single scalar value
-        image = self.images[index]
-        label = self.labels[index]
-        if self.transforms:
-            # Reshape the flat image (784,) to (28, 28, -1) before applying transforms
-            image = image.reshape((28, 28, -1))
-            # Apply the sequence of transformations to the image
-            image = self.apply_transforms(image)
-            # After transformations, reshape the image back to its original flat shape (784,)
-            image = image.reshape(28 * 28)
-        return image, label
-        ### END YOUR SOLUTION
+	    ### BEGIN YOUR SOLUTION
+	    # The `index` parameter can either be an integer or a numpy array (as used in the Dataloader's implementation for fetching batch data).
+	    # If `index` is an integer, it will fetch a single image and its corresponding label.
+	    # If `index` is a numpy array, it will fetch a batch of images and their corresponding labels.
+	    #
+	    # Shape of `image`: 
+	    # - For a single index, `image` will have the shape (784,), representing a flattened 28x28 image.
+	    # - For a batch of indices, `image` will have the shape (batch_size, 784), where `batch_size` equals len(index).
+	    #
+	    # Shape of `label`:
+	    # - For a single index, `label` will be a scalar value representing the class label.
+	    # - For a batch of indices, `label` will have the shape (batch_size,), where `batch_size` equals len(index).
+
+	    image = self.images[index]
+	    label = self.labels[index]
+
+	    if self.transforms:
+	        # When applying transformations, `index` is assumed to be a single integer.
+	        # Reshape the flattened image from (784,) to (28, 28, -1) before applying transformations.
+	        # The "-1" indicates that the channel dimension will be inferred automatically.
+	        image = image.reshape((28, 28, -1))
+	        
+	        # Apply the sequence of transformations to the image.
+	        image = self.apply_transforms(image)
+	        
+	        # After transformations, reshape the image back to its original flattened shape (784,).
+	        image = image.reshape(28 * 28)
+        # Return a tuple where: 
+        # - `image` is a numpy ndarray with shape (batch_size, 784) or (784,) depending on whether `index` is a batch or single index. 
+        # - `label` is a numpy ndarray with shape (batch_size,) or a scalar value depending on whether `index` is a batch or single index. 
+	    return image, label
+	    ### END YOUR SOLUTION
 
     def __len__(self) -> int:
         ### BEGIN YOUR SOLUTION
@@ -466,15 +485,26 @@ The provided code defines a custom dataset class `MNISTDataset` that is designed
         
         -   **Purpose**: Initializes the dataset by loading the images and labels using the `parse_mnist` function and optionally applies a list of transformations to the data.
         -   **Details**: The `image_filename` and `label_filename` are passed to `parse_mnist` to load the data, and any transformations provided are stored for later use.
-    -   **`__getitem__` Method**:
+ 
+	-  **`__getitem__` Method**:
+
+		-   **Purpose**: Retrieves a sample (image and label) from the dataset based on the given index or indices.
+    
+		-   **Details**:
+    
+		    -   The image corresponding to the specified `index` is retrieved from `self.images`.
+		        -   If `index` is a single integer, `image` is retrieved as a 1D array with shape `(784,)`, representing a flattened 28x28 image.
+		        -   If `index` is a numpy array (for batch processing), `image` is retrieved as a 2D array with shape `(batch_size, 784)`, where `batch_size` is the number of indices in `index`.
+		    -   The corresponding label is retrieved from `self.labels`.
+		        -   If `index` is a single integer, `label` is retrieved as a scalar value.
+		        -   If `index` is a numpy array, `label` is retrieved as a 1D array with shape `(batch_size,)`.
+		    -   If transformations are provided (from the test, I see when applying transformations, `index` is assumed to be a single integer):
+		        -   The image is reshaped into a 3D array with shape `(28, 28, -1)`  to allow spatial transformations (such as flipping or cropping) to be applied correctly.
+		        -   After applying the transformations, the image is reshaped back to its flattened form `(784,)`.
+		    -   The method returns the transformed image and its label as a tuple.
+		        -   The `image` is a `numpy.ndarray` with shape `(784,)` or `(batch_size, 784)`, depending on whether `index` is a single integer or a numpy array.
+		        -   The `label` is a scalar value or a `numpy.ndarray` with shape `(batch_size,)`, depending on whether `index` is a single integer or a numpy array.
         
-        -   **Purpose**: Retrieves a single sample (image and label) from the dataset based on the given index.
-        -   **Details**:
-            -   The image corresponding to the specified `index` is retrieved from `self.images`. Since `self.images` is a 2D array with each row representing a flattened image, the shape of `image` is `(784,)`.
-            -   The corresponding label is also retrieved from `self.labels` as a scalar value.
-            -   If transformations are provided, the image is reshaped into a 3D array with shape `(28, 28, 1)` to allow spatial transformations (such as flipping or cropping) to be applied correctly.
-            -   After applying the transformations, the image is reshaped back to its flattened form `(784,)`.
-            -   The method returns the transformed image and its label.
     -   **`__len__` Method**:
         
         -   **Purpose**: Returns the number of samples in the dataset.
@@ -483,7 +513,7 @@ The provided code defines a custom dataset class `MNISTDataset` that is designed
 #### Summary:
 
 -   The `MNISTDataset` class allows for loading, transforming, and accessing individual samples from the MNIST dataset.
--   The `__getitem__` method handles retrieving and optionally transforming each image, ensuring that spatial transformations are applied correctly by reshaping the image into its original dimensions before and after transformations.
+- The `__getitem__` method handles retrieving and optionally transforming images. It ensures that spatial transformations are applied correctly by reshaping each image into its original dimensions before applying transformations and then reshaping it back to its flattened form afterward. This process is applied whether a single image or a batch of images is retrieved based on whether the `index` is a single integer or a numpy array. For transformations, it is assumed that the `index` is a single integer, as inferred from the test cases.
 -   The `__len__` method provides the total number of images in the dataset, making it easy to iterate over the dataset in a structured manner.
 
 ### Explanation of `__getitem__`
@@ -550,6 +580,38 @@ class Dataset:
                 x = tform(x)
         return x
 ```
+
+#### Explanation of how NumPy handles indexing with arrays versus indexing with integers
+
+##### Indexing with an Integer
+
+When you index a NumPy array with a single integer, you directly access the element at that position, and the result is a scalar value. For example:
+
+```python
+import numpy as np
+
+labels = np.array([0, 1, 2, 3, 4])
+label = labels[2]  # Indexing with an integer
+print(label)  # Output: 2
+print(type(label))  # Output: <class 'numpy.int64'>
+```
+Here, `label` is a scalar because we're directly accessing the value at index 2.
+
+##### Indexing with a NumPy Array
+
+When you index a NumPy array with another NumPy array (even if it has only one element), NumPy returns a new array containing the values at the specified indices. The shape of this new array reflects the shape of the index array. For example:
+```python
+import numpy as np
+
+labels = np.array([0, 1, 2, 3, 4])
+index_array = np.array([2])
+label = labels[index_array]  # Indexing with a NumPy array
+print(label)  # Output: [2]
+print(type(label))  # Output: <class 'numpy.ndarray'>
+print(label.shape)  # Output: (1,)
+```
+Here, `label` is a 1D array with shape `(1,)`, even though the `index_array` contains only one element. This is because when you use a NumPy array as an index, NumPy treats it as a request for multiple elements, even if the index array only specifies one element. Thus, the result is still an array, not a scalar.
+
 ### Choosing Between `reshape` Method and `np.reshape` Function in NumPy
 When working with NumPy arrays, you have two options for reshaping: using the instance method `reshape` directly on the array, or using the standalone function `np.reshape`.
 ```python
