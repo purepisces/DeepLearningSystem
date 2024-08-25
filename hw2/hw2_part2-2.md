@@ -64,6 +64,7 @@ class LayerNorm1d(Module):
         # Element-wise multiplication of broadcast_weight and x_minus_mean (batch_size, features)
         # self.eps is a scalar value, when add self.eps to broadcast_var, it is automatically broadcasted to match the shape of broadcast_var, which is (batch_size, features).
         return broadcast_weight * x_minus_mean / ops.power_scalar(broadcast_var + self.eps, 0.5) +  broadcast_bias
+        ### END YOUR SOLUTION
 ```
 
 ___
