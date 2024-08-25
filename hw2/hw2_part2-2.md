@@ -627,13 +627,13 @@ class Dropout(Module):
     def forward(self, x: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
         if self.training:
-            # Create a mask with the same shape as x, where each element is 1 with probability 1-p, and 0 with probability p
-            mask = init.randb(*x.shape, p=1 - self.p)
-            # Return the input tensor scaled by 1/(1 - p) and then multiplied by the mask
-            return x / (1 - self.p) * mask
+           # Create a mask with the same shape as x, where each element is 1 with probability 1-p, and 0 with probability p
+           mask = init.randb(*x.shape, p=1 - self.p)
+           # Return the input tensor scaled by 1/(1 - p) and then multiplied by the mask
+           return x / (1 - self.p) * mask
         else:
-            # During evaluation, dropout does nothing; just return the input as is.
-            return x
+           # During evaluation, dropout does nothing; just return the input as is.
+           return x
         ### END YOUR SOLUTION
  ```
 
