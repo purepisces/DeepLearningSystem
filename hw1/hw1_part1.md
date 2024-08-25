@@ -442,7 +442,34 @@ class Summation(TensorOp):
         self.axes = axes
 
     def compute(self, a):
+        ### BEGIN YOUR SOLUTION
         return array_api.sum(a, axis=self.axes)
+        ### END YOUR SOLUTION
+
+    def gradient(self, out_grad, node):
+        ### BEGIN YOUR SOLUTION
+        input_shape = node.inputs[0].shape
+
+        # Initialize the shape to the input shape
+        grad_shape = list(input_shape)
+
+        if self.axes is not None:
+            for axis in self.axes:
+                grad_shape[axis] = 1
+        else:
+            # If axes is None, summation was over all axes, set all dimensions to 1
+            grad_shape = [1] * len(grad_shape)
+        
+        # Reshape out_grad to the calculated shape
+        reshaped_grad = reshape(out_grad, grad_shape)
+        
+        # Broadcast the gradient to match the input shape
+        return reshaped_grad * array_api.ones(input_shape, dtype=array_api.float32)
+        ### END YOUR SOLUTION
+
+
+def summation(a, axes=None):
+    return Summation(axes)(a)
 ```
 
 ### `BroadcastTo`: broadcast an array to a new shape (1 input, `shape` - tuple)
