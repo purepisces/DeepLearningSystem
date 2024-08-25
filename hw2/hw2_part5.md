@@ -547,3 +547,57 @@ Initializes a training dataloader (with `shuffle` set to `True`) and a test data
 - `hidden_dim` (*int*) - hidden dim for `MLPResNet`
 
 - `data_dir` (*int*) - directory containing MNIST image/label files
+
+**Code Implementation: **
+```python
+def train_mnist(
+    batch_size=100,
+    epochs=10,
+    optimizer=ndl.optim.Adam,
+    lr=0.001,
+    weight_decay=0.001,
+    hidden_dim=100,
+    data_dir="data",
+):
+    np.random.seed(4)
+    ### BEGIN YOUR SOLUTION
+    # Load the data
+    train_dataset = ndl.data.MNISTDataset(data_dir + "/train-images-idx3-ubyte.gz", data_dir+ "/train-labels-idx1-ubyte.gz")
+    test_dataset = ndl.data.MNISTDataset(data_dir + "/t10k-images-idx3-ubyte.gz", data_dir + "/t10k-labels-idx1-ubyte.gz")
+    
+    train_dataloader = ndl.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    test_dataloader = ndl.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+    
+    # train_dataset[0] invokes the dataset's __getitem__ method. 
+    # Since the index (0 in this case) is an integer, it retrieves a single image  and its corresponding label,     returning them as a tuple (image, label). 
+    # The image is a flattened 28x28 array, giving it a shape of (784,). 
+    # Thus, train_dataset[0] accesses the tuple (image, label), and train_dataset[0][0] specifically accesses       the image. 
+    # The shape of this image is (784,), and train_dataset[0][0].shape[0] returns 784, which is the                 dimensionality of the flattened image.
+    input_dim = train_dataset[0][0].shape[0]
+    # Initialize the model
+    model = MLPResNet(dim=input_dim, hidden_dim=hidden_dim)
+    
+    # Initialize the optimizer
+    opt = optimizer(params=model.parameters(), lr=lr, weight_decay=weight_decay)
+    
+    # Training loop
+    for epoch_num in range(epochs):
+        train_error, train_loss = epoch(train_dataloader, model, opt=opt)
+        test_error, test_loss = epoch(test_dataloader, model, opt=None)
+    return train_error, train_loss, test_error, test_loss
+    ### END YOUR SOLUTION
+```
+___
+
+
+### Explanation of `train_mnist`
+
+The `train_mnist` function is designed to train a neural network model on the MNIST dataset using the provided parameters, such as batch size, number of epochs, optimizer, learning rate, weight decay, hidden layer dimension, and the directory where the MNIST data is stored. The function trains the model for a specified number of epochs and returns the training and test accuracy and loss from the final epoch.
+
+-   **`batch_size=100`**: The number of samples per batch for both the training and test dataloaders.
+-   **`epochs=10`**: The number of times the entire training dataset will be passed through the model.
+-   **`optimizer=ndl.optim.Adam`**: The optimizer type used to update the model’s parameters during training. The default is Adam, a popular adaptive optimizer.
+-   **`lr=0.001`**: The learning rate for the optimizer, controlling the size of the steps taken during optimization.
+-   **`weight_decay=0.001`**: Regularization term added to the loss to prevent overfitting by penalizing large weights.
+-   **`hidden_dim=100`**: The size of the hidden layer in the MLPResNet model.
+-   **`data_dir="data"`**: Directory where the MNIST data files are stored.
