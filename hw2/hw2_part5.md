@@ -1,11 +1,7 @@
-
 ## Question 5
-
-  
 
 Given you have now implemented all the necessary components for our neural network library, let's build and train an MLP ResNet. For this question, you will be working in `apps/mlp_resnet.py`. First, fill out the functions `ResidualBlock` and `MLPResNet` as described below:
 
-  
 
 ### ResidualBlock
 
