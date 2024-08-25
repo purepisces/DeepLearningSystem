@@ -428,7 +428,7 @@ class MNISTDataset(Dataset):
 
     def __getitem__(self, index) -> object:
         ### BEGIN YOUR SOLUTION
-	    # The `index` parameter can either be an integer or a numpy array (as used in the Dataloader's implementation for fetching batch data).
+        # The `index` parameter can either be an integer or a numpy array (as used in the Dataloader's implementation for fetching batch data).
 	    # If `index` is an integer, it will fetch a single image and its corresponding label.
 	    # If `index` is a numpy array, it will fetch a batch of images and their corresponding labels.
 	    #
