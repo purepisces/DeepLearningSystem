@@ -122,6 +122,19 @@ After implementing these functions, you should pass/submit the following tests. 
         return self.as_strided(new_shape, new_strides)
         ### END YOUR SOLUTION
 ```
+### Explanation of row-major order
+
+`ndarray.py` is based on Python's default array handling, which uses **row-major order**. This means that in this implementation:
+
+-   **Row-Major Order**: The elements of a multi-dimensional array are stored in contiguous memory locations row by row. This is consistent with how NumPy (and most other numerical libraries in Python) store arrays.
+
+
+#### Key Points:
+-   In row-major order, the last index in the shape has the smallest stride, meaning elements of the last dimension are contiguous in memory.
+-   The code provided handles arrays in a way that is compatible with row-major storage, as seen in how strides are calculated and manipulated.
+
+For ndarray.py, it is based on Python's default array handling, which uses row-major order. In row-major order, the last index in the shape has the smallest stride, meaning elements of the last dimension are contiguous in memory.
+
 ### **Explanation of Stride**
 
 In the context of arrays, particularly multi-dimensional arrays (like 2D matrices or 3D tensors), a **stride** is the number of memory steps (or bytes) you need to move in order to go from one element to the next along a particular dimension of the array.
