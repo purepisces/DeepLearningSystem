@@ -133,7 +133,7 @@ After implementing these functions, you should pass/submit the following tests. 
 -   In row-major order, the last index in the shape has the smallest stride, meaning elements of the last dimension are contiguous in memory.
 -   The code provided handles arrays in a way that is compatible with row-major storage, as seen in how strides are calculated and manipulated.
 
-For ndarray.py, it is based on Python's default array handling, which uses row-major order. In row-major order, the last index in the shape has the smallest stride, meaning elements of the last dimension are contiguous in memory.
+For `ndarray.py`, it is based on Python's default array handling, which uses row-major order. In row-major order, the last index in the shape has the smallest stride, meaning elements of the last dimension are contiguous in memory.
 
 ### **Explanation of Stride**
 
