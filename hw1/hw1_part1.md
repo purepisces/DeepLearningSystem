@@ -772,13 +772,17 @@ print(np.broadcast_to(c, new_shape))
 import numpy as np
 c = np.array([1, 2, 3])
 print(c.shape) #(3,)
-new_shape = (2,3)
+new_shape = (3,2)
 print(np.broadcast_to(c, new_shape))
 ```
+1.  **Original Shape**: `(3,)`
+    
+    -   This shape has only one dimension: `3`. For broadcasting purposes, it can be treated as `(1, 3)`.
+2.  **Target Shape**: `(3, 2)`
+
 **Comparison**
 
 -   **Trailing Dimensions**: `3` (original) vs. `2` (target) – these are not compatible because they are not equal and neither is 1.
 -   **Leading Dimensions**: `1` (original) vs. `3` (target) – these are compatible because 1 can be expanded to 3.
 
 Since the trailing dimensions do not match and are not compatible, broadcasting cannot proceed.
-
