@@ -472,6 +472,18 @@ void EwiseTanh(const AlignedArray& a, AlignedArray* out) {
 -   **Return Value**: The hyperbolic tangent of `x`, which is a value between `-1` and `1`.
 
 ### Explain of `m.def()`
+`m.def()` is a function in **Pybind11**, a popular C++ library used to create Python bindings for C++ code. This function is used to **expose C++ functions to Python**, allowing them to be called as if they were regular Python functions.
+```c++
+m.def("python_function_name", cplusplus_function_pointer);
+```
+#### Components:
+
+-   **`m`**: This refers to the module object that you define in the `PYBIND11_MODULE` block. It represents the Python module you're creating, and you're adding functions to this module.
+    
+-   **`def()`**: This is a method used to register a function with the Python module. It takes a few parameters:
+    
+    -   **`"python_function_name"`**: The name you want to use when calling the function from Python.
+    -   **`cplusplus_function_pointer`**: The actual C++ function you are exposing to Python.
 
 ```c++
    m.def("ewise_mul", EwiseMul);
@@ -495,3 +507,24 @@ void EwiseTanh(const AlignedArray& a, AlignedArray* out) {
 The code uses `m.def()` with Pybind11 to expose C++ functions to Python, enabling Python to call these functions for operations like element-wise multiplication, division, comparison, logarithms, exponentiation, and more on arrays or between arrays and scalars.
 
 > The phrase **"register functions in the pybind module"** refers to the process of making the C++ functions available in Python by binding them to Python using `m.def()`. When you "register" a function, you're essentially telling Pybind11 to expose the C++ function so that Python can call it.
+
+#### Example
+```c++
+   m.def("ewise_div", EwiseDiv);
+```
+In Python, you would call it as `ewise_div()`. Here's how Python would call `EwiseDiv`:
+```python
+import your_module_name  # Replace 'your_module_name' with the actual name of your module
+
+# Assuming you have numpy arrays or other arrays of the appropriate type
+a = your_module_name.Array()  # Create or load an array
+b = your_module_name.Array()  # Another array
+
+# Create an output array to store the result
+out = your_module_name.Array()
+
+# Perform element-wise division
+your_module_name.ewise_div(a, b, out)
+
+# The result of the division will be stored in 'out'
+```
