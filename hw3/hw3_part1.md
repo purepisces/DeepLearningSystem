@@ -1,3 +1,4 @@
+
 # Homework 3: Building an NDArray library
 
 In this homework, you will build a simple backing library for the processing that underlies most deep learning systems: the n-dimensional array (a.k.a. the NDArray). Up until now, you have largely been using numpy for this purpose, but this homework will walk you through developing what amounts to your own (albeit much more limited) variant of numpy, which will support both CPU and GPU backends. What's more, unlike numpy (and even variants like PyTorch), you won't simply call out to existing highly-optimized variants of matrix multiplication or other manipulation code, but actually write your own versions that are reasonably competitive will the highly optimized code backing these standard libraries (by some measure, i.e., "only 2-3x slower" ... which is a whole lot better than naive code that can easily be 100x slower). This class will ultimately be integrated into `needle`, but for this assignment you can _only_ focus on the ndarray module, as this will be the only subject of the tests.
@@ -1345,8 +1346,9 @@ This means the new view starts at the memory location corresponding to the eleme
                 for i, s in enumerate(idxs)
             ]
         )
+       
         assert len(idxs) == self.ndim, "Need indexes equal to number of dimensions"
-
+        
         ### BEGIN YOUR SOLUTION
         new_shape = []  # List to store the new shape of the array view.
         new_strides = []  # List to store the new strides for the array view.
@@ -1355,7 +1357,7 @@ This means the new view starts at the memory location corresponding to the eleme
         # Loop through each dimension and its corresponding slice
         for i, sl in enumerate(idxs):
             # Calculate the size(number of elements) of this dimension in the new array view.
-            new_shape.append((sl.stop - sl.start) // sl.step)
+            new_shape.append((sl.stop - sl.start + (sl.step - 1)) // sl.step)
             # Calculate the new stride for this dimension by scaling the original stride by the step size from the slice.
             new_strides.append(self._strides[i] * sl.step)
             # Adjust the offset to account for the starting position of this slice in the original array's memory.
@@ -1364,7 +1366,7 @@ This means the new view starts at the memory location corresponding to the eleme
         # Convert the shape and strides lists to tuples.
         new_shape = tuple(new_shape)
         new_strides = tuple(new_strides)
-            
+        
         # Create and return a new NDArray with the calculated shape, strides, and offset.
         return self.make(shape=new_shape, strides=new_strides, device=self.device, handle=self._handle, offset=new_offset)
         ### END YOUR SOLUTION
@@ -1417,12 +1419,12 @@ new_strides = []
 new_offset = self._offset
 
 for i, sl in enumerate(idxs):
-    new_shape.append((sl.stop - sl.start) // sl.step)
+    new_shape.append((sl.stop - sl.start + (sl.step - 1)) // sl.step)
     new_strides.append(self._strides[i] * sl.step)
     new_offset += self._strides[i] * sl.start
 ```
 -   **Purpose**: This loop calculates the new shape, strides, and offset for the array view that will be returned:
-    -   **`new_shape`**: Calculates the number of elements in each dimension based on the slice's `start`, `stop`, and `step`.
+    -   **`new_shape`**: Calculates the number of elements in each dimension based on the slice's `start`, `stop`, and `step`, ensuring any remaining elements are included when the range isn’t divisible by the step size.
     -   **`new_strides`**: Adjusts the stride for each dimension, taking into account the `step` in the slice.
     -   **`new_offset`**: Adjusts the starting point in memory for the new view based on the starting index of the slice.
 
