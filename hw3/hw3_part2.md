@@ -79,6 +79,17 @@ Due to this similarity, if you implement your indexing strategy in a modular fas
 ```c++
 size_t index_to_offset(const std::vector<int32_t>& strides, 
                        const std::vector<int32_t>& indices, size_t base_offset) {
+   /**
+    * Convert a multi-dimensional index into a linear memory offset.
+    *
+    * Args:
+    *   strides: Strides of the array, specifying how far apart elements in each dimension are in memory.
+    *   indices: Multi-dimensional index for which the linear offset is calculated.
+    *   base_offset: Offset of the first element in the array (starting position in the flattened memory).
+    *
+    * Returns:
+    *   size_t: The computed linear memory offset.
+    */
   size_t offset = base_offset;
   
   // Iterate over each dimension and compute the linear offset
@@ -90,6 +101,16 @@ size_t index_to_offset(const std::vector<int32_t>& strides,
 }
 
 void IncrementIndices(std::vector<int32_t>& indices, const std::vector<int32_t>& shape) {
+   /**
+    * Increment a multi-dimensional index in lexicographical order.
+    *
+    * Args:
+    *   indices: A reference to the current multi-dimensional index vector.
+    *   shape: Shape of the array (size of each dimension), used to determine the bounds for each index.
+    *
+    * Returns:
+    *   void (the function modifies the indices vector directly).
+    */
   for (int dim = shape.size() - 1; dim >= 0; --dim) {
     indices[dim]++;
     if (indices[dim] < shape[dim]) {
