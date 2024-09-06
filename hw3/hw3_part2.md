@@ -583,4 +583,3 @@ Consider `out` as a non-contiguous 2D array with shape `[3, 2]`, strides `[2, 1]
 -   The index is incremented until all elements are set to the scalar value.
 
 This function ensures that the scalar value is written correctly, even when the array's memory layout is non-contiguous.
-___
