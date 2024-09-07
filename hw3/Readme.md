@@ -4,3 +4,16 @@ The key components you'll be working on include array operations in Python and l
 
 
 when modified `ndarray_backend_cpu.cc`, each time you need to !make and see the results.
+
+
+
+-   **`ndarray_backend_cuda.cu`**: This file contains code written in **CUDA C/C++**, which is a parallel computing platform and programming model created by NVIDIA. CUDA extends C/C++ to enable programmers to write code that runs on NVIDIA GPUs. The `.cu` extension indicates that the file contains CUDA-specific functions, and it includes both standard C/C++ code and CUDA-specific constructs for GPU programming, such as kernel functions and memory management for GPU devices.
+    
+-   **`ndarray_backend_cpu.cc`**: This file is written in **C++** and is designed to run on the CPU. The `.cc` extension is commonly used for C++ source files (though `.cpp` is also frequently used). This file contains functions that operate on arrays using the CPU's resources, without the parallelism or GPU-specific features of CUDA.
+    
+
+### Language Summary:
+
+-   **`.cu` (ndarray_backend_cuda.cu)**: CUDA C/C++ for programming with GPUs.
+-   **`.cc` (ndarray_backend_cpu.cc)**: Standard C++ code for CPU operations.
+-   **`.py` (test.py)**: Python, typically used to interface with the C++ or CUDA backends using Python bindings like PyBind11, allowing high-level Python code to call C++/CUDA functions.
