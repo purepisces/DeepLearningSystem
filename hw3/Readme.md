@@ -16,4 +16,4 @@ when modified `ndarray_backend_cpu.cc`, each time you need to !make and see the 
 
 -   **`.cu` (ndarray_backend_cuda.cu)**: CUDA C/C++ for programming with GPUs.
 -   **`.cc` (ndarray_backend_cpu.cc)**: Standard C++ code for CPU operations.
--   **`.py` (test.py)**: Python, typically used to interface with the C++ or CUDA backends using Python bindings like PyBind11, allowing high-level Python code to call C++/CUDA functions.
+-   **`.py`**: Python, typically used to interface with the C++ or CUDA backends using Python bindings like PyBind11, allowing high-level Python code to call C++/CUDA functions.
