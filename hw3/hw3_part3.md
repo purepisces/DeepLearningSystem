@@ -471,6 +471,10 @@ void EwiseTanh(const AlignedArray& a, AlignedArray* out) {
 -   **x**: The value (in radians) for which the hyperbolic tangent is to be computed.
 -   **Return Value**: The hyperbolic tangent of `x`, which is a value between `-1` and `1`.
 
+### Explain of pybind11
+
+This is a C++ library used to create Python bindings for C++ code. It allows C++ functions and classes to be called from Python.
+
 ### Explain of `m.def()`
 `m.def()` is a function in **Pybind11**, a popular C++ library used to create Python bindings for C++ code. This function is used to **expose C++ functions to Python**, allowing them to be called as if they were regular Python functions.
 ```c++
