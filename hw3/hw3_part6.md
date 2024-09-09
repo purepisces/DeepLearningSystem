@@ -61,6 +61,8 @@ __global__ void CompactKernel(const scalar_t* a, scalar_t* out, size_t size, Cud
     size_t a_offset = index_to_offset_cuda(strides, shape, gid, offset);
     out[gid] = a[a_offset];
   /// END SOLUTION
+}
+
 void Compact(const CudaArray& a, CudaArray* out, std::vector<int32_t> shape,
              std::vector<int32_t> strides, size_t offset) {
   /**
@@ -82,7 +84,6 @@ void Compact(const CudaArray& a, CudaArray* out, std::vector<int32_t> shape,
   CudaDims dim = CudaOneDim(out->size);
   CompactKernel<<<dim.grid, dim.block>>>(a.ptr, out->ptr, out->size, VecToCuda(shape),
                                          VecToCuda(strides), offset);
-}
 }
 ```
 
@@ -1080,7 +1081,7 @@ void EwiseSetitem(const CudaArray& a, CudaArray* out, std::vector<int32_t> shape
 ---
 **Code Implementation**
 ```cpp
-__global__ void ScalarSetitemKernel(const scalar_t* a, scalar_t* out, size_t size, CudaVec shape,
+__global__ void ScalarSetitemKernel(scalar_t val, scalar_t* out, size_t size, CudaVec shape,
                               CudaVec strides, size_t offset) {
   size_t gid = blockIdx.x * blockDim.x + threadIdx.x;
 
