@@ -68,6 +68,10 @@ void ReduceSum(const CudaArray& a, CudaArray* out, size_t reduce_size) {
   /// END SOLUTION
 }
 ```
+```cpp
+  m.def("reduce_max", ReduceMax);
+  m.def("reduce_sum", ReduceSum);
+```
 ### Explain 100 x 20 Scenario in question
 In the statement, the dimensions of the array are referred to as `100 x 20`, meaning the array has 100 rows and 20 columns. The reference to reducing over the "second dimension" means reducing along the columns (in this case, over the 20 elements in each row).
 
@@ -320,3 +324,4 @@ A more efficient solution would involve:
 2.  **Using Shared Memory**: Utilize shared memory within a block to store intermediate results, allowing threads to combine their results efficiently. This reduces global memory access latency and speeds up the reduction process.
     
 By utilizing all available threads within a block and introducing thread cooperation, the overall performance of the reduction operation can be significantly improved, particularly for larger datasets or cases where `reduce_size` is large.
+
