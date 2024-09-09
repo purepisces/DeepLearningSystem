@@ -1078,8 +1078,8 @@ void EwiseSetitem(const CudaArray& a, CudaArray* out, std::vector<int32_t> shape
 -   **Host function**: `EwiseSetitem` runs on the CPU and sets up the kernel's execution by calculating the appropriate grid and block sizes, then launches the `EwiseSetitemKernel` on the GPU.
 
 ---
+**Code Implementation**
 ```cpp
-
 __global__ void ScalarSetitemKernel(const scalar_t* a, scalar_t* out, size_t size, CudaVec shape,
                               CudaVec strides, size_t offset) {
   size_t gid = blockIdx.x * blockDim.x + threadIdx.x;
