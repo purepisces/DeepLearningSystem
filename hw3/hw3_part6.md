@@ -85,6 +85,12 @@ void Compact(const CudaArray& a, CudaArray* out, std::vector<int32_t> shape,
 }
 }
 ```
+
+In CUDA programming, there is a key distinction between **host** code (which runs on the CPU) and **device** code (which runs on the GPU). In your case:
+
+-   **`Compact()`**, **`EwiseSetitem()`**, and **`ScalarSetitem()`** are **host-side** functions. They prepare and launch GPU kernels and are callable from Python through Pybind11.
+-   **`CompactKernel()`** (and other kernels you will define, such as for `Setitem`) are **device-side** functions. These kernels are executed in parallel on the GPU by many threads.
+
 ### Explain Thread, Block, Block Dimension and Grid
 
 #### 1. **Thread (`threadIdx`)**
@@ -1008,3 +1014,136 @@ __global__ void CompactKernel(const scalar_t* a, scalar_t* out, size_t size, Cud
 > **Performance**: On a CPU, compaction would be done sequentially, processing one element after another. This would be much slower, especially for large arrays. By using a CUDA kernel on the GPU, we can handle hundreds or thousands of elements simultaneously, drastically speeding up the process.
 
 The **kernel** is used in the `Compact` function because it allows the task of compacting a non-contiguous array into a contiguous layout to be executed **in parallel** on the **GPU**, taking advantage of the GPU's high parallelism and memory bandwidth. This leads to **faster processing** of large datasets and efficient use of hardware resources compared to sequential processing on the CPU.
+
+---
+**Code Implementation**
+```cpp
+__global__ void EwiseSetitemKernel(const scalar_t* a, scalar_t* out, size_t size, CudaVec shape,
+                              CudaVec strides, size_t offset) {
+  
+  size_t gid = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (gid >= size) return;  // Check for out-of-bounds
+    size_t out_offset = index_to_offset_cuda(strides, shape, gid, offset);
+    out[out_offset] = a[gid];
+}
+
+void EwiseSetitem(const CudaArray& a, CudaArray* out, std::vector<int32_t> shape,
+                  std::vector<int32_t> strides, size_t offset) {
+  /**
+   * Set items in a (non-compact) array using CUDA.  Yyou will most likely want to implement a
+   * EwiseSetitemKernel() function, similar to those above, that will do the actual work.
+   * 
+   * Args:
+   *   a: _compact_ array whose items will be written to out
+   *   out: non-compact array whose items are to be written
+   *   shape: shapes of each dimension for a and out
+   *   strides: strides of the *out* array (not a, which has compact strides)
+   *   offset: offset of the *out* array (not a, which has zero offset, being compact)
+   */
+  /// BEGIN SOLUTION
+  CudaDims dim = CudaOneDim(out->size);
+  EwiseSetitemKernel<<<dim.grid, dim.block>>>(a.ptr, out->ptr, a.size, VecToCuda(shape),
+                                         VecToCuda(strides), offset);
+  /// END SOLUTION
+}
+```
+### Explaination of `EwiseSetitem`
+1.  **`EwiseSetitemKernel` (GPU kernel function)**: This is the CUDA kernel function that performs the element-wise set operation. It runs on the GPU and is responsible for copying elements from a compact input array `a` to a non-compact output array `out`.
+    
+    Key points:
+    
+    -   **`gid = blockIdx.x * blockDim.x + threadIdx.x;`**: This calculates the global thread index (`gid`) for each thread based on the current block and thread within the block. CUDA runs multiple threads in parallel, and each thread is responsible for processing one element.
+    -   **`if (gid >= size) return;`**: If the thread index is greater than or equal to the size of the array, the thread exits early, ensuring no out-of-bounds memory access occurs.
+    -   **`size_t out_offset = index_to_offset_cuda(strides, shape, gid, offset);`**: This computes the memory offset within the non-compact output array using the provided strides, shape, and offset. This is necessary because the output array is non-compact, meaning its elements may not be stored in consecutive memory locations.
+    -   **`out[out_offset] = a[gid];`**: The value from the compact array `a` at index `gid` is copied to the calculated location `out_offset` in the non-compact output array `out`.
+    
+2.  **`EwiseSetitem` (Host-side function)**: This is the host (CPU-side) function that prepares and launches the CUDA kernel (`EwiseSetitemKernel`). It runs on the CPU and is responsible for setting up the grid and block dimensions and then calling the kernel to execute on the GPU.
+    
+    Key points:
+    
+    -   **`CudaDims dim = CudaOneDim(out->size);`**: This utility function calculates the number of blocks and threads needed to process all elements in the output array. The number of threads per block is usually a constant (e.g., 256), and the number of blocks is calculated based on the size of the output array.
+    -   **`EwiseSetitemKernel<<<dim.grid, dim.block>>>(...);`**: This launches the kernel on the GPU, where each thread will process one element. The kernel is called with `dim.grid` blocks and `dim.block` threads per block.
+    -   **Arguments to the kernel**:
+        -   `a.ptr`: Pointer to the compact input array `a` on the GPU.
+        -   `out->ptr`: Pointer to the non-compact output array `out` on the GPU.
+        -   `a.size`: Total size of the input array `a`.
+        -   `VecToCuda(shape)`: Converts the CPU-side shape vector to a `CudaVec` structure that can be passed to the GPU.
+        -   `VecToCuda(strides)`: Converts the CPU-side strides vector to a `CudaVec` structure.
+        -   `offset`: Offset for the non-compact output array `out`.
+
+### Summary:
+
+-   **Kernel function**: `EwiseSetitemKernel` runs on the GPU and copies values from a compact array `a` to a non-compact array `out`. It calculates the correct memory location for the output using strides and shape information.
+-   **Host function**: `EwiseSetitem` runs on the CPU and sets up the kernel's execution by calculating the appropriate grid and block sizes, then launches the `EwiseSetitemKernel` on the GPU.
+
+---
+```cpp
+
+__global__ void ScalarSetitemKernel(const scalar_t* a, scalar_t* out, size_t size, CudaVec shape,
+                              CudaVec strides, size_t offset) {
+  size_t gid = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (gid >= size) return;  // Check for out-of-bounds
+
+   size_t out_offset = index_to_offset_cuda(strides, shape, gid, offset);
+out[out_offset] = val;
+}
+
+void ScalarSetitem(size_t size, scalar_t val, CudaArray* out, std::vector<int32_t> shape,
+                   std::vector<int32_t> strides, size_t offset) {
+  /**
+   * Set items is a (non-compact) array
+   * 
+   * Args:
+   *   size: number of elements to write in out array (note that this will note be the same as
+   *         out.size, because out is a non-compact subset array);  it _will_ be the same as the 
+   *         product of items in shape, but covenient to just pass it here.
+   *   val: scalar value to write to
+   *   out: non-compact array whose items are to be written
+   *   shape: shapes of each dimension of out
+   *   strides: strides of the out array
+   *   offset: offset of the out array
+   */
+  /// BEGIN SOLUTION
+  CudaDims dim = CudaOneDim(size);
+  ScalarSetitemKernel<<<dim.grid, dim.block>>>(val, out->ptr, size, VecToCuda(shape),
+                                                 VecToCuda(strides), offset);
+  /// END SOLUTION
+}
+```
+### Explanation of `ScalarSetitem`
+
+1.  **`ScalarSetitemKernel` (GPU Kernel Function)**: This CUDA kernel function is responsible for setting a scalar value (`val`) to specific locations in a non-compact output array `out`. The key challenge is that the output array `out` is non-compact, meaning the elements are not necessarily stored contiguously in memory. The kernel handles each element in parallel using GPU threads.
+    
+    **Key steps**:
+    
+    -   **Thread index (`gid`) calculation**:
+        -   Each thread on the GPU computes its global index (`gid`) using `blockIdx.x * blockDim.x + threadIdx.x`. This index tells the thread which element it should process in parallel.
+    -   **Out-of-bounds check**:
+        -   The `if (gid >= size) return;` check ensures that if the thread index exceeds the array's size, it exits early to avoid accessing memory outside the bounds of the array.
+    -   **Offset computation**:
+        -   `size_t out_offset = index_to_offset_cuda(...)` calculates the exact memory location (offset) within the non-compact array `out` where the scalar value `val` should be written. This calculation is necessary because non-compact arrays have elements stored in non-consecutive memory locations, determined by their strides and shape.
+    -   **Assigning the scalar value**:
+        -   `out[out_offset] = val;` sets the scalar value `val` at the computed memory location `out_offset`.
+2.  **`ScalarSetitem` (Host-Side Function)**: This is the host (CPU-side) function that prepares and launches the CUDA kernel. It handles the setup of grid and block sizes for the GPU threads and invokes the `ScalarSetitemKernel`.
+    
+    **Key steps**:
+    
+    -   **Grid and block dimensions**:
+        -   `CudaDims dim = CudaOneDim(size);` computes the number of blocks and threads needed to process all elements in the output array. This helps maximize the parallelism by ensuring there are enough threads to handle the size of the output array.
+    -   **Launching the kernel**:
+        -   `ScalarSetitemKernel<<<dim.grid, dim.block>>>(...);` launches the GPU kernel with the specified grid and block sizes. The kernel then runs on the GPU, where each thread processes one element by setting the scalar value.
+    -   **Arguments**:
+        -   **`val`**: The scalar value that will be written to all specified locations in the array.
+        -   **`out->ptr`**: A pointer to the non-compact output array `out` on the GPU.
+        -   **`size`**: The total number of elements to write, typically calculated based on the product of the array's shape dimensions.
+        -   **`VecToCuda(shape)` and `VecToCuda(strides)`**: These utility functions convert the CPU-side vectors for shape and strides into a format (`CudaVec`) that can be used by the GPU kernel.
+        -   **`offset`**: The starting memory offset for the output array `out`.
+
+### Summary:
+
+-   The **kernel function** (`ScalarSetitemKernel`) runs on the GPU and assigns a scalar value to elements of a non-compact output array, calculating the correct memory location for each element based on the array's shape and strides.
+-   The **host function** (`ScalarSetitem`) runs on the CPU and sets up the execution environment for the CUDA kernel by determining the appropriate grid and block sizes, and then launches the kernel to execute in parallel on the GPU.
+
+This setup allows for efficient setting of values in non-contiguous memory regions of an array, leveraging the power of parallel computation on the GPU.
