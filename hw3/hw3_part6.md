@@ -1148,3 +1148,7 @@ void ScalarSetitem(size_t size, scalar_t val, CudaArray* out, std::vector<int32_
 -   The **host function** (`ScalarSetitem`) runs on the CPU and sets up the execution environment for the CUDA kernel by determining the appropriate grid and block sizes, and then launches the kernel to execute in parallel on the GPU.
 
 This setup allows for efficient setting of values in non-contiguous memory regions of an array, leveraging the power of parallel computation on the GPU.
+
+## Reference:
+
+- CUDA Grid image From https://www.microway.com/hpc-tech-tips/cuda-parallel-thread-management/
