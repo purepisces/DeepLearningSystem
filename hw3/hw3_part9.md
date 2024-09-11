@@ -91,3 +91,5 @@ __global__ void MatmulKernel(const scalar_t* a, const scalar_t* b, scalar_t* c, 
   }
 }
 ```
+<img src="CUDA_Grid.png" alt="CUDA_Grid" width="600" height="500"/>
+
