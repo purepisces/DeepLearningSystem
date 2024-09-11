@@ -93,3 +93,11 @@ __global__ void MatmulKernel(const scalar_t* a, const scalar_t* b, scalar_t* c, 
 ```
 <img src="CUDA_Grid.png" alt="CUDA_Grid" width="600" height="500"/>
 
+## Reference
+
+- CUDA_Grid.png from https://www.microway.com/hpc-tech-tips/cuda-parallel-thread-management/
+
+
+
+
+
