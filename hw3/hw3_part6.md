@@ -94,6 +94,9 @@ In CUDA programming, there is a key distinction between **host** code (which run
 
 ### Explain Thread, Block, Block Dimension and Grid
 
+<img src="CUDA_Grid.png" alt="CUDA_Grid" width="600" height="500"/>
+
+
 #### 1. **Thread (`threadIdx`)**
 
 A **thread** is the basic unit of execution in CUDA. Each thread executes the same code but can operate on different data based on its unique ID.
