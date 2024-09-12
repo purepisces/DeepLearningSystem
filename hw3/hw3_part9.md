@@ -1,7 +1,53 @@
+## Part 9: CUDA Backend - Matrix multiplication
+  
+Implement the following functions in `ndarray_backend_cuda.cu`:
+
+
+* `Matmul()`
+
+  
+Finally, as your final exercise, you'll implement matrix multiplication on the GPU. Your implementation here can roughly follow the presentation in class. While you can pass the tests using fairly naive code here (i.e., you could just have a separate thread for each (i,j) location in the matrix, doing the matrix multiplication efficiently (to make it actually faster than a CPU version) requires cooperative fetching and the block shared memory register tiling covered in class. Try to implement using these methods, and see how much faster you can get your code than the C++ (or numpy) backends.
+
+
+The Pseudocode in Class
+
+```cpp
+__global__ void mm(float A[N][N], float B[N][N], float C[N][N]) {
+    __shared__ float sA[S][L], sB[S][L];
+    float c[V][V] = {0};
+    float a[V], b[V];
+    int yblock = blockIdx.y;
+    int xblock = blockIdx.x;
+
+    for (int ko = 0; ko < N; ko += S) {
+        __syncthreads();
+        // needs to be implemented by thread cooperative fetching
+        sA[:, :] = A[ko + S, yblock * L : yblock * L + L];
+        sB[:, :] = B[ko + S, xblock * L : xblock * L + L];
+        __syncthreads();
+
+        for (int ki = 0; ki < S; ++ki) {
+            a[:] = sA[ki, threadIdx.x * V + V];
+            b[:] = sB[ki, threadIdx.x * V + V];
+            for (int y = 0; y < V; ++y) {
+                for (int x = 0; x < V; ++x) {
+                    c[y][x] += a[y] * b[x];
+                }
+            }
+        }
+    }
+
+    int ybase = blockIdx.y * blockDim.y + threadIdx.y;
+    int xbase = blockIdx.x * blockDim.x + threadIdx.x;
+    C[ybase * V : ybase * V + V, xbase * V : xbase * V + V] = c[:, :];
+}
+```
+
+
+**Code Implementation**
 ```cpp
 __global__ void MatmulKernel(const scalar_t* a, const scalar_t* b, scalar_t* c, uint32_t M, uint32_t N, uint32_t P) {
 #define V 2
-#define TILE 4
 
   // Get block and thread indices
   int block_x = blockIdx.x;  // Now block_x corresponds to columns of C (P)
@@ -125,584 +171,134 @@ void Matmul(const CudaArray& a, const CudaArray& b, CudaArray* out, uint32_t M, 
 }
 ```
 
-```cpp
-__global__ void MatmulKernel(const scalar_t* a, const scalar_t* b, scalar_t* c, uint32_t M, uint32_t N, uint32_t P) {
-#define V 2
-#define TILE 4
 
-  // Get block and thread indices
-  int block_x = blockIdx.x;
-  int block_y = blockIdx.y;
-  int thread_x = threadIdx.x;
-  int thread_y = threadIdx.y;
-  int thread_id = thread_x + thread_y * blockDim.x;
-  int nthreads = blockDim.x * blockDim.y;
+```python
+TILE = 4
+N = 5
+start = 0
+stripe_cnt = min(TILE, N - start)
+thread_x = 0
+thread_y = 0
+V = 2
 
-  // Shared memory for sub-matrices (tiles) of A and B
-  __shared__ scalar_t a_shared[TILE][TILE];
-  __shared__ scalar_t b_shared[TILE][TILE];
+# Initialize the shared memory for matrices A and B (for demonstration, these are 4x4 matrices)
+a_shared = [[0 for _ in range(TILE)] for _ in range(TILE)]
+b_shared = [[0 for _ in range(TILE)] for _ in range(TILE)]
 
-  // Registers for sub-block calculations
-  scalar_t c_reg[V][V] = {0};  // Initialize output sub-block
-  scalar_t a_reg[V] = {0};     // Temporary storage for row data from A
-  scalar_t b_reg[V] = {0};     // Temporary storage for column data from B
+# Initialize registers
+a_reg = [0 for _ in range(V)]
+b_reg = [0 for _ in range(V)]
 
-  // Iterate over tiles of A and B
-  for (int start = 0; start < N; start += TILE) {
-    __syncthreads(); // Ensure all threads in the block finish the previous loop
+# Initialize the output register (c_reg), which is a 2x2 block
+c_reg = [[0 for _ in range(V)] for _ in range(V)]
 
-    // Load tiles of A and B into shared memory, each thread loads one or more elements
-    for (int idx = thread_id; idx < TILE * TILE; idx += nthreads) {
-      int x = idx / TILE;  // Row index in the shared memory tile
-      int y = idx % TILE;  // Column index in the shared memory tile
+# Loop over stripes
+for stripe_i in range(stripe_cnt):
+    if thread_x * V < TILE and thread_y * V < TILE:
+        # Load row of A into registers for the current stripe
+        for reg_x in range(V):
+            shared_x = thread_x * V + reg_x
+            if shared_x < TILE:
+                a_reg[reg_x] = a_shared[shared_x][stripe_i]
+                # For demonstration, let's print the values being loaded
+                print(f"Loaded a_shared[{shared_x}][{stripe_i}] into a_reg[{reg_x}]")
 
-      // Load A tile from global memory to shared memory
-      if (x + block_x * TILE < M && y + start < N) {
-        a_shared[x][y] = a[(x + block_x * TILE) * N + y + start];
-      } else {
-        a_shared[x][y] = 0.0f; // Out of bounds, set to 0
-      }
+        # Load column of B into registers for the current stripe
+        for reg_y in range(V):
+            shared_y = thread_y * V + reg_y
+            if shared_y < TILE:
+                b_reg[reg_y] = b_shared[stripe_i][shared_y]
+                # For demonstration, let's print the values being loaded
+                print(f"Loaded b_shared[{stripe_i}][{shared_y}] into b_reg[{reg_y}]")
 
-      // Load B tile from global memory to shared memory
-      if (x + start < N && y + block_y * TILE < P) {
-        b_shared[x][y] = b[(x + start) * P + y + block_y * TILE];
-      } else {
-        b_shared[x][y] = 0.0f; // Out of bounds, set to 0
-      }
-    }
+        # Compute the outer product and accumulate results in c_reg
+        for i in range(V):
+            for j in range(V):
+                c_reg[i][j] += a_reg[i] * b_reg[j]
+                # For demonstration, print the computation details
+                print(f"c_reg[{i}][{j}] += a_reg[{i}] * b_reg[{j}] => {c_reg[i][j]}")
 
-    __syncthreads(); // Ensure all threads finish loading data to shared memory
-
-    // Perform matrix multiplication on the loaded tiles
-    int stripe_cnt = min(TILE, N - start); // Ensure we don't exceed matrix boundaries
-    for (int stripe_i = 0; stripe_i < stripe_cnt; ++stripe_i) {
-      if (thread_x * V < TILE && thread_y * V < TILE) {
-        // Load row of A and column of B into registers for the current stripe
-        for (int reg_x = 0; reg_x < V; ++reg_x) {
-          int shared_x = thread_x * V + reg_x;
-          if (shared_x < TILE) {
-            a_reg[reg_x] = a_shared[shared_x][stripe_i];
-          }
-        }
-
-        for (int reg_y = 0; reg_y < V; ++reg_y) {
-          int shared_y = thread_y * V + reg_y;
-          if (shared_y < TILE) {
-            b_reg[reg_y] = b_shared[stripe_i][shared_y];
-          }
-        }
-
-        // Compute the outer product and accumulate results in c_reg
-        for (int i = 0; i < V; ++i) {
-          for (int j = 0; j < V; ++j) {
-            c_reg[i][j] += a_reg[i] * b_reg[j];
-          }
-        }
-      }
-    }
-
-    __syncthreads(); // Ensure all threads finish computations for this tile
-  }
-
-  // Store the computed 2x2 sub-block from c_reg into global memory
-  if (thread_x * V < TILE && thread_y * V < TILE) {
-    for (int i = 0; i < V; ++i) {
-      for (int j = 0; j < V; ++j) {
-        int x = block_x * TILE + thread_x * V + i;
-        int y = block_y * TILE + thread_y * V + j;
-        if (x < M && y < P) {
-          c[x * P + y] = c_reg[i][j];  // Store result in the output matrix
-        }
-      }
-    }
-  }
-}
-
-void Matmul(const CudaArray& a, const CudaArray& b, CudaArray* out, uint32_t M, uint32_t N,
-            uint32_t P) {
-  /**
-   * Multiply two (compact) matrices into an output (also comapct) matrix.  You will want to look
-   * at the lecture and notes on GPU-based linear algebra to see how to do this.  Since ultimately
-   * mugrade is just evaluating correctness, you _can_ implement a version that simply parallelizes
-   * over (i,j) entries in the output array.  However, to really get the full benefit of this
-   * problem, we would encourage you to use cooperative fetching, shared memory register tiling, 
-   * and other ideas covered in the class notes.  Note that unlike the tiled matmul function in
-   * the CPU backend, here you should implement a single function that works across all size
-   * matrices, whether or not they are a multiple of a tile size.  As with previous CUDA
-   * implementations, this function here will largely just set up the kernel call, and you should
-   * implement the logic in a separate MatmulKernel() call.
-   * 
-   *
-   * Args:
-   *   a: compact 2D array of size m x n
-   *   b: comapct 2D array of size n x p
-   *   out: compact 2D array of size m x p to write the output to
-   *   M: rows of a / out
-   *   N: columns of a / rows of b
-   *   P: columns of b / out
-   */
-
-  /// BEGIN SOLUTION
-  dim3 grid_dim = dim3((M + TILE - 1) / TILE, (P + TILE - 1) / TILE, 1);
-  dim3 block_dim = dim3(2, 2, 1);
-  MatmulKernel<<<grid_dim, block_dim>>>(a.ptr, b.ptr, out->ptr, M, N, P);
-  /// END SOLUTION
-}
+# For demonstration, output the final c_reg values
+print("Final c_reg values:")
+for row in c_reg:
+    print(row)
 ```
-<img src="CUDA_Grid.png" alt="CUDA_Grid" width="600" height="500"/>
-
-## Reference
-
-- CUDA_Grid.png from https://www.microway.com/hpc-tech-tips/cuda-parallel-thread-management/
-
-
-
-## Part 9: CUDA Backend - Matrix multiplication
-  
-Implement the following functions in `ndarray_backend_cuda.cu`:
-
-
-* `Matmul()`
-
-  
-Finally, as your final exercise, you'll implement matrix multiplication on the GPU. Your implementation here can roughly follow the presentation in class. While you can pass the tests using fairly naive code here (i.e., you could just have a separate thread for each (i,j) location in the matrix, doing the matrix multiplication efficiently (to make it actually faster than a CPU version) requires cooperative fetching and the block shared memory register tiling covered in class. Try to implement using these methods, and see how much faster you can get your code than the C++ (or numpy) backends.
-
-
-The Pseudocode in Class
-
-```cpp
-__global__ void mm(float A[N][N], float B[N][N], float C[N][N]) {
-    __shared__ float sA[S][L], sB[S][L];
-    float c[V][V] = {0};
-    float a[V], b[V];
-    int yblock = blockIdx.y;
-    int xblock = blockIdx.x;
-
-    for (int ko = 0; ko < N; ko += S) {
-        __syncthreads();
-        // needs to be implemented by thread cooperative fetching
-        sA[:, :] = A[ko + S, yblock * L : yblock * L + L];
-        sB[:, :] = B[ko + S, xblock * L : xblock * L + L];
-        __syncthreads();
-
-        for (int ki = 0; ki < S; ++ki) {
-            a[:] = sA[ki, threadIdx.x * V + V];
-            b[:] = sB[ki, threadIdx.x * V + V];
-            for (int y = 0; y < V; ++y) {
-                for (int x = 0; x < V; ++x) {
-                    c[y][x] += a[y] * b[x];
-                }
-            }
-        }
-    }
-
-    int ybase = blockIdx.y * blockDim.y + threadIdx.y;
-    int xbase = blockIdx.x * blockDim.x + threadIdx.x;
-    C[ybase * V : ybase * V + V, xbase * V : xbase * V + V] = c[:, :];
-}
+```css
+Loaded a_shared[0][0] into a_reg[0]
+Loaded a_shared[1][0] into a_reg[1]
+Loaded b_shared[0][0] into b_reg[0]
+Loaded b_shared[0][1] into b_reg[1]
+c_reg[0][0] += a_reg[0] * b_reg[0] => 0
+c_reg[0][1] += a_reg[0] * b_reg[1] => 0
+c_reg[1][0] += a_reg[1] * b_reg[0] => 0
+c_reg[1][1] += a_reg[1] * b_reg[1] => 0
+Loaded a_shared[0][1] into a_reg[0]
+Loaded a_shared[1][1] into a_reg[1]
+Loaded b_shared[1][0] into b_reg[0]
+Loaded b_shared[1][1] into b_reg[1]
+c_reg[0][0] += a_reg[0] * b_reg[0] => 0
+c_reg[0][1] += a_reg[0] * b_reg[1] => 0
+c_reg[1][0] += a_reg[1] * b_reg[0] => 0
+c_reg[1][1] += a_reg[1] * b_reg[1] => 0
+Loaded a_shared[0][2] into a_reg[0]
+Loaded a_shared[1][2] into a_reg[1]
+Loaded b_shared[2][0] into b_reg[0]
+Loaded b_shared[2][1] into b_reg[1]
+c_reg[0][0] += a_reg[0] * b_reg[0] => 0
+c_reg[0][1] += a_reg[0] * b_reg[1] => 0
+c_reg[1][0] += a_reg[1] * b_reg[0] => 0
+c_reg[1][1] += a_reg[1] * b_reg[1] => 0
+Loaded a_shared[0][3] into a_reg[0]
+Loaded a_shared[1][3] into a_reg[1]
+Loaded b_shared[3][0] into b_reg[0]
+Loaded b_shared[3][1] into b_reg[1]
+c_reg[0][0] += a_reg[0] * b_reg[0] => 0
+c_reg[0][1] += a_reg[0] * b_reg[1] => 0
+c_reg[1][0] += a_reg[1] * b_reg[0] => 0
+c_reg[1][1] += a_reg[1] * b_reg[1] => 0
+Final c_reg values:
+[0, 0]
+[0, 0]
 ```
 
-Expand Cooperative Fetching 18 sA[:, :] = A[k : k + S, yblock * L : yblock * L + L]; int nthreads = blockDim.y * blockDim.x; int tid = threadIdx.y * blockDim.x + threadIdx.x; for(int j = 0; j < L * S / nthreads; ++j) { int y = (j * nthreads + tid) / L; int x = (j * nthreads + tid) % L; s[y, x] = A[k + y, yblock * L + x]; }
+```python
+# Define necessary variables
+TILE = 4
+V = 2
+M = 9  # Number of rows in matrix C
+P = 8  # Number of columns in matrix C
 
-Implemented
-```cpp
-__global__ void MatmulKernel(const scalar_t* a, const scalar_t* b, scalar_t* c, uint32_t M, uint32_t N, uint32_t P) {
-#define V 2
-#define TILE 4
+block_x = 1  # Example block column index
+block_y = 0  # Example block row index
 
-  // Get block and thread indices
-  int block_x = blockIdx.x;
-  int block_y = blockIdx.y;
-  int thread_x = threadIdx.x;
-  int thread_y = threadIdx.y;
-  int thread_id = thread_x + thread_y * blockDim.x;
-  int nthreads = blockDim.x * blockDim.y;
+thread_x = 0  # Example thread row index in block
+thread_y = 0  # Example thread column index in block
 
-  // Shared memory for sub-matrices (tiles) of A and B
-  __shared__ scalar_t a_shared[TILE][TILE];
-  __shared__ scalar_t b_shared[TILE][TILE];
+# Initialize c_reg (2x2 matrix for each thread)
+c_reg = [[0 for _ in range(V)] for _ in range(V)]
 
-  // Registers for sub-block calculations
-  scalar_t c_reg[V][V] = {0};  // Initialize output sub-block
-  scalar_t a_reg[V] = {0};     // Temporary storage for row data from A
-  scalar_t b_reg[V] = {0};     // Temporary storage for column data from B
+# Initialize the global memory matrix 'c' with zeros (M x P)
+c = [[0 for _ in range(P)] for _ in range(M)]
 
-  // Iterate over tiles of A and B
-  for (int start = 0; start < N; start += TILE) {
-    __syncthreads(); // Ensure all threads in the block finish the previous loop
+# Loop over the elements of the 2x2 block
+for i in range(V):
+    for j in range(V):
+        # Calculate global indices (x and y) in matrix C
+        x = block_y * TILE + thread_x * V + i  # Row index in C
+        y = block_x * TILE + thread_y * V + j  # Column index in C
 
-    // Load tiles of A and B into shared memory, each thread loads one or more elements
-    for (int idx = thread_id; idx < TILE * TILE; idx += nthreads) {
-      int x = idx / TILE;  // Row index in the shared memory tile
-      int y = idx % TILE;  // Column index in the shared memory tile
-
-      // Load A tile from global memory to shared memory
-      if (x + block_x * TILE < M && y + start < N) {
-        a_shared[x][y] = a[(x + block_x * TILE) * N + y + start];
-      } else {
-        a_shared[x][y] = 0.0f; // Out of bounds, set to 0
-      }
-
-      // Load B tile from global memory to shared memory
-      if (x + start < N && y + block_y * TILE < P) {
-        b_shared[x][y] = b[(x + start) * P + y + block_y * TILE];
-      } else {
-        b_shared[x][y] = 0.0f; // Out of bounds, set to 0
-      }
-    }
-
-    __syncthreads(); // Ensure all threads finish loading data to shared memory
-
-    // Perform matrix multiplication on the loaded tiles
-    int stripe_cnt = min(TILE, N - start); // Ensure we don't exceed matrix boundaries
-    for (int stripe_i = 0; stripe_i < stripe_cnt; ++stripe_i) {
-      if (thread_x * V < TILE && thread_y * V < TILE) {
-        // Load row of A and column of B into registers for the current stripe
-        for (int reg_x = 0; reg_x < V; ++reg_x) {
-          int shared_x = thread_x * V + reg_x;
-          if (shared_x < TILE) {
-            a_reg[reg_x] = a_shared[shared_x][stripe_i];
-          }
-        }
-
-        for (int reg_y = 0; reg_y < V; ++reg_y) {
-          int shared_y = thread_y * V + reg_y;
-          if (shared_y < TILE) {
-            b_reg[reg_y] = b_shared[stripe_i][shared_y];
-          }
-        }
-
-        // Compute the outer product and accumulate results in c_reg
-        for (int i = 0; i < V; ++i) {
-          for (int j = 0; j < V; ++j) {
-            c_reg[i][j] += a_reg[i] * b_reg[j];
-          }
-        }
-      }
-    }
-
-    __syncthreads(); // Ensure all threads finish computations for this tile
-  }
-
-  // Store the computed 2x2 sub-block from c_reg into global memory
-  if (thread_x * V < TILE && thread_y * V < TILE) {
-    for (int i = 0; i < V; ++i) {
-      for (int j = 0; j < V; ++j) {
-        int x = block_x * TILE + thread_x * V + i;
-        int y = block_y * TILE + thread_y * V + j;
-        if (x < M && y < P) {
-          c[x * P + y] = c_reg[i][j];  // Store result in the output matrix
-        }
-      }
-    }
-  }
-}
+        # Check for out-of-bounds and write to matrix C if valid
+        if x < M and y < P:
+            c[x][y] = c_reg[i][j]  # Store the result in the global matrix C
+            print(f"Loaded c_reg[{i}][{j}] into c[{x}][{y}]")      
 ```
-```cpp
-__global__ void MatmulKernel(const scalar_t* a, const scalar_t* b, scalar_t* c, uint32_t M, uint32_t N,
-            uint32_t P){
-#define V 2
-#define TILE 4
-  /**
-   * 使用分块计算矩阵乘法，按照TILE大小分块
-   * a: M x N
-   * b: N x P
-   */
-  int block_x = blockIdx.x;
-  int block_y = blockIdx.y;
-  int thread_x = threadIdx.x;
-  int thread_y = threadIdx.y;
-  int thread_id = thread_x + thread_y * blockDim.x;
-  int nthreads = blockDim.x * blockDim.y;
-  // 每个block负责计算一个子矩阵的结果，具体来说，就是c[block_x*TILE: (block_x+1)*TILE, block_y*TILE: (block_y+1)*TILE]
-  // 通过累加"outer product"的结果计算这个子矩阵，product的两个元素都是分块后行列子矩阵的一个stripe
-  // 例如，a按行分块后每一块shape是(TILE, N)，再取一个stripe的shape就是(TILE, TILE)
-  // outer product每次的步长不是1，而是TILE
-
-  __shared__ scalar_t a_shared[TILE][TILE];
-  __shared__ scalar_t b_shared[TILE][TILE];
-  scalar_t c_reg[V][V] = {0};
-  scalar_t a_reg[V]={0}, b_reg[V]={0};
-
-
-  for(int start=0; start<N; start+=TILE){
-    __syncthreads();
-    // 一共有TILE * TILE个元素要导入，每个线程平均负责(TILE * TILE+nthreads-1)/nthreads个元素
-    // for (int i=0; i<(TILE * TILE+nthreads-1)/nthreads; i++){
-    //   int idx = thread_id + i * nthreads; // 在shared中的索引
-    //   int x = idx / TILE; // 在shared中的索引
-    //   int y = idx % TILE; // 在shared中的索引
-    //   // a_shared中的(x, y)相当于a中的(x+block_x*TILE, y+start)
-    //   // b_shared中的(x, y)相当于b中的(x+start, y+block_y*TILE)
-    //   if(x+block_x*TILE < M && y+start < N){
-    //     a_shared[x][y] = a[(x+block_x*TILE)*N + y+start];
-    //   }
-    //   if(x+start < N && y+block_y*TILE < P){
-    //     b_shared[x][y] = b[(x+start)*P + y+block_y*TILE];
-    //   }
-    // }
-    for (int idx = thread_id; idx < TILE * TILE; idx += nthreads){
-      int x = idx / TILE; // 在shared中的索引
-      int y = idx % TILE; // 在shared中的索引
-      // a_shared中的(x, y)相当于a中的(x+block_x*TILE, y+start)
-      // b_shared中的(x, y)相当于b中的(x+start, y+block_y*TILE)
-      if(x+block_x*TILE < M && y+start < N){
-        a_shared[x][y] = a[(x+block_x*TILE)*N + y+start];
-      }
-      if(x+start < N && y+block_y*TILE < P){
-        b_shared[x][y] = b[(x+start)*P + y+block_y*TILE];
-      }
-    }
-    __syncthreads();
-    // 接下来开始计算外积
-    // 通过遍历a_shared的列和b_shared的行，也就是a_shared的第stripe_i行和b_shared的第stripe_i列
-    int stripe_cnt = min(TILE, N-start);
-    for(int stripe_i=0; stripe_i<stripe_cnt; stripe_i++){
-    // 这个外积由nthreads负责计算，这个外积将stripe_a 和 stripe_b 按照连续的V行/列分块，由每个线程计算
-    // 接下来把计算V*V的外积结果的要用的数据加载到寄存器数组中
-      if(thread_x * V >= TILE || thread_y * V >= TILE)
-        continue;
-      for(int reg_x=0; reg_x<V; reg_x++){
-        int shared_x = reg_x + thread_x * V;
-        if(shared_x >= TILE){
-          break;
-        }
-        a_reg[reg_x] = a_shared[shared_x][stripe_i];
-        // b_reg[reg_x] = b_shared[stripe_i][shared_x];
-      }
-      for(int reg_y=0; reg_y<V; reg_y++){
-        int shared_y = reg_y + thread_y * V;
-        if(shared_y >= TILE){
-          break;
-        }
-        // a_reg[reg_y] = a_shared[stripe_i][shared_y];
-        b_reg[reg_y] = b_shared[stripe_i][shared_y];
-      }
-      for(int i=0; i<V; i++){
-        for(int j=0; j<V; j++){
-          // 这里“越界”可以不管吧？把c_reg放到结果中的时候再处理
-          c_reg[i][j] += a_reg[i] * b_reg[j];
-        }
-      }
-    }
-  }
-
-  // 把c_reg的结果写入到c中
-  if(thread_x * V >= TILE || thread_y * V >= TILE)
-    return;
-  for(int i=0; i<V; i++){
-    for(int j=0; j<V; j++){
-      int x = block_x * TILE + thread_x * V + i;
-      int y = block_y * TILE + thread_y * V + j;
-      if(x < M && y < P){
-        c[x*P + y] = c_reg[i][j];
-      } else {
-        break;
-      }
-
-    }
-  }
-
-
-}
-
-void Matmul(const CudaArray& a, const CudaArray& b, CudaArray* out, uint32_t M, uint32_t N,
-            uint32_t P) {
-  /**
-   * Multiply two (compact) matrices into an output (also comapct) matrix.  You will want to look
-   * at the lecture and notes on GPU-based linear algebra to see how to do this.  Since ultimately
-   * mugrade is just evaluating correctness, you _can_ implement a version that simply parallelizes
-   * over (i,j) entries in the output array.  However, to really get the full benefit of this
-   * problem, we would encourage you to use cooperative fetching, shared memory register tiling, 
-   * and other ideas covered in the class notes.  Note that unlike the tiled matmul function in
-   * the CPU backend, here you should implement a single function that works across all size
-   * matrices, whether or not they are a multiple of a tile size.  As with previous CUDA
-   * implementations, this function here will largely just set up the kernel call, and you should
-   * implement the logic in a separate MatmulKernel() call.
-   * 
-   *
-   * Args:
-   *   a: compact 2D array of size m x n
-   *   b: comapct 2D array of size n x p
-   *   out: compact 2D array of size m x p to write the output to
-   *   M: rows of a / out
-   *   N: columns of a / rows of b
-   *   P: columns of b / out
-   */
-
-  /// BEGIN SOLUTION
-  // 结果的shape是M*P，每个block负责计算一个TILE*TILE的子矩阵
-  dim3 grid_dim = dim3((M + TILE - 1) / TILE, (P + TILE - 1) / TILE, 1);
-  dim3 block_dim = dim3(16, 16, 1);
-  // dim3 block_dim = dim3(2, 2, 1);
-  MatmulKernel<<<grid_dim, block_dim>>>(a.ptr, b.ptr, out->ptr, M, N, P);
-  /// END SOLUTION
-}
+```css
+Loaded c_reg[0][0] into c[0][4]
+Loaded c_reg[0][1] into c[0][5]
+Loaded c_reg[1][0] into c[1][4]
+Loaded c_reg[1][1] into c[1][5]
 ```
-```cpp
-#define TILE 4  // Predefined tile size
-#define V 2     // Size of the sub-block each thread computes within a tile
 
-__global__ void MatmulKernel(const scalar_t* A, const scalar_t* B, scalar_t* C, uint32_t M, uint32_t N, uint32_t P) {
-    // Shared memory for tiles of A and B
-    __shared__ scalar_t sA[TILE][TILE];
-    __shared__ scalar_t sB[TILE][TILE];
-
-    // Thread and block indices
-    int xblock = blockIdx.x;  // Handling rows of A and C
-    int yblock = blockIdx.y;  // Handling columns of B and C
-    int x = threadIdx.x;
-    int y = threadIdx.y;
-
-    // Registers for storing sub-block computations
-    scalar_t c[V][V] = {0};
-
-    // Loop over the tiles of A and B
-    for (int ko = 0; ko < N; ko += TILE) {
-        // Cooperative fetching of tiles from A and B
-        if (xblock * TILE + x < M && ko + y < N) {
-            sA[x][y] = A[(xblock * TILE + x) * N + ko + y];
-        } else {
-            sA[x][y] = 0.0f;  // Handle boundary conditions
-        }
-
-        if (yblock * TILE + y < P && ko + x < N) {
-            sB[x][y] = B[(ko + x) * P + yblock * TILE + y];
-        } else {
-            sB[x][y] = 0.0f;  // Handle boundary conditions
-        }
-
-        // Wait for all threads to load their tiles
-        __syncthreads();
-
-        // Perform the matrix multiplication on the tile
-        for (int ki = 0; ki < TILE; ++ki) {
-            scalar_t a[V], b[V];
-
-            // Each thread computes a VxV sub-block
-            for (int v = 0; v < V; ++v) {
-                a[v] = sA[x][ki * V + v];
-                b[v] = sB[ki * V + v];
-
-                for (int yv = 0; yv < V; ++yv) {
-                    for (int xv = 0; xv < V; ++xv) {
-                        c[yv][xv] += a[yv] * b[xv];
-                    }
-                }
-            }
-        }
-
-        // Synchronize before loading the next tile
-        __syncthreads();
-    }
-
-    // Write back the result to the output matrix C
-    int xbase = xblock * TILE + x;
-    int ybase = yblock * TILE + y;
-
-    if (xbase < M && ybase < P) {
-        for (int yv = 0; yv < V; ++yv) {
-            for (int xv = 0; xv < V; ++xv) {
-                C[(xbase * V + yv) * P + (ybase * V + xv)] = c[yv][xv];
-            }
-        }
-    }
-}
-
-void Matmul(const CudaArray& A, const CudaArray& B, CudaArray* C, uint32_t M, uint32_t N, uint32_t P) {
-    // Configure the grid and block sizes
-    dim3 blockDim(TILE, TILE);
-    dim3 gridDim((M + TILE - 1) / TILE, (P + TILE - 1) / TILE);
-
-    // Launch the kernel
-    MatmulKernel<<<gridDim, blockDim>>>(A.ptr, B.ptr, C->ptr, M, N, P);
-}
-```
-```cpp
-__global__ void MatmulKernel(const scalar_t* a, const scalar_t* b, scalar_t* c, uint32_t M, uint32_t N, uint32_t P)
-{
-    #define V 2   // Size of the sub-block each thread computes within a tile
-    #define TILE 4 // Tile size for shared memory (4x4 blocks)
-
-    // Thread and block indices
-    int block_x = blockIdx.x;   // x index of the block within the grid (responsible for rows)
-    int block_y = blockIdx.y;   // y index of the block within the grid (responsible for columns)
-    int thread_x = threadIdx.x; // x index of the thread within the block (which row this thread handles)
-    int thread_y = threadIdx.y; // y index of the thread within the block (which column this thread handles)
-
-    // Unique thread ID within the block
-    int thread_id = thread_x + thread_y * blockDim.x; // Flattened 1D index for the thread in the block
-    int nthreads = blockDim.x * blockDim.y;           // Total number of threads in the block (blockDim.x * blockDim.y)
-
-    // Shared memory for tiles of matrix A and B
-    __shared__ scalar_t a_shared[TILE][TILE]; // Shared memory tile for matrix A
-    __shared__ scalar_t b_shared[TILE][TILE]; // Shared memory tile for matrix B
-
-    // Registers to hold intermediate computation
-    scalar_t c_reg[V][V] = {0};  // Accumulates the sub-block computation (2x2 in this case)
-    scalar_t a_reg[V] = {0}, b_reg[V] = {0}; // Temporary storage for rows of a_shared and columns of b_shared
-
-    // Loop over the tiles of matrix A and B
-    for (int start = 0; start < N; start += TILE) {
-        // Load the tiles of A and B into shared memory cooperatively
-        __syncthreads();  // Ensure that previous computation on shared memory is complete
-
-        for (int idx = thread_id; idx < TILE * TILE; idx += nthreads) {
-            int x = idx / TILE; // Row index within the tile
-            int y = idx % TILE; // Column index within the tile
-
-            // Load elements from global memory into shared memory
-            if (x + block_x * TILE < M && y + start < N) {
-                a_shared[x][y] = a[(x + block_x * TILE) * N + y + start]; // Load a tile from matrix A
-            }
-            if (x + start < N && y + block_y * TILE < P) {
-                b_shared[x][y] = b[(x + start) * P + y + block_y * TILE]; // Load a tile from matrix B
-            }
-        }
-        __syncthreads();  // Ensure all threads have loaded the tiles
-
-        // Perform matrix multiplication on the tile
-        int stripe_cnt = min(TILE, N - start); // Number of stripes (sub-tiles) to process
-
-        for (int stripe_i = 0; stripe_i < stripe_cnt; stripe_i++) {
-            // Check if the thread is responsible for processing this sub-block
-            if (thread_x * V >= TILE || thread_y * V >= TILE) continue;
-
-            // Load rows and columns of the shared memory tile into registers
-            for (int reg_x = 0; reg_x < V; reg_x++) {
-                int shared_x = reg_x + thread_x * V;
-                if (shared_x >= TILE) break;
-                a_reg[reg_x] = a_shared[shared_x][stripe_i]; // Load a stripe from a_shared into a_reg
-            }
-            for (int reg_y = 0; reg_y < V; reg_y++) {
-                int shared_y = reg_y + thread_y * V;
-                if (shared_y >= TILE) break;
-                b_reg[reg_y] = b_shared[stripe_i][shared_y]; // Load a stripe from b_shared into b_reg
-            }
-
-            // Compute the outer product of a_reg and b_reg and accumulate the result in c_reg
-            for (int i = 0; i < V; i++) {
-                for (int j = 0; j < V; j++) {
-                    c_reg[i][j] += a_reg[i] * b_reg[j];
-                }
-            }
-        }
-    }
-
-    // Write the result back to the global memory matrix C
-    if (thread_x * V >= TILE || thread_y * V >= TILE) return; // Ensure threads don't go out of bounds
-
-    for (int i = 0; i < V; i++) {
-        for (int j = 0; j < V; j++) {
-            int x = block_x * TILE + thread_x * V + i;
-            int y = block_y * TILE + thread_y * V + j;
-            if (x < M && y < P) {
-                c[x * P + y] = c_reg[i][j]; // Store the result in the global memory
-            }
-        }
-    }
-}
-```
 ### Explain Kernel Launch:
 When you call `Matmul`, it launches the CUDA kernel `MatmulKernel` with a **grid of blocks**, where each block contains a **2D array of threads**. This doesn't just call the kernel for one thread; instead, it invokes the kernel across all the **threads in all the blocks** simultaneously (or in parallel, depending on hardware).
 
@@ -949,7 +545,5 @@ Thread 1 (thread_id = 1) loads elements: 1, 5, 9, 13
 Thread 2 (thread_id = 2) loads elements: 2, 6, 10, 14
 Thread 3 (thread_id = 3) loads elements: 3, 7, 11, 15
 ```
-
-
 
 
