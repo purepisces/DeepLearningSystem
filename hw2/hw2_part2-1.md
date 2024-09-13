@@ -522,7 +522,7 @@ out = np.array([3.4076, 6.4076])  # Shape: (2,)
 7.  **`out`**: Shape `(2,)` — Final result after adding back the max values without dimensions.
 
 
-### First Solution: My explanation for  def gradient(self, out_grad, node):
+### First Solution: Explanation for  def gradient(self, out_grad, node) (reference zhihu):
 ```python
 def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
