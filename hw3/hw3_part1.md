@@ -1286,7 +1286,7 @@ This means the new view starts at the memory location corresponding to the eleme
 ### Explanation of `__getitem__`
 
 ```python
-    def process_slice(self, sl, dim):
+        def process_slice(self, sl, dim):
         """Convert a slice to an explicit start/stop/step"""
         start, stop, step = sl.start, sl.stop, sl.step
         if start == None:
@@ -1345,9 +1345,8 @@ This means the new view starts at the memory location corresponding to the eleme
                 for i, s in enumerate(idxs)
             ]
         )
-       
         assert len(idxs) == self.ndim, "Need indexes equal to number of dimensions"
-        
+
         ### BEGIN YOUR SOLUTION
         new_shape = []  # List to store the new shape of the array view.
         new_strides = []  # List to store the new strides for the array view.
