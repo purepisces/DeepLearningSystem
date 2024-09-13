@@ -519,7 +519,7 @@ The image also illustrates the thread IDs:
 - `threadIdx(1,1)` corresponds to `threadId 3`
 
 
-<img src="tile_loading_iteration.png" alt="Tile Loading Iteration: First and Second" width="500" height="600"/>
+<img src="tile_loading_iteration.png" alt="Tile Loading Iteration: First and Second" width="600" height="600"/>
 
 Since block (1, 0) is responsible for calculating the top-right portion of the output matrix **C**, which corresponds to rows 0–3 of matrix **A** multiplied by columns 4–7 of matrix **B**, the relevant parts of these matrices are loaded into shared memory as tiles for efficient processing.
 
