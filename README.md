@@ -1,4 +1,5 @@
 Emergency To do:
+1. Modify all summation related part in homework ops.mathematics
 
 1. Check summation gradient make hw1's solution to hw2's summation
 
