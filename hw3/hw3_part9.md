@@ -663,7 +663,7 @@ Each thread has its own registers, so while multiple threads load values into `c
 
 **Visualization**:
 
-<img src="block_thread_assignment.png" alt="block_thread_assignment" width="500" height="600"/>
+<img src="block_thread_assignment.png" alt="block_thread_assignment" width="400" height="500"/>
 
 In `blockIdx(1,0)`, each thread within the block will compute a specific 2x2 submatrix of the assigned 4x4 portion of matrix **C**:
 
