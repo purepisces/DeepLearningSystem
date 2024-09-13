@@ -181,7 +181,7 @@ When you call `Matmul`, it launches the CUDA kernel `MatmulKernel` with a **grid
 
 ### Explain `thread_id = thread_x + thread_y * blockDim.x`
 
-<img src="CUDA_Grid.png" alt="CUDA_Grid" width="600" height="500"/>
+<img src="CUDA_Grid.png" alt="CUDA_Grid" width="500" height="600"/>
 
 #### Visualization Example:
 
@@ -502,11 +502,11 @@ b_shared[0, 3] corresponds to b[4, 7]
 ```
 **Visualization:**
 
-<img src="matrix_multiplication.png" alt="Matrix Multiplication" width="600" height="500"/>
+<img src="matrix_multiplication.png" alt="Matrix Multiplication" width="500" height="600"/>
 
 In this example, matrix **A** is of size 9x5 (**M = 9**, **N = 5**), matrix **B** is 5x8 (**N = 5**, **P = 8**), and the resulting matrix **C** is 9x8 (**M = 9**, **P = 8**)
 
-<img src="block_1_0.png" alt="Block (1, 0)" width="600" height="500"/>
+<img src="block_1_0.png" alt="Block (1, 0)" width="500" height="600"/>
 
 In this example, the grid dimensions are `griddim.x = 2` and `griddim.y = 3`, while the block dimensions are `blockDim.x = 2` and `blockDim.y = 2`, giving a total of `nthreads = blockDim.x * blockDim.y = 4` threads per block. Each block is assigned to compute a portion of the output matrix **C**, with `blockIdx.x = 0 or 1`, `blockIdx.y = 0, 1, or 2`, and `threadIdx.x = 0 or 1` and `threadIdx.y = 0 or 1`, corresponding to `threadId = 0, 1, 2, or 3`.
 
@@ -519,7 +519,7 @@ The image also illustrates the thread IDs:
 - `threadIdx(1,1)` corresponds to `threadId 3`
 
 
-<img src="tile_loading_iteration.png" alt="Tile Loading Iteration: First and Second" width="600" height="500"/>
+<img src="tile_loading_iteration.png" alt="Tile Loading Iteration: First and Second" width="500" height="600"/>
 
 Since block (1, 0) is responsible for calculating the top-right portion of the output matrix **C**, which corresponds to rows 0–3 of matrix **A** multiplied by columns 4–7 of matrix **B**, the relevant parts of these matrices are loaded into shared memory as tiles for efficient processing.
 
@@ -663,7 +663,7 @@ Each thread has its own registers, so while multiple threads load values into `c
 
 **Visualization**:
 
-<img src="block_thread_assignment.png" alt="block_thread_assignment" width="600" height="500"/>
+<img src="block_thread_assignment.png" alt="block_thread_assignment" width="500" height="600"/>
 
 In `blockIdx(1,0)`, each thread within the block will compute a specific 2x2 submatrix of the assigned 4x4 portion of matrix **C**:
 
