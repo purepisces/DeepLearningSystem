@@ -1,3 +1,14 @@
+modified these function's code different from previous homework, also take a look at tanh's gradient, split's gradient, stack's gradient
+```css
+matmul
+summation
+transpose
+LogSumExp
+broadcast to in ndarray.py
+reduce_view_out in ndarray.py:  if axis is None:
+            view = self.compact().reshape((1,) * (self.ndim - 1) + (prod(self.shape),))
+            out = NDArray.make((1,) * self.ndim if keepdims else (1,), device=self.device)
+```
 # 10-714 Homework 4
 
 In this homework, you will leverage all of the components built in the last three homeworks to solve some modern problems with high performing network structures. We will start by adding a few new ops leveraging our new CPU/CUDA backends. Then, you will implement convolution, and a convolutional neural network to train a classifier on the CIFAR-10 image classification dataset. Then, you will implement recurrent and long-short term memory (LSTM) neural networks, and do word-level prediction language modeling on the Penn Treebank dataset.
@@ -55,19 +66,14 @@ Note that for most of these, you already wrote the solutions in the previous hom
 
 **Note:** Depending on your implementations, you may want to ensure that you call `.compact()` before reshaping arrays. (If this is necessary, you will run into corresponding error messages later in the assignment.)
 
-```python
-matmul
-summation
-transpose
-LogSumExp
-```
+
 
 ___
 ## Explain `stack`
 
 Let’s go through a more detailed example where the tensor `A` has the shape $4 \times 3$ (4 rows and 3 columns) and we'll stack it with another tensor `B` of the same shape. We’ll explore different values of `axis` to show how the `compute` method works.
 
-### Example:
+### Explain With Example:
 ```python
 A = [[ 1,  2,  3],   # shape (4, 3)
      [ 4,  5,  6],
@@ -180,4 +186,212 @@ Final Output of `ret[:, 3, :]`:
 ```python
 [[10, 11, 12],   # 3rd slice from the first row
  [22, 23, 24]]   # 3rd slice from the second row
+```
+
+### Explain why the result is NDArray not Tensor
+The `result = array_api.empty()` line creates an `NDArray` (not a `Tensor`) because:
+
+-   **NDArray** is responsible for numerical storage and computation.
+-   **Tensor** is a higher-level structure that wraps around `NDArray` to add additional functionality like gradients and computational graph management.
+
+___
+## Explain Split
+
+### Understanding Axes in Tensor with Examples
+
+```python
+A = Tensor([[1, 2, 3],
+            [4, 5, 6]])
+```
+-   The **first axis (axis 0)** refers to the **rows** of the tensor.
+-   The **second axis (axis 1)** refers to the **columns** of the tensor.
+
+Let's break it down:
+
+#### **Axis 0 (First Axis)**: Rows
+
+-   The elements along axis 0 are the **rows** of the tensor. Each row is treated as a distinct element along axis 0.
+    -   The first element (along axis 0) is the row `[1, 2, 3]`.
+    -   The second element (along axis 0) is the row `[4, 5, 6]`.
+
+So, the elements in axis 0 are:
+```css
+[1, 2, 3]  # First row
+[4, 5, 6]  # Second row
+```
+#### **Axis 1 (Second Axis)**: Columns
+
+-   The elements along axis 1 are the **columns** of the tensor. Each column is treated as a distinct element along axis 1.
+    -   The first element (along axis 1) is the column `[1, 4]`.
+    -   The second element (along axis 1) is the column `[2, 5]`.
+    -   The third element (along axis 1) is the column `[3, 6]`.
+
+So, the elements in axis 1 are:
+```css
+[1, 4]  # First column
+[2, 5]  # Second column
+[3, 6]  # Third column
+```
+#### Conclusion:
+
+-   **Axis 0 (rows)**: `[1, 2, 3]`, `[4, 5, 6]`
+-   **Axis 1 (columns)**: `[1, 4]`, `[2, 5]`, `[3, 6]`
+
+Each axis refers to a different way of slicing through the tensor: axis 0 slices through rows, and axis 1 slices through columns.
+
+### Explain split `compute` code with example
+
+**Example:** Let `A = Tensor([[1, 2, 3], [4, 5, 6]])`.
+#### Case 1: `axis = 0`
+
+In this case, we are splitting along the rows (axis 0), so we expect the output to be two separate rows.
+
+-   **Initial state:**
+```python
+A.shape = (2, 3)  # 2 rows, 3 columns
+axis = 0
+```
+- **Step-by-step Explanation:**
+```python
+axis_size = A.shape[self.axis]
+# axis_size = 2, since A.shape[0] = 2
+```
+-   We are splitting along axis 0, which has 2 elements (rows).
+```python
+split_tensors = []
+```
+-   We initialize an empty list `split_tensors` to store the split tensors.
+```python
+output_shape = list(A.shape)
+output_shape.pop(self.axis)
+# output_shape = [3], since we removed the axis 0 dimension
+```
+- `output_shape` becomes `[3]` because we are removing axis 0 (which had size 2), leaving us with 3 columns.
+```python
+for i in range(axis_size):  # Loop over the two rows
+```
+-   We loop through the two elements along axis 0.
+
+**First Iteration (`i=0`):**
+```python
+slices = [slice(None)] * len(A.shape)
+slices[self.axis] = i
+# slices = [0, slice(None)], since axis = 0 and i = 0
+```
+- `slices` becomes `[0, slice(None)]`, meaning we take the 0th row and all columns.
+```python
+split_tensors.append(A[tuple(slices)].compact().reshape(output_shape))
+# A[tuple(slices)] gives Tensor([1, 2, 3])
+# reshape(output_shape) keeps it as [1, 2, 3]
+```
+-   This extracts the first row `[1, 2, 3]` from the tensor `A` and appends it to `split_tensors`.
+
+**Second Iteration (`i=1`):**
+```python
+slices = [slice(None)] * len(A.shape)
+slices[self.axis] = i
+# slices = [1, slice(None)], since axis = 0 and i = 1
+```
+- `slices` becomes `[1, slice(None)]`, meaning we take the 1st row and all columns.
+```python
+split_tensors.append(A[tuple(slices)].compact().reshape(output_shape))
+# A[tuple(slices)] gives Tensor([4, 5, 6])
+# reshape(output_shape) keeps it as [4, 5, 6]
+```
+- This extracts the second row `[4, 5, 6]` and appends it to `split_tensors`.
+```python
+return tuple(split_tensors)
+```
+- The final result is
+```python
+(Tensor([1, 2, 3]), Tensor([4, 5, 6]))
+```
+#### Case 2: `axis = 1`
+
+In this case, we are splitting along the columns (axis 1), so we expect the output to be three separate columns.
+
+-   **Initial state:**
+```python
+A.shape = (2, 3)  # 2 rows, 3 columns
+axis = 1
+```
+- **Step-by-step Explanation:**
+```python
+axis_size = A.shape[self.axis]
+# axis_size = 3, since A.shape[1] = 3
+```
+-   We are splitting along axis 1, which has 3 elements (columns).
+```python
+split_tensors = []
+```
+-   We initialize an empty list `split_tensors` to store the split tensors.
+```python
+output_shape = list(A.shape)
+output_shape.pop(self.axis)
+# output_shape = [2], since we removed the axis 1 dimension
+```
+- `output_shape` becomes `[2]` because we are removing axis 1 (which had size 3), leaving us with 2 rows.
+```python
+for i in range(axis_size):  # Loop over the three columns
+```
+-   We loop through the three elements along axis 1.
+
+**First Iteration (`i=0`):**
+```python
+slices = [slice(None)] * len(A.shape)
+slices[self.axis] = i
+# slices = [slice(None), 0], since axis = 1 and i = 0
+```
+- `slices` becomes `[slice(None), 0]`, meaning we take all rows and the 0th column.
+
+```python
+split_tensors.append(A[tuple(slices)].compact().reshape(output_shape))
+# A[tuple(slices)] gives Tensor([1, 4])
+# reshape(output_shape) keeps it as [1, 4]
+```
+-   This extracts the first column `[1, 4]` and appends it to `split_tensors`.
+
+**Second Iteration (`i=1`):**
+```python
+slices = [slice(None)] * len(A.shape)
+slices[self.axis] = i
+# slices = [slice(None), 1], since axis = 1 and i = 1
+```
+- `slices` becomes `[slice(None), 1]`, meaning we take all rows and the 1st column.
+```python
+split_tensors.append(A[tuple(slices)].compact().reshape(output_shape))
+# A[tuple(slices)] gives Tensor([2, 5])
+# reshape(output_shape) keeps it as [2, 5]
+```
+-   This extracts the second column `[2, 5]` and appends it to `split_tensors`.
+
+**Third Iteration (`i=2`):**
+```python
+slices = [slice(None)] * len(A.shape)
+slices[self.axis] = i
+# slices = [slice(None), 2], since axis = 1 and i = 2
+```
+- `slices` becomes `[slice(None), 2]`, meaning we take all rows and the 2nd column.
+```python
+split_tensors.append(A[tuple(slices)].compact().reshape(output_shape))
+# A[tuple(slices)] gives Tensor([3, 6])
+# reshape(output_shape) keeps it as [3, 6]
+```
+- This extracts the third column `[3, 6]` and appends it to `split_tensors`.
+```python
+return tuple(split_tensors)
+```
+- The final result is:
+```python
+(Tensor([1, 4]), Tensor([2, 5]), Tensor([3, 6]))
+```
+#### Summary:
+
+-   **Splitting along axis 0 (rows):**
+```css
+(Tensor([1, 2, 3]), Tensor([4, 5, 6]))
+```
+- **Splitting along axis 1 (columns):**
+```css
+(Tensor([1, 4]), Tensor([2, 5]), Tensor([3, 6]))
 ```
