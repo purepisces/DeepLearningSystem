@@ -1,4 +1,4 @@
-modified these function's code different from previous homework, also take a look at tanh's gradient, split's gradient, stack's gradient
+Modified these function's code different from previous homework, also take a look at tanh's gradient, split's gradient, stack's gradient. **check if previous homework need to modify to this version**
 ```css
 matmul
 summation
