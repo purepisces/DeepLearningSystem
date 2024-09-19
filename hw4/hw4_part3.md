@@ -516,3 +516,273 @@ The resulting flipped array:
  [3, 2, 1]]
  ```
 ___
+
+
+The dilation operator puts zeros between elements of an ndarray. We will need it for computing the backward pass of convolution when the stride of the convolution is greater than 1. As an example, dilation should do the following to a 2x2 matrix when dilated by 1 on both axes:
+
+
+$$
+\begin{bmatrix}
+1 & 2 \\
+3 & 4
+\end{bmatrix}
+\Longrightarrow
+\begin{bmatrix}
+1 & 0 & 2 & 0 \\
+0 & 0 & 0 & 0 \\
+3 & 0 & 4 & 0 \\
+0 & 0 & 0 & 0
+\end{bmatrix}
+$$
+
+To get some intuition for why we need dilation for the backward pass of strided convolution, consider a `stride=2`, `padding="same"`, `input_channels=output_channels=8` convolution applied to an input of size (10, 32, 32, 8). The resulting output will be of size (10, 16, 16, 8) due to the stride, and thus `out_grad` will have shape (10, 16, 16, 8). Yet, the gradient of the input needs to, of course, have shape (10, 32, 32, 8) -- so we must need to increase the size of `out_grad` in some way. Consider also that you could implement strided convolution as `Conv(x)[:, ::2, ::2, :]`, i.e., only keeping every other pixel in the spatial dimension.
+
+
+Implement `Dilate` in `ops.py`. This function takes two additional parameters (in attrs): the `dilation` amount and the `axes` to dilate. You must also implement the corresponding op `UnDilate`, whose forward pass will be used to implement the gradient of `Dilate`. (This is so we do not have to implement `GetItem` and `SetItem` ops, which can be highly inefficient to backprop through without additional optimizations.)
+
+**Code Implementation**
+```python
+class Dilate(TensorOp):
+    def __init__(self, axes: tuple, dilation: int):
+        self.axes = axes
+        self.dilation = dilation
+
+    def compute(self, a):
+        ### BEGIN YOUR SOLUTION
+        # Create the new shape by adding dilation
+        new_shape = list(a.shape)
+        for axis in self.axes:
+            new_shape[axis] = new_shape[axis] * (self.dilation + 1)
+
+        # Create an output array filled with zeros of the new shape
+        out = array_api.full(new_shape, 0, dtype=a.dtype, device=a.device)
+        # Define the slice for inserting original values into the dilated array
+        slices = tuple(slice(None, None, self.dilation + 1) if i in self.axes else slice(None) for i in range(len(a.shape)))
+
+        # Insert the original array into the dilated array
+        out[slices] = a
+
+        return out
+        ### END YOUR SOLUTION
+
+    def gradient(self, out_grad, node):
+        ### BEGIN YOUR SOLUTION
+        return undilate(out_grad, self.axes, self.dilation)
+        ### END YOUR SOLUTION
+
+
+def dilate(a, axes, dilation):
+    return Dilate(axes, dilation)(a)
+
+
+class UnDilate(TensorOp):
+    def __init__(self, axes: tuple, dilation: int):
+        self.axes = axes
+        self.dilation = dilation
+
+    def compute(self, a):
+        ### BEGIN YOUR SOLUTION
+        # Define the slices to extract the non-zero elements
+        slices = tuple(slice(None, None, self.dilation + 1) if i in self.axes else slice(None) for i in range(len(a.shape)))
+
+        # Extract the original array from the dilated array
+        return a[slices]
+        ### END YOUR SOLUTION
+
+    def gradient(self, out_grad, node):
+        ### BEGIN YOUR SOLUTION
+        # Gradient of undilation is dilation, so return the dilated gradient
+        return dilate(out_grad, self.axes, self.dilation)
+        ### END YOUR SOLUTION
+
+
+def undilate(a, axes, dilation):
+    return UnDilate(axes, dilation)(a)
+```
+### Explain Slice
+
+Let's consider a 2D array:
+```python
+a_array = np.array([[0, 0, 0],
+                    [0, 0, 0],
+                    [0, 0, 0]])
+
+b_array = np.array([[1, 2, 3],
+                    [4, 5, 6]])
+
+# Define slices to specify where to place b_array in a_array
+slices = (slice(1, 3), slice(None))  # Rows 1 to 2 and all columns
+
+# Assign b_array into the sliced region of a_array
+a_array[slices] = b_array
+
+print(a_array)
+```
+**Explanation:**
+
+-   `slices = (slice(1, 3), slice(None))` means:
+    -   `slice(1, 3)`: Select rows 1 to 2 (inclusive).
+    -   `slice(None)`: Select all columns.
+-   The shape of the sliced portion of `a_array` is `(2, 3)` (2 rows and 3 columns), which matches the shape of `b_array` `(2, 3)`.
+-   The values from `b_array` will replace the values in `a_array` in the region defined by the slices (rows 1 and 2, and all columns).
+
+**Result:**
+```css
+[[0, 0, 0],
+ [1, 2, 3],
+ [4, 5, 6]]
+```
+
+### Explain `Dilate`
+
+Let’s go through the `Dilate` class implementation with an example to explain how it works.
+
+#### Example:
+
+Consider a simple 2x2 matrix:
+```python
+A = [[1, 2],
+     [3, 4]]
+```
+We want to dilate this matrix along both axes (axis 0 and axis 1) with a dilation factor of 1. The dilation means that zeros will be inserted between the original values along the specified axes.
+
+#### Step-by-Step Walkthrough:
+
+##### Step 1: Initialization
+```python
+class Dilate(TensorOp):
+    def __init__(self, axes: tuple, dilation: int):
+        self.axes = axes
+        self.dilation = dilation
+```
+
+-   **`axes`**: The axes along which you want to dilate the matrix. In this case, `axes=(0, 1)` means you want to insert zeros along both rows (axis 0) and columns (axis 1).
+-   **`dilation`**: The number of zeros you want to insert between elements. A dilation of 1 means 1 zero is inserted between each element.
+
+For this example:
+
+-   `axes = (0, 1)`
+-   `dilation = 1`
+##### Step 2: Compute Method
+
+The `compute` method handles the dilation process.
+```python
+def compute(self, a):
+    ### BEGIN YOUR SOLUTION
+    # Create the new shape by adding dilation
+    new_shape = list(a.shape)
+    for axis in self.axes:
+        new_shape[axis] = new_shape[axis] * (self.dilation + 1)
+```
+Here, we calculate the new shape of the output matrix after dilation:
+
+-   **Original shape of `a`**: `a.shape = (2, 2)`
+-   Since we are dilating along axes 0 and 1 with a dilation of 1:
+    -   For axis 0: `new_shape[0] = 2 * (1 + 1) = 4`
+    -   For axis 1: `new_shape[1] = 2 * (1 + 1) = 4`
+
+So, the new shape will be `(4, 4)`.
+
+##### Step 3: Create the Output Array
+```python
+    # Create an output array filled with zeros of the new shape
+    out = array_api.full(new_shape, 0, dtype=a.dtype, device=a.device)
+```
+-   An array `out` of shape `(4, 4)` is created, initialized with zeros. This array will hold the original values of `a` with zeros inserted between them.
+
+##### Step 4: Define Slices for Dilation
+```python
+    # Define the slice for inserting original values into the dilated array
+    slices = tuple(slice(None, None, self.dilation + 1) if i in self.axes else slice(None) for i in range(len(a.shape)))
+```
+-   This line creates slices that determine how the original values are placed into the larger array.
+-   The slice for an axis with dilation 1 will look like `slice(None, None, 2)`, meaning "take every other element" in that axis.
+
+For this example:
+
+-   `slices` will be `(slice(None, None, 2), slice(None, None, 2))` for axes 0 and 1, meaning that the original values will be placed in every other row and column.
+
+##### Step 5: Insert Original Values
+```python
+    # Insert the original array into the dilated array
+    out[slices] = a
+```
+-   The values of `a` are inserted into the output array `out` using the defined `slices`.
+
+After this step, the array `out` looks like this:
+```css
+[[1, 0, 2, 0],
+ [0, 0, 0, 0],
+ [3, 0, 4, 0],
+ [0, 0, 0, 0]]
+```
+-   The original values are placed at the correct positions, and zeros are inserted between them.
+
+##### Step 6: Return the Result
+```python
+    return out
+```
+-   Finally, the dilated array `out` is returned.
+
+#### Gradient Method
+
+The `gradient` method computes the gradient of dilation during the backward pass:
+
+```python
+def gradient(self, out_grad, node):
+    return undilate(out_grad, self.axes, self.dilation)
+```
+- This method reverses the dilation process by calling the `undilate` operation, which removes the zeros that were inserted.
+
+### Explanation of `UnDilate`
+
+The `UnDilate` operation is the reverse of the **dilation** process. Dilation inserts zeros between elements of an array along specified axes, while **UnDilate** removes those zeros, recovering the original values from the dilated array.
+
+Here, the `UnDilate` class defines how to extract the original values from the dilated array, effectively reversing the dilation operation.
+
+#### Key Concepts:
+
+-   **Axes**: These are the axes along which dilation was applied. UnDilate will work along these axes to remove the zeros that were inserted during dilation.
+-   **Dilation Factor**: This represents how many zeros were inserted between elements during the dilation. UnDilate will skip over these zeros to recover the original elements.
+
+#### The Code Breakdown:
+```python
+class UnDilate(TensorOp):
+    def __init__(self, axes: tuple, dilation: int):
+        self.axes = axes
+        self.dilation = dilation
+```
+-   **`axes`**: The axes along which the dilation was applied.
+-   **`dilation`**: The dilation factor, indicating how many zeros were inserted between the original elements.
+
+##### Step 1: `compute` Method
+
+This is the core of the operation where the actual undilation takes place.
+
+```python
+def compute(self, a):
+    ### BEGIN YOUR SOLUTION
+    # Define the slices to extract the non-zero elements
+    slices = tuple(slice(None, None, self.dilation + 1) if i in self.axes else slice(None) for i in range(len(a.shape)))
+
+    # Extract the original array from the dilated array
+    return a[slices]
+    ### END YOUR SOLUTION
+```
+-   **Purpose**: The `compute` method takes the dilated array `a` and extracts the original values by skipping the zeros that were inserted during the dilation.
+
+##### Breaking Down `slices`:
+
+-   The line:
+```python
+slices = tuple(slice(None, None, self.dilation + 1) if i in self.axes else slice(None) for i in range(len(a.shape)))
+```
+creates a tuple of slice objects that will select only the original values from the dilated array `a`.
+    
+-   **How it works**:
+    
+    -   For every axis in `a`:
+        -   If the axis is one of the axes that was dilated (i.e., `i in self.axes`), the slice will be `slice(None, None, self.dilation + 1)`. This slice selects every `(self.dilation + 1)`-th element along that axis, which skips the zeros and takes only the original values.
+        -   If the axis was **not** dilated, the slice is simply `slice(None)`, which means "take all elements along this axis" (no skipping).
+
+___
