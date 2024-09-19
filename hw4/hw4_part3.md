@@ -1,4 +1,3 @@
-
 ## Part 3: Convolutional neural network [40 points]
 
 Here's an outline of what you will do in this task.
