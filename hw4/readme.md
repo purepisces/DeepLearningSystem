@@ -1,1 +1,2 @@
 1. why tanh不用realized_cache_data like relu?
+2. ops.mathemetics.py need to go through
