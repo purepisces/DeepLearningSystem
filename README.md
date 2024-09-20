@@ -1,6 +1,8 @@
 Emergency To do:
 1. Modify all summation related part in homework ops.mathematics
-check all of this  ```python
+check all of this
+
+```python
 matmul
 summation
 transpose
