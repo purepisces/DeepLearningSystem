@@ -125,7 +125,7 @@ new_shape = tuple(self._shape[i] + axes[i][0] + axes[i][1] for i in range(len(se
     So, the new shape of the array will be `(4, 7)`.
 2.  **Create New Array with Padded Shape:**
 ```python
-new_array = self.make(new_shape, device=self.device)
+new_array = self.device.full(new_shape, 0)
 ```
 Here, we create a new `NDArray` of shape `(4, 7)` using the same device as the original array (so if it's on CPU, it remains on CPU; if it's on GPU, it remains on GPU). Initially, this array is filled with zeros.
 
