@@ -658,7 +658,7 @@ for **multi-channel convolutions**, each **kernel** (also called a filter) has a
 -   **`K x K`**: Represents the spatial size of the filter (e.g., 3x3, 5x5). This refers to how the filter moves over the height and width of the input.
 -   **`C_in`**: Refers to the **number of input channels** (or depth). For example, if the input is an RGB image, `C_in` would be 3 because there are 3 color channels (Red, Green, Blue).
 
-### Example of a Kernel with Multi-Channel Input (RGB Image)
+#### Example of a Kernel with Multi-Channel Input (RGB Image)
 
 Let’s say we have an RGB image (3 channels: Red, Green, Blue) with a **height** and **width** of 5x5, and we are using a **3x3** kernel.
 
@@ -667,12 +667,11 @@ For an RGB image:
 -   The input has 3 channels, so the kernel must also operate across all 3 channels.
 -   The kernel would be a **3D tensor** with size **`3x3x3`**, where the third dimension corresponds to the 3 input channels.
 
-#### Visualization of the Kernel (3x3x3):
+##### Visualization of the Kernel (3x3x3):
 
 -   Each kernel will have 3 slices, one for each channel.
 
 ```python
-
 Kernel (3x3x3):
 
 Slice 1 (for Red channel):
@@ -695,11 +694,11 @@ Here:
 -   **Each slice** operates on one channel of the input.
 -   All three slices together form the full kernel that operates on a **3-channel input**.
 
-### How the Kernel is Applied to the Input:
+#### How the Kernel is Applied to the Input:
 
 When this **`3x3x3` kernel** is applied to an RGB image, it performs **element-wise multiplication** between the kernel and the corresponding **3x3 patch of the input** across all 3 channels, and then sums the results. This gives a single scalar value, which becomes one element in the output feature map.
 
-#### Example:
+##### Example:
 
 Let’s say the input is a small patch from an RGB image:
 
@@ -707,10 +706,10 @@ Let’s say the input is a small patch from an RGB image:
     
 ```python
     
-    `Red channel:    Green channel:    Blue channel:
+    Red channel:    Green channel:    Blue channel:
     [[1, 2, 3],     [[4, 5, 6],       [[7, 8, 9],
      [0, 1, 2],      [3, 2, 1],        [6, 5, 4],
-     [1, 0, 1]]      [4, 3, 2]]        [7, 6, 5]]` 
+     [1, 0, 1]]      [4, 3, 2]]        [7, 6, 5]] 
 ```
 
 -   **Kernel (3x3x3)**:
@@ -739,7 +738,7 @@ Total sum = -2 (Red) + 8 (Green) + 7 (Blue) = 13
 ```
 The result of this operation for this 3x3 patch is **13**, which becomes one value in the output feature map.
 
-### **Multiple Filters**:
+#### **Multiple Filters**:
 
 In most convolutional layers, you don’t just apply one filter; you apply multiple filters to extract different features from the input. Each filter might detect different patterns, such as edges, textures, or specific shapes.
 
@@ -748,10 +747,327 @@ For example:
 -   You could have 16 filters of size **`3x3x3`**, where each filter detects different features.
 -   The result of applying each filter would be **16 output channels**, resulting in a **feature map** of size **`HxWx16`**.
 
-### Recap:
+#### Recap:
 
 -   **Kernel Size** for a multi-channel convolution is **`KxKxC_in`**, where:
     -   `KxK` is the spatial size (height and width) of the filter.
     -   `C_in` is the number of input channels (e.g., 3 for RGB images, or more in deeper layers of a neural network).
 -   The filter is applied across all channels of the input, and the resulting dot products are summed to give a single output value at each position in the output feature map.
 -   If there are multiple filters, each filter produces its own output channel, resulting in a multi-channel output feature map.
+
+<img src="convolutional_kernels.png" alt="convolutional_kernels" width="400" height="300"/>
+
+### **Why is the Kernel Size Typically Square (e.g., 3x3, 5x5) and Not Rectangular (e.g., 3x4 or 5x6)?**
+
+The use of square kernels (e.g., 3x3, 5x5) rather than rectangular kernels (e.g., 3x4, 5x6) in convolutional neural networks (CNNs) is a design choice that stems from several practical and theoretical reasons:
+
+#### **Isotropy (Uniformity in All Directions)**:
+
+-   **Square kernels** treat both the horizontal and vertical directions of the input image **equally**. This symmetry is useful for image processing tasks because many features (like edges, textures, and patterns) can occur in any direction (vertical, horizontal, diagonal).
+-   Rectangular kernels (e.g., 3x4) would treat one dimension differently from the other, introducing **directional bias**. For example, a 3x4 kernel would capture more horizontal information than vertical information, which is usually not desirable since we want to treat the image equally in both directions.
+
+### **Receptive Field**
+
+The **receptive field** in the context of convolutional neural networks (CNNs) refers to the **region of the input image** (or feature map) that influences a particular neuron in the network's output layer (or feature map). In simpler terms, it's the size of the area in the input that affects the value of a specific output value in a CNN layer.
+
+The receptive field increases as we move deeper into the network, meaning that neurons in deeper layers "see" larger portions of the input image compared to neurons in earlier layers.
+
+
+#### Why the Receptive Field Matters:
+
+1.  **Feature Detection**: The size of the receptive field determines the level of detail captured by a particular neuron. Neurons with a small receptive field can capture fine-grained details (like edges or textures), while neurons with a larger receptive field can capture broader patterns (like object parts or entire objects).
+    
+2.  **Hierarchical Feature Representation**: As we move deeper into the network, the receptive field grows. This allows the network to first capture local features (in early layers) and gradually capture more global, higher-level features (in deeper layers).
+
+
+#### How the Receptive Field Works:
+
+-   When a **convolutional filter (kernel)** is applied to an image or feature map, it covers a small local region. This region is the **receptive field** of the output neuron corresponding to that filter's position on the input.
+    
+-   As we stack layers of convolutional operations, the receptive field of neurons in the deeper layers increases, because the neurons in deeper layers depend on the output of neurons from previous layers, which in turn depend on earlier inputs.
+
+#### Receptive Field in a Single Convolutional Layer:
+
+For a single convolutional layer with a kernel of size **`KxK`**, the receptive field of each output neuron is the **`KxK`** patch of the input that the kernel covers. For example:
+
+-   If the kernel size is **3x3**, the receptive field of each output neuron is a 3x3 patch of the input.
+-   If the kernel size is **5x5**, the receptive field is a 5x5 patch.
+
+#### Receptive Field in Deeper Networks:
+
+As you stack multiple convolutional layers, the receptive field **grows**, because each neuron in the deeper layer depends on a patch from the previous layer, which in turn depends on patches from earlier layers.
+
+#### Example:
+
+Let's consider a simple network with two convolutional layers, each with a **3x3** kernel:
+
+1.  **First Layer**:
+    
+    -   The receptive field of a neuron in the first layer is **3x3**, because the kernel size is 3x3.
+    -   Each neuron in this layer looks at a 3x3 patch of the input image.
+2.  **Second Layer**:
+    
+    -   The neurons in the second layer receive input from the 3x3 output of the first layer. However, each neuron in the first layer is already looking at a 3x3 patch of the input, so the receptive field of neurons in the second layer is **larger**.
+    -   Specifically, each neuron in the second layer now has a receptive field of **5x5** in the original input. This is because the 3x3 patch of the first layer’s output is itself dependent on a 3x3 patch of the input.
+
+In general, the **effective receptive field** grows as more layers are added to the network. For each layer, the receptive field is determined by the size of the filter and the receptive field of the previous layer.
+
+### Mathematical Calculation of Receptive Field:
+
+For a convolutional layer, the receptive field can be calculated using:
+
+-   **Kernel size (`K`)**: The size of the filter (e.g., 3x3, 5x5).
+-   **Stride (`S`)**: How much the filter moves at each step.
+-   **Padding (`P`)**: How many pixels of padding are added around the input.
+
+The **receptive field (`R`)** of a convolutional layer is affected by:
+
+-   The receptive field of the previous layer (`R_prev`).
+-   The kernel size of the current layer (`K`).
+
+In a simple case, with stride 1 and no padding, the receptive field increases by the size of the kernel minus 1 at each layer. This can be recursively calculated as:
+
+$$R_{current} = R_{previous} + (K - 1)$$
+
+For more complex cases with strides and padding, the calculation would need to take those into account, but this gives the basic intuition.
+
+#### Visualization of Receptive Field Growth
+
+##### **Layer 1**:
+
+-   Input (original image):
+```css
+[[ 1,  2,  3,  4,  5],
+ [ 6,  7,  8,  9, 10],
+ [11, 12, 13, 14, 15],
+ [16, 17, 18, 19, 20],
+ [21, 22, 23, 24, 25]]
+```
+- Apply a **3x3 kernel** to the input. Each neuron in the first layer sees a **3x3 patch** of the input:
+
+```css
+First layer receptive field: 3x3
+[[ 1,  2,  3],
+ [ 6,  7,  8],
+ [11, 12, 13]]
+```
+##### **Layer 2**:
+
+-   Now apply the **second layer’s 3x3 kernel** to a **3x3 region** of the first layer’s output.
+-   Each neuron in the second layer takes input from a **3x3 region** of the first layer. But each of those neurons in the first layer already covers a **3x3 patch** in the original input image.
+-   This results in the second-layer neuron having an **effective receptive field of 5x5**.
+
+#### Receptive Field Calculation:
+
+1.  **First Layer**: Each neuron in the first layer sees a **3x3 patch** of the input, so the receptive field is **3x3**.
+    
+2.  **Second Layer**:
+    
+    -   The **second layer** applies a **3x3 kernel** to the output of the first layer, but the **3x3 region** in the first layer corresponds to a larger portion of the input.
+    -   The receptive field grows because each neuron in the first layer already "sees" a 3x3 patch of the input. So, stacking the second layer with a 3x3 kernel expands the receptive field to **5x5**.
+
+### Explain conv_im2col 🌟🌟
+```python 
+def conv_im2col(Z, weight):
+    N,H,W,C_in = Z.shape
+    K,_,_,C_out = weight.shape
+    Ns, Hs, Ws, Cs = Z.strides
+    
+    inner_dim = K * K * C_in
+    A = np.lib.stride_tricks.as_strided(Z, shape = (N, H-K+1, W-K+1, K, K, C_in),
+                                        strides = (Ns, Hs, Ws, Hs, Ws, Cs)).reshape(-1,inner_dim)
+    out = A @ weight.reshape(-1, C_out)
+    return out.reshape(N,H-K+1,W-K+1,C_out)
+```
+####  Visualization of `A` at Different Shapes:
+
+Let's break down and visualize how the array `A` changes its shape through the operation, focusing on:
+
+1.  **Shape**: `(N, H-K+1, W-K+1, K, K, C_in)`
+2.  **Reshaped to**: `(-1, inner_dim)`
+
+#### 1. Shape: `(N, H-K+1, W-K+1, K, K, C_in)`
+
+At this stage, the input `Z` has been transformed into patches that correspond to the **receptive fields** of the convolutional kernel. This is how the **im2col** trick works—by extracting **patches** of size `(K, K, C_in)` for every possible location where the kernel can be applied to the input.
+
+-   **`N`**: Number of images (batch size).
+-   **`H-K+1`**: Number of rows where the kernel can be applied (height of the output).
+-   **`W-K+1`**: Number of columns where the kernel can be applied (width of the output).
+-   **`K, K`**: The spatial dimensions of the convolutional kernel (kernel height and width).
+-   **`C_in`**: Number of input channels (depth).
+
+Let’s assume the following example:
+
+-   **`N=1`**: One image.
+-   **`H=5`**, **`W=5`**: Input size of 5x5.
+-   **`K=3`**: Kernel size of 3x3.
+-   **`C_in=1`**: A single-channel input (e.g., a grayscale image).
+
+In this case:
+
+-   **`H-K+1 = 5-3+1 = 3`**: There are 3 positions vertically where the kernel can be applied.
+-   **`W-K+1 = 5-3+1 = 3`**: There are 3 positions horizontally where the kernel can be applied.
+-   **`K=3`** and **`C_in=1`**: Each patch is a 3x3 area of the input, with 1 channel.
+
+##### Visualization of `A` at Shape `(N, H-K+1, W-K+1, K, K, C_in)`:
+
+-   Let's say the input `Z` is a **5x5 single-channel image**:
+
+```css
+Z = [[ 1,  2,  3,  4,  5],
+     [ 6,  7,  8,  9, 10],
+     [11, 12, 13, 14, 15],
+     [16, 17, 18, 19, 20],
+     [21, 22, 23, 24, 25]]
+```
+- After applying **im2col**, the **3x3 patches** extracted from `Z` will be as follows:
+
+	-   For the first position (top-left):
+```css
+Patch 1: [[ 1,  2,  3],
+          [ 6,  7,  8],
+          [11, 12, 13]]
+```
+- For the second position (shifted 1 column to the right):
+```css
+Patch 2: [[ 2,  3,  4],
+          [ 7,  8,  9],
+          [12, 13, 14]]
+```
+- Continue extracting patches until the last valid position (bottom-right):
+```python
+Patch 9: [[13, 14, 15],
+          [18, 19, 20],
+          [23, 24, 25]]
+```
+At this point, the patches are stored in a large **6D array** of shape `(1, 3, 3, 3, 3, 1)`:
+
+-   **`1`** (batch size),
+-   **`3x3`** positions for sliding the kernel (output size),
+-   **`3x3x1`** patch size at each location.
+
+#### 2. Reshaped to `(-1, inner_dim)`:
+
+In this step, we flatten the patches into **rows**, where each row contains all the elements of a flattened 3x3 patch. The resulting matrix `A` has shape `(-1, inner_dim)`, where:
+
+-   **`-1`** is the total number of patches (in this case, `9` patches).
+-   **`inner_dim`** is the flattened size of each patch, which is **`K * K * C_in = 3 * 3 * 1 = 9`**.
+
+##### Visualization of `A` at Shape `(-1, inner_dim)`:
+
+The matrix `A` will look like this, where each row is a **flattened 3x3 patch**:
+
+```css
+A = [[ 1,  2,  3,  6,  7,  8, 11, 12, 13],
+     [ 2,  3,  4,  7,  8,  9, 12, 13, 14],
+     [ 3,  4,  5,  8,  9, 10, 13, 14, 15],
+     [ 6,  7,  8, 11, 12, 13, 16, 17, 18],
+     [ 7,  8,  9, 12, 13, 14, 17, 18, 19],
+     [ 8,  9, 10, 13, 14, 15, 18, 19, 20],
+     [11, 12, 13, 16, 17, 18, 21, 22, 23],
+     [12, 13, 14, 17, 18, 19, 22, 23, 24],
+     [13, 14, 15, 18, 19, 20, 23, 24, 25]]
+```
+-   Each row represents a **3x3 patch** extracted from the input.
+-   There are **9 rows** in total, corresponding to the **9 different positions** where the kernel was applied.
+-   Each row contains **9 elements**, representing the flattened version of a **3x3 patch** from the input.
+
+####  Visualization of `weight` at Different Shapes:
+
+#### 1. **Visualizing `weight` when its shape is `(K, _, _, C_out)`**:
+
+-   **`weight`** is the **filter (kernel)** used in the convolution operation.
+-   The shape of `weight` is **`(K, K, C_in, C_out)`**, where:
+    -   **`K x K`**: The spatial dimensions of the kernel (height and width of the filter).
+    -   **`C_in`**: The number of input channels (e.g., for RGB images, this would be 3 channels).
+    -   **`C_out`**: The number of output channels (i.e., how many filters are being applied, which determines how many feature maps are produced).
+
+#### Example:
+
+Let’s consider the following dimensions for clarity:
+
+-   **`K = 3`** (the kernel size is 3x3).
+-   **`C_in = 2`** (the input has 2 channels, such as a color image with 2 feature maps).
+-   **`C_out = 2`** (the convolution applies 2 filters, so it will produce 2 output channels).
+
+The kernel (filter) `weight` would look like this:
+
+```css
+weight = [
+    # Filter for output channel 1
+    [
+        # First slice for the 1st input channel
+        [[w111, w112, w113], [w121, w122, w123], [w131, w132, w133]],
+        # Second slice for the 2nd input channel
+        [[w211, w212, w213], [w221, w222, w223], [w231, w232, w233]]
+    ],
+    # Filter for output channel 2
+    [
+        # First slice for the 1st input channel
+        [[w311, w312, w313], [w321, w322, w323], [w331, w332, w333]],
+        # Second slice for the 2nd input channel
+        [[w411, w412, w413], [w421, w422, w423], [w431, w432, w433]]
+    ]
+]
+```
+-   **`wijk`** represents the weight at the position `(i, j)` for the `k-th` input channel in the kernel.
+-   Each **`3x3`** slice corresponds to the kernel applied to each input channel.
+-   There are **2 filters** (one for each output channel), each with **2 input slices** (for the 2 input channels).
+
+#### Visualization of `weight.reshape(-1, C_out)`:
+
+When we reshape the kernel from **`(K, K, C_in, C_out)`** to **`(-1, C_out)`**, we're flattening each kernel into a **2D matrix** where:
+
+-   Each row corresponds to one flattened 3x3 filter applied to each channel of the input.
+-   Each column corresponds to the output channels.
+
+For the given example (`K = 3`, `C_in = 2`, `C_out = 2`), the **flattened weight matrix** would look like this:
+
+```python
+weight.reshape(-1, C_out) =
+[    [w111, w311],
+    [w112, w312],
+    [w113, w313],
+    [w121, w321],
+    [w122, w322],
+    [w123, w323],
+    [w131, w331],
+    [w132, w332],
+    [w133, w333],
+    [w211, w411],
+    [w212, w412],
+    [w213, w413],
+    [w221, w421],
+    [w222, w422],
+    [w223, w423],
+    [w231, w431],
+    [w232, w432],
+    [w233, w433]
+]
+```
+-   There are **18 rows** (9 elements per input channel × 2 channels) in total.
+-   There are **2 columns**, one for each output channel.
+
+	-   Each **column** corresponds to a different output channel.
+	-   Each **row** contains the weights for the spatial dimensions and input channels, flattened into a single row, across both input channels (in this case, 2 channels).
+
+#### Matrix Multiplication Result:
+
+When you multiply `A @ weight`, the result will be a matrix where:
+
+-   Each row corresponds to the **dot product between a flattened patch of the input and each filter**.
+-   The number of columns in the output corresponds to the number of filters (`C_out`).
+
+
+```python
+out =
+[
+    [out_patch1_channel1, out_patch1_channel2],
+    [out_patch2_channel1, out_patch2_channel2],
+    [out_patch3_channel1, out_patch3_channel2],
+    ...
+]
+```
+
+## Reference:
+- [Image](https://medium.com/@abhishekjainindore24/all-about-convolutions-kernels-features-in-cnn-c656616390a1#id_token=eyJhbGciOiJSUzI1NiIsImtpZCI6IjVhYWZmNDdjMjFkMDZlMjY2Y2NlMzk1YjIxNDVjN2M2ZDQ3MzBlYTUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiIyMTYyOTYwMzU4MzQtazFrNnFlMDYwczJ0cDJhMmphbTRsamRjbXMwMHN0dGcuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiIyMTYyOTYwMzU4MzQtazFrNnFlMDYwczJ0cDJhMmphbTRsamRjbXMwMHN0dGcuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTY2NTU4NjEyNDk4NDc4MDg2OTAiLCJoZCI6ImFuZHJldy5jbXUuZWR1IiwiZW1haWwiOiJ3ZW5xaW5nY0BhbmRyZXcuY211LmVkdSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYmYiOjE3MjcwMTMxOTgsIm5hbWUiOiJXZW5xaW5nIENhbyIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NKN3YtMlNqdE9CVjhlLUpnV05SQ0lBNktqWFpqSDgtNXVTb1J3R29WYWZ0RHBHbnd5dT1zOTYtYyIsImdpdmVuX25hbWUiOiJXZW5xaW5nIiwiZmFtaWx5X25hbWUiOiJDYW8iLCJpYXQiOjE3MjcwMTM0OTgsImV4cCI6MTcyNzAxNzA5OCwianRpIjoiZjdlMTNlM2IyMzBkZWQ4YWVlZjk5NTI4YmFmNWZkYWNlNGFkMWI2NyJ9.c6XGotcoi_jbNYvqAberorrq0YhDrGJreRcPaW6C8B7C3xQurAPIoKpqqDprVLRuLpS2hUqOc-yvhWfQZc9aBNk7vJCZ5MBZ2SH9eFOgX6n_orFiBHLuxkcoWI-oolmgwzQl2ePDLvif9v3ks_M1WsuiY1dn9KPVSllhEt4YeQAz-WWQ2dXMV1SOPdZMkX9TQQAC4tCK83V8cQ1IbmOtNSaleLuDOeO4uvOw_XVy1MLatnsgXqUE6G1nr4C_T_cmX8Wnkdzq27oWTrqvzl8vG7giaxl4DoeNN-PRbgk1oOVQ77hK0cpK7f595AL87Cs1YVbwh7DkH1L5n_-RXsCiyA)
