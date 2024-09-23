@@ -83,7 +83,7 @@ def pad(self, axes):
         """
         ### BEGIN YOUR SOLUTION
         new_shape = tuple(self._shape[i] + axes[i][0] + axes[i][1] for i in range(len(self._shape)))
-        new_array = self.make(new_shape, device=self.device)
+        new_array = self.device.full(new_shape, 0)
         pad_slices = tuple(slice(axes[i][0], axes[i][0] + self._shape[i]) for i in range(len(self._shape)))
         new_array[pad_slices] = self
         return new_array
