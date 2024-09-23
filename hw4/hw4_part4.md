@@ -6,7 +6,7 @@ In `python/needle/nn_sequence.py`, implement `RNNCell`.
 
 $h^\prime = \text{tanh}(xW_{ih} + b_{ih} + hW_{hh} + b_{hh})$. If nonlinearity is 'relu', then ReLU is used in place of tanh.
 
-All weights and biases should be initialized from $\mathcal{U}(-\sqrt{k}, \sqrt{k})$ where $k=\frac{1}{\text{hidden_size}}$.
+All weights and biases should be initialized from $\mathcal{U}(-\sqrt{k}, \sqrt{k})$ where $k=\frac{1}{\text{hiddensize}}$.
 
 In `python/needle/nn_sequence.py`, implement `RNN`.
 
