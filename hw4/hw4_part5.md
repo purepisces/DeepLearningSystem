@@ -110,7 +110,7 @@ class LSTM(Module):
 
 ___
 
-<img src="LSTM.png" alt="LSTM" width="600" height="500"/>
+<img src="LSTM.png" alt="LSTM" width="700" height="500"/>
 
 ## Explain the stripes part in LSTMCell
 
