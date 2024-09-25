@@ -18,6 +18,62 @@ where $h_t$ is the hidden state at time $t$, $x_t$ is the input at time $t$, and
 
 In a multi-layer RNN, the input $x_t^{(l)}$ of the $l$-th layer ($l \ge 2$) is the hidden state $h_t^{(l-1)}$ of the previous layer.
 
+**Code Implementation**
+```python
+class RNNCell(Module):
+    def __init__(self, input_size, hidden_size, bias=True, nonlinearity='tanh', device=None, dtype="float32"):
+        super().__init__()
+        ### BEGIN YOUR SOLUTION
+        bound = 1 / np.sqrt(hidden_size)
+        self.W_ih = Parameter(init.rand(input_size, hidden_size, low=-bound, high=bound, device=device, dtype=dtype))
+        self.W_hh = Parameter(init.rand(hidden_size, hidden_size, low=-bound, high=bound, device=device, dtype=dtype))
+        self.bias_ih = Parameter(init.rand(hidden_size, low=-bound, high=bound, device=device, dtype=dtype)) if bias else None
+        self.bias_hh = Parameter(init.rand(hidden_size, low=-bound, high=bound, device=device, dtype=dtype)) if bias else None
+        self.nonlinearity = ops.tanh if nonlinearity == 'tanh' else ops.relu
+        ### END YOUR SOLUTION
+
+    def forward(self, X, h=None):
+        ### BEGIN YOUR SOLUTION
+        if h is None:
+            h = init.zeros(X.shape[0], self.W_hh.shape[0], device=X.device, dtype=X.dtype)
+        Z = X@self.W_ih + h@self.W_hh
+        if self.bias_ih:
+            bias = self.bias_ih + self.bias_hh
+            bias = bias.reshape((1, bias.shape[0]))
+            bias = bias.broadcast_to(Z.shape)
+            Z += bias
+        return self.nonlinearity(Z)
+        ### END YOUR SOLUTION
+```
+
+```python
+class RNN(Module):
+    def __init__(self, input_size, hidden_size, num_layers=1, bias=True, nonlinearity='tanh', device=None, dtype="float32"):
+        super().__init__()
+        ### BEGIN YOUR SOLUTION
+        self.rnn_cells = []
+        self.rnn_cells.append(RNNCell(input_size, hidden_size, bias, nonlinearity, device, dtype))
+        for i in range(1, num_layers):
+            self.rnn_cells.append(RNNCell(hidden_size, hidden_size, bias, nonlinearity, device, dtype))
+        ### END YOUR SOLUTION
+
+    def forward(self, X, h0=None):
+        ### BEGIN YOUR SOLUTION
+        seq_len = X.shape[0]
+        layer_num = len(self.rnn_cells)
+        if h0 is None:
+            h0 = init.zeros(len(self.rnn_cells), X.shape[1], self.rnn_cells[0].W_hh.shape[0], device=X.device, dtype=X.dtype)
+        h_input = list(ops.split(h0, 0)) # list length = num_layers, element shape = (bs, hidden_size)
+        X_input = list(ops.split(X, 0)) # list length = seq_len, element shape = (bs, input_size)
+        for i in range(seq_len):
+            for j in range(layer_num):
+                X_input[i] = self.rnn_cells[j](X_input[i], h_input[j])
+                h_input[j] = X_input[i]
+        output = ops.stack(X_input, 0) # output features of last layer == input X of last+1 layer
+        h_n = ops.stack(h_input, 0)
+        return output, h_n  
+        ### END YOUR SOLUTION
+```
 ___
 ### Stacking RNNs
 Just like normal neural networks, RNNs can be stacked together, treating the hidden unit of one layer as the input to the next layer, to form “deep” RNNs. Practically speaking, tends to be less value in “very deep” RNNs than for other architectures
