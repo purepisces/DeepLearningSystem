@@ -37,7 +37,6 @@ Note that despite the name of the function, the subdivison of data is not done a
 
 **Code Implementation**
 ```python
-```python3
 class Dictionary(object):
     def __init__(self):
         self.word2idx = {}
@@ -58,7 +57,6 @@ class Dictionary(object):
 ```
 
 ```python
-```python3
 class Corpus(object):
     def __init__(self, base_dir, max_lines=None):
         self.dictionary = Dictionary()
